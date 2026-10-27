@@ -1,8 +1,8 @@
 {
-  "code": 27,
-  "name": "5.0",
+  "code": 28,
+  "name": "5.1",
   "minApk": 19,
-  "notes": "Músicas novas e animadas em todo o app (bateria, baixo, acordes e melodias próprias, estilo videogame).",
+  "notes": "Jogo novo: Corrida do Oliver, com 6 mundos (escola, selva, pré-história, mar de barco, neve e espaço de nave), itens, moedas, derrapagem com turbo, níveis e controle por setas ou girando o tablet.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/JogosDoOliver.apk"
 }

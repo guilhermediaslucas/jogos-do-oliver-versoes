@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 27, name: '5.0' }; -->
+<!-- const APP_VERSION = { code: 28, name: '5.1' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -401,6 +401,52 @@ button:active { transform: scale(.92); }
 .report-top li b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .report-top li em { font-style: normal; font-weight: 800; white-space: nowrap; }
 .report-none { font-size: 18px; opacity: .7; }
+/* corrida do Oliver */
+#g-kart { --sun: #ffd23f; --hot: #ff6b3d; --shade: rgba(42,29,18,.35); --display: "Baloo 2", "Arial Rounded MT Bold", system-ui, sans-serif; touch-action: none; }
+#g-kart .k-hud .round { pointer-events: auto; }
+#kCv { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+.k-hud { position: fixed; top: calc(10px + env(safe-area-inset-top, 0px)); left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; gap: 8px; align-items: flex-start; pointer-events: none; }
+.k-pill { background: var(--paper); border-radius: 999px; padding: 4px 14px; font-weight: 800; font-size: clamp(15px, 3.2vmin, 26px); box-shadow: 0 4px 0 var(--shade); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.k-pill.k-pos { background: var(--sun); font-size: clamp(22px, 5vmin, 40px); padding: 0 18px; }
+.round { pointer-events: auto; width: clamp(44px, 9vmin, 60px); height: clamp(44px, 9vmin, 60px); border-radius: 16px; border: 0; background: var(--paper); box-shadow: 0 4px 0 var(--shade); font-size: clamp(20px, 4.5vmin, 30px); cursor: pointer; }
+.k-grow { flex: 1; }
+#kRank { position: fixed; right: max(12px, env(safe-area-inset-right, 0px)); top: calc(clamp(56px, 11vmin, 80px) + env(safe-area-inset-top, 0px)); margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; pointer-events: none; counter-reset: r; }
+#kRank li { counter-increment: r; display: flex; align-items: center; gap: 4px; font-size: clamp(13px, 2.8vmin, 20px); background: rgba(255,247,234,.85); border-radius: 999px; padding: 0 10px 0 6px; border-left: 6px solid var(--c); }
+#kRank li::before { content: counter(r) "º"; font-size: .7em; font-weight: 800; }
+#kRank li.me { background: var(--sun); }
+.k-btn { position: fixed; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); width: clamp(80px, 17vmin, 128px); height: clamp(80px, 17vmin, 128px); border-radius: 50%; border: 4px solid rgba(255,255,255,.7);
+  background: rgba(255,255,255,.28); color: rgba(255,255,255,.95); font-size: clamp(36px, 8vmin, 60px); display: grid; place-items: center; touch-action: none; cursor: pointer; }
+.k-btn.on { background: rgba(255,255,255,.65); color: var(--ink); }
+#kL { left: max(16px, env(safe-area-inset-left, 0px)); } #kR { right: max(16px, env(safe-area-inset-right, 0px)); }
+#kItem { right: calc(max(16px, env(safe-area-inset-right, 0px)) + clamp(90px, 19vmin, 140px)); bottom: calc(40px + env(safe-area-inset-bottom, 0px)); width: clamp(70px, 14vmin, 104px); height: clamp(70px, 14vmin, 104px);
+  font-size: clamp(30px, 7vmin, 52px); border-color: rgba(255,210,63,.9); background: rgba(255,210,63,.25); }
+#kItem.full { background: rgba(255,210,63,.75); animation: kpulse 1s ease-in-out infinite; }
+#g-kart.tilt #kL, #g-kart.tilt #kR { display: none; }
+#g-kart.tilt #kItem { right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: clamp(96px, 20vmin, 140px); height: clamp(96px, 20vmin, 140px); }
+@keyframes kpulse { 50% { transform: scale(1.08); } }
+#kBanner { position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; font-size: 24vmin; font-weight: 800; color: #fff; text-shadow: 0 8px 0 var(--shade); }
+#kBanner.kpop { animation: kbanner .5s ease-out; }
+@keyframes kbanner { from { transform: scale(1.6); opacity: 0; } }
+.k-over { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(42,29,18,.5); padding: 12px max(16px, env(safe-area-inset-left, 0px)); overflow-y: auto; }
+.k-card { background: var(--paper); border-radius: 28px; padding: 18px 24px; width: min(860px, 100%); box-sizing: border-box; box-shadow: 0 8px 0 var(--shade); display: grid; gap: 10px; }
+.k-card h1 { margin: 0; font-size: clamp(26px, 6vmin, 46px); line-height: 1; text-align: center; text-wrap: balance; }
+#kOpts { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px 18px; }
+#kOpts section { min-width: 0; }
+#kOpts h3 { margin: 0 0 2px; font-size: 15px; letter-spacing: .03em; text-transform: uppercase; opacity: .7; }
+#kOpts section > div { display: flex; flex-wrap: wrap; gap: 6px; }
+.k-chip { border: 0; border-radius: 999px; padding: 6px 12px; font: 800 16px var(--display); background: #fff; box-shadow: 0 3px 0 var(--shade); cursor: pointer; color: var(--ink); display: inline-flex; align-items: center; }
+.k-chip.on { background: var(--sun); box-shadow: 0 0 0 3px var(--pick); }
+.k-chip i { width: 22px; height: 22px; border-radius: 50%; display: inline-block; border: 2px solid var(--ink); }
+.k-chip:focus-visible, .k-go:focus-visible, #g-kart .round:focus-visible { outline: 4px solid var(--pick); }
+.k-go { justify-self: center; border: 0; background: var(--hot); color: #fff; font: 800 26px var(--display); padding: 8px 32px; border-radius: 999px; box-shadow: 0 5px 0 #b8431f; cursor: pointer; }
+.k-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.k-note { margin: 0; text-align: center; font: 15px/1.4 system-ui, sans-serif; opacity: .8; }
+#kPodium { display: flex; justify-content: center; align-items: flex-end; gap: 6px; height: 170px; }
+.k-step { width: 92px; display: grid; justify-items: center; align-content: start; background: #ffe0a3; border-radius: 14px 14px 0 0; box-shadow: inset 0 -6px 0 rgba(0,0,0,.08); }
+.k-step span { font-size: 52px; margin-top: -44px; } .k-step b { font-size: 26px; }
+.k-step.s1 { height: 130px; background: var(--sun); } .k-step.s2 { height: 95px; background: #e0e0e0; } .k-step.s3 { height: 70px; background: #e8b98a; }
+@media (prefers-reduced-motion: reduce) { #kItem.full, #kBanner.kpop { animation: none; } }
 .keys { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; height: 100%; }
 .key { border-radius: 20px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 16px; font-size: clamp(30px, 6vw, 56px); box-shadow: 0 6px 0 rgba(0,0,0,.2); touch-action: none; }
 .key span { display: block; }
@@ -584,6 +630,7 @@ button:active { transform: scale(.92); }
   <h3 class="shelf">🎮 Jogar</h3>
   <div class="modes">
     <button class="mode" style="background:var(--g-adv)" data-game="adventure"><span>🏃</span>Aventura do <span class="advName">Oliver</span></button>
+    <button class="mode" style="background:#e53935" data-game="kart"><span>🏎️</span>Corrida do <span class="advName">Oliver</span></button>
     <button class="mode" style="background:var(--g-mem)" data-game="memory"><span>🃏</span>Memória</button>
     <button class="mode" style="background:var(--g-bal)" data-game="bubbles"><span>🎈</span>Estoura balão</button>
     <button class="mode" style="background:var(--g-piano)" data-game="piano"><span>🎹</span>Piano dos bichos</button>
@@ -762,6 +809,27 @@ button:active { transform: scale(.92); }
     <div class="pbtns"><button class="pbtn ok" id="reportClose">Fechar</button></div>
   </div>
 </div>
+<section id="g-kart" class="screen game" hidden>
+<canvas id="kCv"></canvas>
+<div class="k-hud"><button class="round" data-home aria-label="Início">🏠</button><button class="round" id="kMenuBtn" aria-label="Menu da corrida">⚙️</button><span class="k-pill" id="kLap">Volta 1/3</span><span class="k-pill" id="kCoins">🪙 0</span><span class="k-grow"></span><span class="k-pill k-pos" id="kPos">1º</span></div>
+<ol id="kRank" aria-label="Posições"></ol>
+<button class="k-btn" id="kL" aria-label="Virar para a esquerda">◀</button>
+<button class="k-btn" id="kR" aria-label="Virar para a direita">▶</button>
+<button class="k-btn" id="kItem" aria-label="Usar o item"></button>
+<div id="kBanner" hidden></div>
+<div class="k-over" id="kMenu" hidden><div class="k-card">
+  <h1 id="kTitle">Corrida 🏁</h1>
+  <div id="kOpts"></div>
+  <button class="k-go" id="kGo">▶ Correr!</button>
+  <p class="k-note">O carrinho anda sozinho. Pegue as caixas <b>?</b> e toque no botão amarelo para usar o item. Segurar a curva faz faísca e turbo!</p>
+</div></div>
+<div class="k-over" id="kEnd" hidden><div class="k-card">
+  <h1 id="kEndTitle">Chegou!</h1>
+  <div id="kPodium"></div>
+  <p class="k-note" id="kEndText"></p>
+  <div class="k-row"><button class="k-go" id="kAgain">🔁 De novo</button><button class="k-go" id="kToMenu">⚙️ Escolher outra</button></div>
+</div></div>
+</section>
 <section id="g-count" class="screen game" hidden>
   <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Vamos contar</h2><span class="score" id="countScore"></span></div>
   <div class="play"><div class="countWrap"><div class="fruits" id="fruits"></div><div class="nums" id="nums"></div></div></div>
@@ -8086,10 +8154,479 @@ function reportRender() {
 $('#pReport').onclick = () => { blip(560); reportFlush(); reportRender(); $('#parents').hidden = true; $('#report').hidden = false; };
 $('#reportClose').onclick = () => { blip(440); $('#report').hidden = true; $('#parents').hidden = false; };
 
+/* ================= Corrida do Oliver: kart em pseudo-3D (a estrada é uma fila de segmentos projetados) ================= */
+const K_SEG = 200, K_ROAD = 2000, K_CAMH = 1000, K_DRAW = 200, K_FOV = 100;
+const kDepth = 1 / Math.tan(K_FOV / 2 * Math.PI / 180), kPZ = K_CAMH * kDepth;
+const K_MAX = K_SEG * 44, K_ACC = K_MAX / 2.6;
+const K_EMOJI = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+// mundos: cores da pista, enfeites, corredores, veículo e música
+const K_WORLDS = {
+  escola: { name: 'Escola', icon: '🏫', ride: 'kart', song: 2, sky: ['#5bc0f5', '#d6f2ff'], hills: ['#9fdc8a', '#6cc24a'], grass: ['#5cbf4a', '#6ccf58'], road: ['#8d8f99', '#9a9ca6'], rumble: ['#ffb300', '#fff'],
+    deco: ['🏫', '🌳', '⚽', '🎒', '🛝', '🌳', '📚', '🚸', '🌻'], rivals: ['👧🏽', '👦🏻', '🧒🏿', '👧🏼', '👦🏾', '🧒🏻', '👧🏿'] },
+  selva: { name: 'Selva', icon: '🌴', ride: 'kart', song: 1, sky: ['#7ecf9e', '#e2f7d0'], hills: ['#3f9b4a', '#2e7d32'], grass: ['#2f8f3a', '#38a045'], road: ['#a1754a', '#ad8155'], rumble: ['#6d4c2a', '#d9b98a'],
+    deco: ['🌴', '🌿', '🦜', '🍌', '🌺', '🌴', '🍍', '🦋', '🌳'], rivals: ['🐵', '🦁', '🐯', '🐘', '🦒', '🦓', '🦛'] },
+  dinos: { name: 'Pré-história', icon: '🦖', ride: 'kart', song: 0, sky: ['#ffb07a', '#ffe6c2'], hills: ['#c9a46a', '#9bc47a'], grass: ['#8cb85a', '#97c463'], road: ['#c8a36b', '#d2ae77'], rumble: ['#7a5235', '#f3dca0'],
+    deco: ['🌋', '🌴', '🦴', '🥚', '🌿', '🌴', '🦴', '🌋'], rivals: ['🦖', '🦕', '🐊', '🦎', '🐢', '🦣', '🐉'] },
+  mar: { name: 'Mar (barco)', icon: '🌊', ride: 'boat', song: 5, sky: ['#6ec6ff', '#e8f8ff'], hills: ['#ffd59a', '#7ccf6a'], grass: ['#1e74c9', '#2280d6'], road: ['#3aa0e8', '#45aaf0'], rumble: ['#e53935', '#fff'],
+    deco: ['🏝️', '⛵', '🐚', '🐳', '🌴', '🐬', '⚓'], rivals: ['🐬', '🐙', '🐢', '🦀', '🐳', '🦭', '🐠'], water: true },
+  neve: { name: 'Neve', icon: '⛄', ride: 'kart', song: 2, sky: ['#9fc2ff', '#eef4ff'], hills: ['#ffffff', '#dfe9f5'], grass: ['#f4f8ff', '#e6eef9'], road: ['#9fb4c8', '#a9bed2'], rumble: ['#1e88e5', '#fff'],
+    deco: ['⛄', '🌲', '❄️', '🏔️', '🌲', '☃️', '🎄'], rivals: ['🐧', '🐻‍❄️', '🦭', '🐰', '🦊', '🦌', '🐺'] },
+  espaco: { name: 'Espaço (nave)', icon: '🚀', ride: 'ship', song: 4, sky: ['#0b0d33', '#2b2f6b'], hills: ['#3a3f7a', '#2a2e63'], grass: ['#0b0d2a', '#10133a'], road: null, rumble: ['#ff4fd8', '#4fe3ff'],
+    deco: ['🪐', '🌙', '⭐', '🛸', '☄️', '🛰️', '🌟'], rivals: ['👽', '👾', '🤖', '🐙', '👽', '🛸', '🤖'], space: true }
+};
+// enfeites grandes (árvores, casas, vulcão); o resto (frutas, bolas, placas) aparece menor
+const K_BIG = new Set(['🏫', '🌳', '🌲', '🌴', '🛝', '🌋', '🏝️', '⛵', '🐳', '🏔️', '⛄', '☃️', '🎄', '🪐', '🌙', '🛸']);
+const K_COLORS = ['#e53935', '#1e88e5', '#43a047', '#fb8c00', '#8e24aa', '#ec407a', '#00acc1', '#6d4c41'];
+const K_ITEMS = { mush: '🍄', mush3: '🍄', banana: '🍌', bubble: '🫧', star: '⭐', bolt: '⚡', coins: '🪙' };
+// opções escolhidas antes da corrida (ficam guardadas)
+const kOpt = (() => { try { return Object.assign({ world: 'escola', size: 1, laps: 3, level: 1, rivals: 5, ctrl: 'arrows', music: true, color: 0 }, JSON.parse(localStorage.getItem('oliver-kart') || '{}')); } catch (e) { return { world: 'escola', size: 1, laps: 3, level: 1, rivals: 5, ctrl: 'arrows', music: true, color: 0 }; } })();
+const kSave = () => { try { localStorage.setItem('oliver-kart', JSON.stringify(kOpt)); } catch (e) {} };
+
+let kCv, kx, kW = 0, kH = 0, kSegs = [], kLen = 0, K = null, kRaf = 0, kSong = null;
+const kEase = (a, b, p) => a + (b - a) * ((-Math.cos(p * Math.PI) / 2) + .5);
+const kWrap = z => ((z % kLen) + kLen) % kLen;
+const kSegAt = z => kSegs[Math.floor(kWrap(z) / K_SEG) % kSegs.length];
+
+/* ---------- pista: pedaços sorteados (sempre os mesmos para cada mundo e tamanho) ---------- */
+function kBuild(world, size) {
+  kSegs = [];
+  let seed = [...world].reduce((n, c) => n * 31 + c.charCodeAt(0), 7) + size * 101;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const lastY = () => kSegs.length ? kSegs[kSegs.length - 1].p2.y : 0;
+  const add = (curve, y) => { const n = kSegs.length; kSegs.push({ i: n, curve, deco: [], p1: { y: lastY(), z: n * K_SEG, c: {}, s: {} }, p2: { y, z: (n + 1) * K_SEG, c: {}, s: {} } }); };
+  const piece = (enter, hold, leave, curve, hill) => {
+    const y0 = lastY(), y1 = y0 + hill * K_SEG, t = enter + hold + leave;
+    for (let n = 0; n < enter; n++) add(kEase(0, curve, n / enter), kEase(y0, y1, n / t));
+    for (let n = 0; n < hold; n++) add(curve, kEase(y0, y1, (enter + n) / t));
+    for (let n = 0; n < leave; n++) add(kEase(curve, 0, n / leave), kEase(y0, y1, (enter + hold + n) / t));
+  };
+  piece(10, 40, 10, 0, 0);
+  const pieces = [9, 15, 22][size];
+  for (let k = 0; k < pieces; k++) {
+    const turn = (rnd() < .5 ? -1 : 1) * (2 + rnd() * 3), hill = (rnd() - .5) * 40;
+    piece(20 + rnd() * 15 | 0, 20 + rnd() * 30 | 0, 20 + rnd() * 15 | 0, rnd() < .2 ? 0 : turn, kOpt.world === 'mar' || kOpt.world === 'espaco' ? hill * .4 : hill);
+    if (rnd() < .5) piece(10, 20 + rnd() * 20 | 0, 10, 0, 0);
+  }
+  piece(25, 30, 25, 0, -lastY() / K_SEG);
+  kLen = kSegs.length * K_SEG;
+  const W = K_WORLDS[world];
+  for (let n = 10, k = 0; n < kSegs.length; n += 3, k++) {
+    kSegs[n].deco.push({ e: W.deco[(k * 5 + (k >> 2)) % W.deco.length], off: (n % 2 ? 1 : -1) * (1.35 + (n % 5) / 6), size: 1.4 + (n % 3) * .3 });
+    if (n % 9 === 0) kSegs[n].deco.push({ e: W.deco[(k * 3 + 1) % W.deco.length], off: (n % 2 ? -1 : 1) * (2.2 + (n % 4) / 4), size: 1.8 });
+  }
+  for (let k = 0; k < 4; k++) kSegs[k].start = true;
+  // caixas de item, moedas e faixas de turbo
+  K.boxes = []; K.coinsOnRoad = []; K.pads = new Set();
+  for (let n = 70; n < kSegs.length - 20; n += 120) for (const off of [-.55, -.18, .18, .55]) K.boxes.push({ z: n * K_SEG, off, t: 0 });
+  for (let n = 40; n < kSegs.length - 20; n += 90) { const off = (rnd() - .5) * 1.2; for (let k = 0; k < 5; k++) K.coinsOnRoad.push({ z: (n + k * 3) * K_SEG, off, t: 0 }); }
+  for (let n = 130; n < kSegs.length - 20; n += 230) for (let k = 0; k < 5; k++) K.pads.add(n + k);
+}
+
+/* ---------- corredores ---------- */
+function kNewRace() {
+  K = { t: 0, state: 'count', count: 3.4, items: [], fx: [], laps: kOpt.laps, wobble: 0, steerHeld: 0, drift: 0, last: 0, done: false };
+  kBuild(kOpt.world, kOpt.size);
+  const W = K_WORLDS[kOpt.world], lvl = kOpt.level;
+  // no fácil o Oliver é mais rápido; no difícil todos correm igual e os outros usam itens nele
+  const rivalSpeed = [[.74, .86], [.86, .96], [.97, 1.02]][lvl];
+  K.racers = [];
+  for (let i = 0; i < kOpt.rivals; i++) {
+    const row = Math.floor((i + 1) / 2), side = (i + 1) % 2 ? -1 : 1;
+    K.racers.push({ name: W.rivals[i % W.rivals.length], color: K_COLORS[(i + 1 + kOpt.color) % K_COLORS.length], me: false,
+      z: K_SEG * (8 + row * 5), off: side * .45, lap: 1, sp: 0, top: K_MAX * (rivalSpeed[0] + (rivalSpeed[1] - rivalSpeed[0]) * (i / Math.max(1, kOpt.rivals - 1))),
+      spin: 0, star: 0, boost: 0, small: 0, item: null, itemT: 3 + Math.random() * 5, coins: 0, lane: (Math.random() - .5) * .9, fin: 0 });
+  }
+  K.me = { name: 'kid', color: K_COLORS[kOpt.color], me: true, z: K_SEG * 4, off: 0, lap: 1, sp: 0, top: K_MAX * (lvl === 0 ? 1.08 : 1), spin: 0, star: 0, boost: 0, small: 0, item: null, roll: 0, coins: 0, fin: 0 };
+  K.racers.push(K.me);
+  kHud();
+}
+const kProg = r => (r.lap - 1) * kLen + kWrap(r.z);
+const kRank = () => [...K.racers].sort((a, b) => (b.fin ? 1e9 - b.fin : kProg(b)) - (a.fin ? 1e9 - a.fin : kProg(a)));
+
+/* ---------- itens ---------- */
+function kRoll(r) {
+  // quem está atrás ganha itens melhores (como no Mario Kart)
+  const place = kRank().indexOf(r), back = place / Math.max(1, K.racers.length - 1);
+  const pool = back < .3 ? ['banana', 'bubble', 'coins', 'banana', 'mush'] : back < .7 ? ['mush', 'bubble', 'banana', 'mush3', 'coins', 'star'] : ['mush3', 'star', 'bolt', 'mush', 'bubble'];
+  return pool[Math.random() * pool.length | 0];
+}
+function kUse(r) {
+  const it = r.item; if (!it || (r.me && r.roll > 0)) return;
+  if (it === 'mush3' && (r.uses = (r.uses ?? 3) - 1) > 0) { r.boost = 1.3; kSfx(r, 'boost'); return; }
+  r.item = null; r.uses = undefined;
+  if (it === 'mush' || it === 'mush3') { r.boost = 1.3; kSfx(r, 'boost'); }
+  else if (it === 'star') { r.star = 6; kSfx(r, 'star'); if (r.me) kSay('Estrela! Ninguém te segura!'); }
+  else if (it === 'coins') { r.coins = Math.min(10, r.coins + 3); kSfx(r, 'coin'); }
+  else if (it === 'banana') { K.items.push({ kind: 'banana', z: kWrap(r.z - K_SEG * 2), off: r.off, t: 0 }); kSfx(r, 'drop'); }
+  else if (it === 'bubble') {
+    const ahead = kRank(), i = ahead.indexOf(r), target = i > 0 ? ahead[i - 1] : null;
+    K.items.push({ kind: 'bubble', z: kWrap(r.z + K_SEG * 2), off: r.off, t: 0, target, from: r }); kSfx(r, 'shoot');
+  } else if (it === 'bolt') {
+    for (const o of K.racers) if (o !== r && o.star <= 0) { o.small = 3.5; o.spin = Math.max(o.spin, .6); }
+    kSfx(r, 'bolt'); if (r.me) kSay('Trovão! Todo mundo ficou pequenininho!'); else if (K.me.small > 0) kSay('Ih, um trovão!');
+  }
+  if (r.me) kHud();
+}
+function kHit(r, why) {
+  if (r.star > 0 || r.spin > 0) return;
+  r.spin = 1.3; r.coins = Math.max(0, r.coins - 2); kSfx(r, 'spin');
+  if (r.me) kSay(why === 'banana' ? 'Escorregou na banana!' : 'Opa! Rodopiou!');
+}
+
+/* ---------- física de cada corredor ---------- */
+function kMove(r, dt) {
+  const seg = kSegAt(r.z), offroad = Math.abs(r.off) > 1;
+  r.spin -= dt; r.star -= dt; r.boost -= dt; r.small -= dt;
+  let target = r.top * (1 + r.coins * .015);
+  if (K.state !== 'race') target = 0;
+  if (r.fin) target = K_MAX * .45;
+  if (r.boost > 0) target *= 1.45;
+  if (r.star > 0) target *= 1.3;
+  if (r.small > 0) target *= .7;
+  if (offroad && r.star <= 0 && r.boost <= 0) target *= kOpt.world === 'espaco' ? .75 : .55;
+  if (r.spin > 0) target *= .25;
+  r.sp += Math.sign(target - r.sp) * Math.min(Math.abs(target - r.sp), (target > r.sp ? K_ACC : K_ACC * 2.2) * dt);
+  const before = r.z; r.z = kWrap(r.z + r.sp * dt);
+  if (r.z < before - kLen / 2 && K.state === 'race') {   // completou uma volta
+    if (r.lap >= K.laps) { if (!r.fin) r.fin = K.t; }
+    else { r.lap++; if (r.me) { kHud(); kSay(r.lap === K.laps ? 'Última volta!' : `Volta ${r.lap}!`); if (r.lap === K.laps && kSong) kSong.speed(1.12); } }
+  }
+  if (K.pads.has(seg.i) && r.boost < .3) { r.boost = 1.1; kSfx(r, 'boost'); }
+  // moedas: cada uma deixa um pouquinho mais rápido (até 10)
+  for (const c of K.coinsOnRoad) if (c.t <= 0 && Math.abs(kWrap(c.z - r.z)) < K_SEG * 1.2 && Math.abs(c.off - r.off) < .25) { c.t = 6; r.coins = Math.min(10, r.coins + 1); if (r.me) { kSfx(r, 'coin'); kHud(); } }
+  for (const b of K.boxes) if (b.t <= 0 && Math.abs(kWrap(b.z - r.z)) < K_SEG * 1.2 && Math.abs(b.off - r.off) < .26) {
+    b.t = 3; if (!r.item) { r.item = kRoll(r); if (r.me) { r.roll = 1.1; kSfx(r, 'box'); kHud(); } else r.itemT = 1 + Math.random() * (kOpt.level === 2 ? 2 : 6); }
+  }
+}
+function kAI(r, dt) {
+  const seg = kSegAt(r.z), aheadSeg = kSegs[(seg.i + 6) % kSegs.length];
+  let want = r.lane - aheadSeg.curve * .12;   // corta um pouco por dentro da curva
+  for (const it of K.items) if (it.kind === 'banana' && kWrap(it.z - r.z) < K_SEG * 8 && Math.abs(it.off - r.off) < .35) want = it.off > 0 ? it.off - .6 : it.off + .6;
+  for (const b of K.boxes) if (!r.item && b.t <= 0 && kWrap(b.z - r.z) < K_SEG * 10 && Math.abs(b.off - want) < .4) want = b.off;
+  r.off += Math.sign(want - r.off) * Math.min(Math.abs(want - r.off), dt * 1.2);
+  r.off = Math.max(-.85, Math.min(.85, r.off));
+  if (Math.random() < dt * .1) r.lane = (Math.random() - .5) * 1.1;
+  // usar o item: no fácil nunca contra o Oliver; no difícil, sempre que der
+  if (r.item && (r.itemT -= dt) <= 0) {
+    const mean = ['banana', 'bubble', 'bolt'].includes(r.item);
+    if (!mean || kOpt.level === 2 || (kOpt.level === 1 && Math.random() < .5)) kUse(r);
+    else r.item = null;   // no fácil eles jogam fora as maldades
+    r.itemT = 2 + Math.random() * 3;
+  }
+  // rubber band: no fácil e no médio quem está muito na frente segura um pouco
+  const gap = kProg(r) - kProg(K.me);
+  if (kOpt.level < 2 && gap > K_SEG * 60) r.sp *= 1 - dt * .4;
+  if (gap < -K_SEG * 80) r.sp *= 1 + dt * .2;
+}
+function kStep(dt) {
+  K.t += dt;
+  if (K.state === 'count') {
+    const b = Math.ceil(K.count); K.count -= dt; const a = Math.ceil(K.count);
+    if (K.count <= 0) { K.state = 'race'; kBanner('VAI!', .8); kSfx(K.me, 'go'); kSay('Vai!'); }
+    else if (a !== b && a <= 3) { kBanner(String(a), .9); kSfx(K.me, 'beep'); }
+    return;
+  }
+  const me = K.me;
+  // direção: setas ou girar o tablet; segurar a curva faz a derrapagem com turbo (como o mini-turbo do Mario Kart)
+  const steer = kOpt.ctrl === 'tilt' ? kTilt : (kKeys.r ? 1 : 0) - (kKeys.l ? 1 : 0);
+  const seg = kSegAt(me.z + kPZ), pct = me.sp / K_MAX;
+  if (me.spin <= 0 && !me.fin) me.off += steer * dt * 2.3 * Math.min(1, pct + .2);
+  me.off -= dt * pct * seg.curve * .2;
+  if (!steer) me.off -= me.off * Math.min(1, dt * .7);
+  me.off = Math.max(-2.2, Math.min(2.2, me.off)); me.steer = steer;
+  if (Math.abs(steer) > .5 && pct > .6 && Math.abs(seg.curve) > 1) K.drift += dt; else {
+    if (K.drift > 1.6) { me.boost = 1.2; kSfx(me, 'boost'); } else if (K.drift > .8) { me.boost = .7; kSfx(me, 'boost'); }
+    K.drift = 0;
+  }
+  if (me.roll > 0 && (me.roll -= dt) <= 0) { kHud(); kSfx(me, 'ding'); }
+  for (const r of K.racers) { if (!r.me) kAI(r, dt); kMove(r, dt); }
+  // encostões entre carrinhos
+  for (let i = 0; i < K.racers.length; i++) for (let j = i + 1; j < K.racers.length; j++) {
+    const a = K.racers[i], b = K.racers[j], dz = kWrap(b.z - a.z + kLen / 2) - kLen / 2;
+    if (Math.abs(dz) < K_SEG * 1.3 && Math.abs(a.off - b.off) < .3) {
+      if (a.star > 0) kHit(b, 'star'); else if (b.star > 0) kHit(a, 'star');
+      const push = a.off < b.off ? -1 : 1; a.off += push * .06; b.off -= push * .06;
+      const back = dz > 0 ? a : b; back.sp *= .92;
+      if ((a.me || b.me) && K.t - (K.bumpT || 0) > .6) { K.bumpT = K.t; kSfx(me, 'bump'); }
+    }
+  }
+  // bananas e bolhas
+  for (const it of K.items) {
+    it.t += dt;
+    if (it.kind === 'bubble') {
+      const tg = it.target; it.z = kWrap(it.z + K_MAX * 1.5 * dt);
+      if (tg) { it.off += Math.sign(tg.off - it.off) * Math.min(Math.abs(tg.off - it.off), dt * 2); if (Math.abs(kWrap(tg.z - it.z + kLen / 2) - kLen / 2) < K_SEG * 1.5 && Math.abs(tg.off - it.off) < .35) { kHit(tg, 'bubble'); it.gone = true; } }
+      if (it.t > 4) it.gone = true;
+    } else for (const r of K.racers) if (Math.abs(kWrap(r.z - it.z + kLen / 2) - kLen / 2) < K_SEG && Math.abs(r.off - it.off) < .3 && r !== it.owner) { kHit(r, 'banana'); it.gone = true; break; }
+  }
+  K.items = K.items.filter(it => !it.gone && it.t < 40);
+  for (const b of K.boxes) b.t -= dt; for (const c of K.coinsOnRoad) c.t -= dt;
+  if (me.fin && !K.done) kFinish();
+  if (K.t - K.last > .25) { K.last = K.t; kHud(); }
+  if (kEng) { kEng.frequency.value = 55 + pct * 150 + (me.boost > 0 ? 50 : 0); kEngG.gain.value = K.state === 'race' ? .03 : .01; }
+}
+function kFinish() {
+  K.done = true; const place = kRank().indexOf(K.me) + 1;
+  kSfx(K.me, 'win'); kSay(place === 1 ? `Primeiro lugar! Campeão!` : `Você chegou em ${place}º lugar!`);
+  setTimeout(() => kPodium(place), 1500);
+}
+
+/* ---------- desenho ---------- */
+function kProject(p, cx, cy, cz) {
+  p.c.x = -cx; p.c.y = p.y - cy; p.c.z = p.z - cz;
+  p.s.k = kDepth / p.c.z; p.s.x = kW / 2 + p.s.k * p.c.x * kW / 2; p.s.y = kH / 2 - p.s.k * p.c.y * kH / 2; p.s.w = p.s.k * K_ROAD * kW / 2;
+}
+function kQuad(c, x1, y1, w1, x2, y2, w2, o1 = 0, o2 = 0) { kx.fillStyle = c; kx.beginPath(); kx.moveTo(x1 - w1 + o1, y1); kx.lineTo(x2 - w2 + o2, y2); kx.lineTo(x2 + w2 + o2, y2); kx.lineTo(x1 + w1 + o1, y1); kx.closePath(); kx.fill(); }
+function kSky(W, shift) {
+  const g = kx.createLinearGradient(0, 0, 0, kH * .6); g.addColorStop(0, W.sky[0]); g.addColorStop(1, W.sky[1]); kx.fillStyle = g; kx.fillRect(0, 0, kW, kH);
+  if (W.space) {
+    kx.fillStyle = '#fff'; for (let i = 0; i < 90; i++) { kx.globalAlpha = .4 + (i % 5) / 8; kx.fillRect((((i * 197) - shift * .2) % kW + kW) % kW, (i * 89) % (kH * .55), 2, 2); }
+    kx.globalAlpha = 1; kx.fillStyle = '#e76f51'; kx.beginPath(); kx.arc(((kW * .2 - shift * .4) % (kW * 1.4) + kW * 1.4) % (kW * 1.4) - kW * .2, kH * .22, kH * .09, 0, 7); kx.fill();
+    kx.fillStyle = '#8ecae6'; kx.beginPath(); kx.arc(kW * .8, kH * .12, kH * .05, 0, 7); kx.fill(); return;
+  }
+  kx.fillStyle = '#ffe066'; kx.beginPath(); kx.arc(kW * .82, kH * .13, kH * .06, 0, 7); kx.fill();
+  kx.fillStyle = '#fff';
+  for (let i = 0; i < 6; i++) { const cx = ((i * kW * .23 - shift * .3) % (kW * 1.4) + kW * 1.4) % (kW * 1.4) - kW * .2, cy = kH * (.08 + (i % 3) * .06), r = kH * .03;
+    kx.beginPath(); kx.arc(cx, cy, r, 0, 7); kx.arc(cx + r, cy - r * .5, r * 1.25, 0, 7); kx.arc(cx + r * 2.2, cy, r, 0, 7); kx.fill(); }
+  W.hills.forEach((col, k) => {
+    kx.fillStyle = col; kx.globalAlpha = k ? 1 : .75; kx.beginPath(); kx.moveTo(0, kH * .56);
+    for (let i = 0; i <= 48; i++) { const px = i / 48 * kW, f = (px + shift * (k ? .9 : .5)) / kW; kx.lineTo(px, kH * .56 - (Math.sin(f * (k ? 9 : 5)) * .5 + .5) * kH * (k ? .08 : .16) - Math.sin(f * 23) * kH * .01); }
+    kx.lineTo(kW, kH * .62); kx.lineTo(0, kH * .62); kx.fill(); kx.globalAlpha = 1;
+  });
+  const haze = kx.createLinearGradient(0, kH * .48, 0, kH * .56); haze.addColorStop(0, 'rgba(255,255,255,0)'); haze.addColorStop(1, 'rgba(255,255,255,.35)'); kx.fillStyle = haze; kx.fillRect(0, kH * .48, kW, kH * .08);
+}
+function kSprite(e, x, y, size, clip) {
+  if (size < 3) return; kx.save(); kx.beginPath(); kx.rect(0, 0, kW, clip); kx.clip();
+  kx.font = `${size}px ${K_EMOJI}`; kx.textAlign = 'center'; kx.textBaseline = 'bottom'; kx.fillText(e, x, y); kx.restore();
+}
+// veículo visto de trás: kart, barco ou nave; head é o emoji do corredor ou 'kid' (a criança)
+function kRide(cx, by, w, r, t) {
+  const ride = K_WORLDS[kOpt.world].ride, spinA = r.spin > 0 ? r.spin * 9 : 0, sm = r.small > 0 ? .6 : 1;
+  kx.save(); kx.translate(cx, by); kx.scale(sm, sm);
+  kx.fillStyle = 'rgba(0,0,0,.22)'; kx.beginPath(); kx.ellipse(0, -w * .01, w * .52, w * .07, 0, 0, 7); kx.fill();
+  if (spinA) kx.rotate(Math.sin(spinA) * .5); else kx.rotate((r.steer || 0) * .06);
+  if (r.star > 0) { kx.shadowColor = `hsl(${t * 600 % 360} 90% 60%)`; kx.shadowBlur = w * .25; }
+  kx.lineJoin = 'round'; kx.lineWidth = Math.max(1.5, w * .025); kx.strokeStyle = '#2a1d12';
+  const body = r.star > 0 ? `hsl(${t * 600 % 360} 85% 60%)` : r.color;
+  if (ride === 'boat') {
+    kx.fillStyle = 'rgba(255,255,255,.85)'; for (const sd of [-1, 1]) { kx.beginPath(); kx.ellipse(sd * w * .42, -w * .04, w * .14, w * .05 + Math.abs(Math.sin(t * 9 + sd)) * w * .03, 0, 0, 7); kx.fill(); }
+    kx.fillStyle = body; kx.beginPath(); kx.moveTo(-w * .45, -w * .32); kx.lineTo(w * .45, -w * .32); kx.lineTo(w * .32, -w * .02); kx.lineTo(-w * .32, -w * .02); kx.closePath(); kx.fill(); kx.stroke();
+    kx.fillStyle = '#fff'; kx.fillRect(-w * .4, -w * .24, w * .8, w * .05);
+    kx.fillStyle = '#9e9e9e'; kx.beginPath(); kx.roundRect(-w * .1, -w * .14, w * .2, w * .12, w * .03); kx.fill(); kx.stroke();
+  } else if (ride === 'ship') {
+    for (const sd of [-1, 1]) { kx.fillStyle = `rgba(255,${150 + Math.random() * 90 | 0},60,.9)`; kx.beginPath(); kx.ellipse(sd * w * .22, -w * .02, w * .07, w * (.08 + Math.random() * .07), 0, 0, 7); kx.fill(); }
+    kx.fillStyle = body; kx.beginPath(); kx.moveTo(-w * .5, -w * .16); kx.lineTo(-w * .2, -w * .34); kx.lineTo(w * .2, -w * .34); kx.lineTo(w * .5, -w * .16); kx.lineTo(w * .3, -w * .06); kx.lineTo(-w * .3, -w * .06); kx.closePath(); kx.fill(); kx.stroke();
+    kx.fillStyle = '#cfd8dc'; for (const sd of [-1, 1]) { kx.beginPath(); kx.roundRect(sd * w * .22 - w * .07, -w * .12, w * .14, w * .08, w * .03); kx.fill(); kx.stroke(); }
+    kx.fillStyle = 'rgba(160,230,255,.55)'; kx.beginPath(); kx.ellipse(0, -w * .4, w * .2, w * .17, 0, Math.PI, 0); kx.fill(); kx.stroke();
+  } else {
+    const tire = tx => { kx.fillStyle = '#333'; kx.beginPath(); kx.roundRect(tx, -w * .26, w * .2, w * .26, w * .05); kx.fill(); kx.stroke(); };
+    tire(-w * .5); tire(w * .3);
+    kx.fillStyle = body; kx.beginPath(); kx.roundRect(-w * .36, -w * .34, w * .72, w * .22, w * .08); kx.fill(); kx.stroke();
+    kx.fillStyle = '#ffd23f'; kx.beginPath(); kx.roundRect(-w * .14, -w * .3, w * .28, w * .1, w * .03); kx.fill(); kx.stroke();
+    kx.fillStyle = '#9e9e9e'; kx.beginPath(); kx.roundRect(-w * .42, -w * .5, w * .84, w * .08, w * .03); kx.fill(); kx.stroke();
+    kx.beginPath(); kx.moveTo(-w * .3, -w * .42); kx.lineTo(-w * .3, -w * .34); kx.moveTo(w * .3, -w * .42); kx.lineTo(w * .3, -w * .34); kx.stroke();
+  }
+  kx.shadowBlur = 0;
+  const hy = ride === 'ship' ? -w * .32 : ride === 'boat' ? -w * .22 : -w * .36;
+  if (r.name === 'kid') kKid(hy, w); else { kx.font = `${w * .34}px ${K_EMOJI}`; kx.textAlign = 'center'; kx.textBaseline = 'bottom'; kx.fillText(r.name, 0, hy); }
+  kx.restore();
+}
+// o piloto é o personagem da criança (com a foto, se tiver), olhando para trás
+function kKid(hy, w) {
+  const fit = OUTFITS[avatar.outfit] || OUTFITS.mixer;
+  kx.fillStyle = fit.shirt; kx.beginPath(); kx.roundRect(-w * .16, hy - w * .22, w * .32, w * .24, w * .08); kx.fill(); kx.stroke();
+  kx.fillStyle = avatar.skin; kx.beginPath(); kx.arc(-w * .2, hy - w * .12, w * .05, 0, 7); kx.arc(w * .2, hy - w * .12, w * .05, 0, 7); kx.fill(); kx.stroke();
+  const s = w * .38 / 64; kx.save(); kx.translate(-50 * s, hy - w * .36 - 43 * s); kx.scale(s, s);
+  kx.lineWidth = 4; kx.strokeStyle = INK; kx.lineJoin = kx.lineCap = 'round'; oliverHead(kx, avatar); kx.restore();
+}
+function kDraw() {
+  const W = K_WORLDS[kOpt.world], me = K.me, camZ = kWrap(me.z - kPZ), base = kSegAt(camZ), bp = (camZ % K_SEG) / K_SEG;
+  const ps = kSegAt(me.z), pp = (me.z % K_SEG) / K_SEG, py = ps.p1.y + (ps.p2.y - ps.p1.y) * pp;
+  kSky(W, camZ * .02 + base.curve * 40);
+  let maxy = kH, xx = 0, dx = -base.curve * bp;
+  for (let n = 0; n < K_DRAW; n++) {
+    const sg = kSegs[(base.i + n) % kSegs.length], looped = sg.i < base.i, cz = camZ - (looped ? kLen : 0);
+    kProject(sg.p1, me.off * K_ROAD - xx, py + K_CAMH, cz); kProject(sg.p2, me.off * K_ROAD - xx - dx, py + K_CAMH, cz);
+    xx += dx; dx += sg.curve; sg.clip = maxy;
+    const a = sg.p1.s, b = sg.p2.s;
+    if (sg.p1.c.z <= kDepth || b.y >= a.y || b.y >= maxy) continue;
+    const dark = Math.floor(sg.i / 3) % 2;
+    kx.fillStyle = W.grass[dark]; kx.fillRect(0, b.y, kW, a.y - b.y + 1);
+    if (W.water && dark) { kx.fillStyle = 'rgba(255,255,255,.18)'; kx.fillRect(0, b.y, kW, Math.max(1, (a.y - b.y) * .3)); }
+    if (W.space) { kx.fillStyle = 'rgba(255,255,255,.6)'; if (sg.i % 4 === 0) for (let k = 0; k < 6; k++) kx.fillRect((sg.i * 53 + k * 271) % kW, b.y, 2, 2); }
+    kQuad(W.rumble[dark], a.x, a.y, a.w * 1.12, b.x, b.y, b.w * 1.12);
+    if (W.road) kQuad(K.pads.has(sg.i) ? (dark ? '#ffb300' : '#ffd23f') : W.road[dark], a.x, a.y, a.w, b.x, b.y, b.w);
+    else {   // estrada arco-íris no espaço
+      const cols = ['#e53935', '#fb8c00', '#fdd835', '#43a047', '#1e88e5', '#8e24aa'];
+      for (let k = 0; k < 6; k++) kQuad(K.pads.has(sg.i) ? '#fff59d' : cols[k], a.x, a.y, a.w / 6, b.x, b.y, b.w / 6, a.w * (-1 + (2 * k + 1) / 6), b.w * (-1 + (2 * k + 1) / 6));
+    }
+    if (sg.start) kQuad(dark ? '#222' : '#fff', a.x, a.y, a.w, b.x, b.y, b.w);
+    else if (dark && W.road && !W.water && !K.pads.has(sg.i)) kQuad('#fff', a.x, a.y, a.w * .025, b.x, b.y, b.w * .025);
+    maxy = a.y;
+  }
+  // tudo o que fica na pista, separado por segmento e desenhado de trás para a frente
+  const bucket = new Map(), put = (z, o) => { const i = kSegAt(z).i; (bucket.get(i) || bucket.set(i, []).get(i)).push(o); };
+  for (const b of K.boxes) if (b.t <= 0) put(b.z, { box: b });
+  for (const c of K.coinsOnRoad) if (c.t <= 0) put(c.z, { coin: c });
+  for (const it of K.items) put(it.z, { item: it });
+  for (const r of K.racers) if (!r.me) put(r.z, { racer: r });
+  for (let n = K_DRAW - 1; n > 0; n--) {
+    const sg = kSegs[(base.i + n) % kSegs.length], p = sg.p1.s;
+    if (!p.k || sg.p1.c.z <= kDepth) continue;
+    const unit = p.k * K_ROAD * kW / 2, X = off => p.x + p.k * off * K_ROAD * kW / 2;
+    for (const d of sg.deco) kSprite(d.e, X(d.off), p.y, unit * .3 * d.size * (K_BIG.has(d.e) ? 1 : .5), sg.clip);
+    for (const o of bucket.get(sg.i) || []) {
+      if (o.box) {
+        const sz = unit * .15, ix = X(o.box.off), iy = p.y - sz * .3 - Math.abs(Math.sin(K.t * 3 + o.box.off * 5)) * sz * .25; if (sz < 3) continue;
+        kx.save(); kx.beginPath(); kx.rect(0, 0, kW, sg.clip); kx.clip();
+        const g = kx.createLinearGradient(ix - sz / 2, iy - sz, ix + sz / 2, iy); ['#e53935', '#fdd835', '#43a047', '#1e88e5', '#8e24aa'].forEach((c, k) => g.addColorStop(k / 4, c));
+        kx.globalAlpha = .9; kx.fillStyle = g; kx.beginPath(); kx.roundRect(ix - sz / 2, iy - sz, sz, sz, sz * .18); kx.fill(); kx.globalAlpha = 1;
+        kx.lineWidth = Math.max(1, sz * .06); kx.strokeStyle = '#fff'; kx.stroke(); kx.fillStyle = '#fff'; kx.font = `900 ${sz * .7}px system-ui,sans-serif`; kx.textAlign = 'center'; kx.textBaseline = 'middle'; kx.fillText('?', ix, iy - sz / 2); kx.restore();
+      } else if (o.coin) kSprite('🪙', X(o.coin.off), p.y - unit * .03, unit * .1, sg.clip);
+      else if (o.item) kSprite(o.item.kind === 'banana' ? '🍌' : '🫧', X(o.item.off), p.y - (o.item.kind === 'bubble' ? unit * .05 : 0), unit * (o.item.kind === 'bubble' ? .16 : .12), sg.clip);
+      else if (o.racer) { const w = unit * .3; if (w < 4) continue; kx.save(); kx.beginPath(); kx.rect(0, 0, kW, sg.clip); kx.clip(); kRide(X(o.racer.off), p.y, w, o.racer, K.t); kx.restore(); }
+    }
+  }
+  // a criança, sempre embaixo no meio
+  const kw = Math.min(kW * .26, kH * .36), bob = me.sp > 10 ? Math.abs(Math.sin(K.t * 18)) * kw * .015 : 0;
+  if (me.boost > 0) { kx.fillStyle = `rgba(255,${120 + Math.random() * 100 | 0},40,.85)`; for (const sd of [-1, 1]) { kx.beginPath(); kx.ellipse(kW / 2 + sd * kw * .18, kH - kw * .06, kw * .06, kw * (.08 + Math.random() * .07), 0, 0, 7); kx.fill(); } }
+  if (K.drift > .8) { kx.fillStyle = K.drift > 1.6 ? '#ff9800' : '#4fc3f7'; for (let k = 0; k < 6; k++) { kx.beginPath(); kx.arc(kW / 2 + (k % 2 ? 1 : -1) * kw * (.32 + Math.random() * .1), kH - Math.random() * kw * .12, kw * .025, 0, 7); kx.fill(); } }
+  kRide(kW / 2, kH - kw * .05 - bob, kw, me, K.t);
+  if (Math.abs(me.off) > 1 && me.sp > 10) { kx.fillStyle = K_WORLDS[kOpt.world].water ? 'rgba(255,255,255,.6)' : 'rgba(120,80,40,.4)'; for (let i = 0; i < 4; i++) { kx.beginPath(); kx.arc(kW / 2 + (Math.random() - .5) * kw * .8, kH - Math.random() * kw * .1, kw * .03, 0, 7); kx.fill(); } }
+}
+/* ---------- tela: menu de opções, placar, botões e sons ---------- */
+const $k = s => document.querySelector(s);
+const kKeys = { l: false, r: false };
+let kTilt = 0, kTiltRaw = 0, kTilt0 = 0, kAc = null, kEng = null, kEngG = null, kOut = null;
+function kAudio() {
+  if (kAc) return kAc;
+  try {
+    kAc = ac = ac || new (window.AudioContext || window.webkitAudioContext)(); kOut = kAc.createGain(); kOut.gain.value = .8; kOut.connect(kAc.destination);
+    kEng = kAc.createOscillator(); kEngG = kAc.createGain(); const f = kAc.createBiquadFilter();
+    kEng.type = 'sawtooth'; f.type = 'lowpass'; f.frequency.value = 420; kEngG.gain.value = 0; kEng.connect(f).connect(kEngG).connect(kOut); kEng.start();
+  } catch (e) { kAc = null; }
+  return kAc;
+}
+function kTone(f0, f1, dur, type = 'triangle', vol = .12, when = 0) {
+  if (!kAc || !st.sound) return; const t = kAc.currentTime + when, o = kAc.createOscillator(), g = kAc.createGain();
+  o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + dur); o.connect(g).connect(kOut); o.start(t); o.stop(t + dur + .02);
+}
+function kSfx(r, kind) {
+  if (!r.me && !['spin', 'bolt'].includes(kind)) return;   // só os sons do Oliver (e o que atinge ele)
+  if (kind === 'boost') kTone(300, 1100, .45, 'sawtooth', .06);
+  else if (kind === 'coin') { kTone(988, 988, .07, 'square', .05); kTone(1319, 1319, .2, 'square', .05, .07); }
+  else if (kind === 'box') for (let i = 0; i < 8; i++) kTone(600 + i * 90, 600 + i * 90, .07, 'square', .04, i * .12);
+  else if (kind === 'ding') kTone(1568, 1568, .25, 'triangle', .1);
+  else if (kind === 'spin') { if (r.me) kTone(700, 150, .6, 'sawtooth', .07); }
+  else if (kind === 'shoot') kTone(400, 900, .25, 'sine', .12);
+  else if (kind === 'drop') kTone(500, 250, .15, 'triangle', .1);
+  else if (kind === 'bolt') { kTone(1200, 100, .5, 'sawtooth', .08); kTone(80, 40, .6, 'square', .1); }
+  else if (kind === 'star') [523, 659, 784, 1047, 784, 1047].forEach((f, i) => kTone(f, f, .1, 'square', .05, i * .08));
+  else if (kind === 'beep') kTone(440, 440, .25, 'square', .07);
+  else if (kind === 'go') kTone(880, 880, .6, 'square', .07);
+  else if (kind === 'bump') kTone(160, 90, .15, 'square', .07);
+  else if (kind === 'win') [523, 659, 784, 1047, 1319, 1568].forEach((f, i) => kTone(f, f, .22, 'square', .06, i * .12));
+}
+const kSay = t => say(t);
+function kBanner(t, dur) { const b = $k('#kBanner'); b.textContent = t; b.hidden = false; b.classList.remove('kpop'); void b.offsetWidth; b.classList.add('kpop'); clearTimeout(b._t); b._t = setTimeout(() => b.hidden = true, dur * 1000); }
+function kHud() {
+  if (!K) return;
+  const me = K.me, rank = kRank(), place = rank.indexOf(me) + 1;
+  $k('#kLap').textContent = `Volta ${Math.min(me.lap, K.laps)}/${K.laps}`;
+  $k('#kPos').textContent = `${place}º`;
+  $k('#kCoins').textContent = `🪙 ${me.coins}`;
+  const slot = $k('#kItem');
+  slot.textContent = me.roll > 0 ? '🎲' : me.item ? K_ITEMS[me.item] + (me.item === 'mush3' ? `×${me.uses ?? 3}` : '') : '';
+  slot.classList.toggle('full', !!me.item && !(me.roll > 0)); slot.hidden = !me.item && !(me.roll > 0);
+  $k('#kRank').innerHTML = rank.map(r => `<li class="${r.me ? 'me' : ''}" style="--c:${r.color}">${r.me ? '🧒' : r.name}</li>`).join('');
+}
+function kPodium(place) {
+  const rank = kRank(), top = rank.slice(0, 3);
+  $k('#kPodium').innerHTML = [1, 0, 2].map(i => top[i] ? `<div class="k-step s${i + 1}"><span>${top[i].me ? '🧒' : top[i].name}</span><b>${i + 1}º</b></div>` : '').join('');
+  $k('#kEndTitle').textContent = place === 1 ? '1º lugar! Campeão! 🏆' : `Você chegou em ${place}º! 🎉`;
+  $k('#kEndText').textContent = `Moedas: ${K.me.coins} · ${K_WORLDS[kOpt.world].name}`;
+  $k('#kEnd').hidden = false;
+}
+
+/* ---------- menu de opções ---------- */
+const K_MENU = [
+  ['world', 'Pista', Object.entries(K_WORLDS).map(([k, w]) => [k, `${w.icon} ${w.name}`])],
+  ['size', 'Tamanho da pista', [[0, 'Curta'], [1, 'Média'], [2, 'Longa']]],
+  ['laps', 'Voltas', [[1, '1'], [2, '2'], [3, '3'], [5, '5']]],
+  ['level', 'Nível', [[0, '😊 Fácil'], [1, '🙂 Médio'], [2, '😎 Difícil']]],
+  ['rivals', 'Corredores', [[3, '3'], [5, '5'], [7, '7']]],
+  ['ctrl', 'Controle', [['arrows', '◀ ▶ Setas'], ['tilt', '📱 Girar o tablet']]],
+  ['color', 'Cor do carrinho', K_COLORS.map((c, i) => [i, `<i style="background:${c}"></i>`])],
+  ['music', 'Música', [[true, '🎵 Com'], [false, '🔇 Sem']]]
+];
+function kMenu() {
+  const box = $k('#kOpts'); box.innerHTML = '';
+  for (const [key, label, vals] of K_MENU) {
+    const sec = document.createElement('section'); sec.innerHTML = `<h3>${label}</h3><div></div>`; box.appendChild(sec);
+    for (const [v, html] of vals) {
+      const b = document.createElement('button'); b.className = 'k-chip' + (kOpt[key] === v ? ' on' : ''); b.innerHTML = html;
+      b.setAttribute('aria-pressed', kOpt[key] === v);
+      b.onclick = () => { kOpt[key] = v; kSave(); kMenu(); kAudio(); kTone(700, 700, .06, 'square', .05); };
+      sec.lastChild.appendChild(b);
+    }
+  }
+  $k('#kTitle').textContent = `Corrida do ${prefs.name} 🏁`;
+  $k('#kMenu').hidden = false; $k('#kEnd').hidden = true;
+}
+function kGo() {
+  kAudio(); $k('#kMenu').hidden = true; $k('#kEnd').hidden = true;
+  kNewRace(); kTilt0 = kTiltRaw;
+  $k('#g-kart').classList.toggle('tilt', kOpt.ctrl === 'tilt');
+  if (kSong) kSong.stop(); stopMusic(); kSong = kOpt.music && kAc && musicOn() ? chipPlay(kAc, kOut, CHIP_SONGS[K_WORLDS[kOpt.world].song], { volume: .7 }) : null;
+  kSay(`${K_WORLDS[kOpt.world].name}! Preparar!`);
+}
+
+/* ---------- controles ---------- */
+function kHold(id, k) {
+  const b = $k(id);
+  const on = e => { e.preventDefault(); kKeys[k] = true; b.classList.add('on'); };
+  const off = () => { kKeys[k] = false; b.classList.remove('on'); };
+  b.addEventListener('pointerdown', on); for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) b.addEventListener(ev, off);
+}
+addEventListener('deviceorientation', e => {
+  const ang = (screen.orientation && screen.orientation.angle) ?? window.orientation ?? 0;
+  kTiltRaw = ang === 90 ? e.beta : (ang === 270 || ang === -90) ? -e.beta : e.gamma;
+  const v = (kTiltRaw - kTilt0) / 18; kTilt = Math.abs(v) < .15 ? 0 : Math.max(-1, Math.min(1, v));
+});
+addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft') kKeys.l = true; if (e.key === 'ArrowRight') kKeys.r = true;
+  if ((e.key === ' ' || e.key === 'ArrowUp') && K) { e.preventDefault(); kUse(K.me); }
+});
+addEventListener('keyup', e => { if (e.key === 'ArrowLeft') kKeys.l = false; if (e.key === 'ArrowRight') kKeys.r = false; });
+function kResize() { const d = Math.min(devicePixelRatio || 1, 2), r = kCv.getBoundingClientRect(); kW = kCv.width = Math.max(1, r.width * d | 0); kH = kCv.height = Math.max(1, r.height * d | 0); }
+function kInit() {
+  kCv = $k('#kCv'); kx = kCv.getContext('2d'); kResize(); addEventListener('resize', kResize);
+  kHold('#kL', 'l'); kHold('#kR', 'r');
+  $k('#kItem').addEventListener('pointerdown', e => { e.preventDefault(); if (K) kUse(K.me); });
+  $k('#kGo').onclick = kGo; $k('#kAgain').onclick = kGo; $k('#kToMenu').onclick = kMenu;
+  $k('#kMenuBtn').onclick = () => { if (kSong) kSong.stop(); kSong = null; kMenu(); };
+  kNewRace(); K.state = 'menu';
+  kLoop(); kMenu();
+  document.addEventListener('visibilitychange', () => { if (document.hidden && kSong) { kSong.stop(); kSong = null; } });
+}
+
+// o laço para sozinho quando a criança sai da corrida (e leva a música junto)
+function kLoop() {
+  let last = performance.now();
+  const loop = t => {
+    if (!shown('g-kart')) { kRaf = 0; if (kSong) { kSong.stop(); kSong = null; } if (kEngG) kEngG.gain.value = 0; return; }
+    const dt = Math.min(.05, (t - last) / 1000); last = t; if (K) { if (K.state !== 'menu') kStep(dt); kDraw(); } kRaf = requestAnimationFrame(loop);
+  };
+  kRaf = requestAnimationFrame(loop);
+}
+function kartStart() { if (!kCv) kInit(); else { kResize(); if (!kRaf) kLoop(); kMenu(); } }
+GAMES.kart = kartStart; GAME_INTRO.kart = 'Vamos correr! Escolha a pista.';
+
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 27, name: '5.0' };
+const APP_VERSION = { code: 28, name: '5.1' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)
