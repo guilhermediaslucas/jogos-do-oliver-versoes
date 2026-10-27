@@ -1,8 +1,8 @@
 {
-  "code": 21,
-  "name": "4.4",
+  "code": 22,
+  "name": "4.5",
   "minApk": 19,
-  "notes": "Jogos novos: Cena de adesivos (fazenda, cidade, fundo do mar e espaço, com o personagem da criança), Sons dos bichos (ouvir e adivinhar) e Repita o ritmo.",
+  "notes": "Atualização automática mais rápida: a versão baixada entra assim que a criança está na tela inicial; área dos pais mostra a última procura e tem o botão Procurar atualização.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/JogosDoOliver.apk"
 }
