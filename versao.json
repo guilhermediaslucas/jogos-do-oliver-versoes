@@ -1,0 +1,8 @@
+{
+  "code": 19,
+  "name": "4.2",
+  "minApk": 19,
+  "notes": "Atualização automática: o app baixa as versões novas sozinho e avisa na área dos pais quando precisa instalar.",
+  "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
+  "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/JogosDoOliver.apk"
+}
