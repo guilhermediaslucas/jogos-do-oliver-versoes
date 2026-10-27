@@ -1,8 +1,8 @@
 {
-  "code": 25,
-  "name": "4.8",
+  "code": 26,
+  "name": "4.9",
   "minApk": 19,
-  "notes": "Corrige a atualização automática da 4.7 (arquivo maior que 512 KB). Inclui tudo da 4.7: 9 jogos novos, pincéis novos, chefes bonzinhos na aventura, relatório da semana e diagnóstico de voz.",
+  "notes": "Aventura: flor de fogo, super cogumelo, blocos ?, canos com plantinha; mapa de fases mais fácil de tocar no celular; corrige música tocando em dobro.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/JogosDoOliver.apk"
 }
