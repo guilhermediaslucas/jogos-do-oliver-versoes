@@ -1,8 +1,8 @@
 {
-  "code": 26,
-  "name": "4.9",
+  "code": 27,
+  "name": "5.0",
   "minApk": 19,
-  "notes": "Aventura: flor de fogo, super cogumelo, blocos ?, canos com plantinha; mapa de fases mais fácil de tocar no celular; corrige música tocando em dobro.",
+  "notes": "Músicas novas e animadas em todo o app (bateria, baixo, acordes e melodias próprias, estilo videogame).",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/JogosDoOliver.apk"
 }
