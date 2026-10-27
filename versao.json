@@ -1,8 +1,8 @@
 {
-  "code": 22,
-  "name": "4.5",
+  "code": 23,
+  "name": "4.6",
   "minApk": 19,
-  "notes": "Atualização automática mais rápida: a versão baixada entra assim que a criança está na tela inicial; área dos pais mostra a última procura e tem o botão Procurar atualização.",
+  "notes": "Versão de teste da atualização automática: só troca o número da versão.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/JogosDoOliver.apk"
 }
