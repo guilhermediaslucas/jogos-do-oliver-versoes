@@ -1,8 +1,8 @@
 {
-  "code": 19,
-  "name": "4.2",
+  "code": 20,
+  "name": "4.3",
   "minApk": 19,
-  "notes": "Atualização automática: o app baixa as versões novas sozinho e avisa na área dos pais quando precisa instalar.",
+  "notes": "Foto vira também personagem desenhado; escolha de voz mais natural; botões da aventura transparentes; 3 fases novas, 6 inimigos novos, asas e ímã; 28 desenhos novos e o Oliver de colorir redesenhado.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/JogosDoOliver.apk"
 }
