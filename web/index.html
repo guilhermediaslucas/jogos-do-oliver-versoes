@@ -28,7 +28,7 @@
   --shadow: rgba(120, 70, 20, .18);
   --m-color: #ff7a59; --m-trace: #29a8e0; --m-free: #5cb85c; --m-kal: #7e57c2; --m-gal: #f2b705;
   --g-mem: #ef5d8f; --g-bal: #e5534b; --g-piano: #8e6ad8; --g-count: #f08a24; --g-shape: #3fae5a; --g-puz: #2c9bd6;
-  --e-learn: #26a69a; --e-quiz: #5c6bc0; --e-song: #ec407a; --e-mem: #ab47bc; --m-stk: #ef6c8f; --m-abc: #00897b; --g-adv: #43a047; --g-fruit: #ef6c4a;
+  --e-learn: #26a69a; --e-quiz: #5c6bc0; --e-song: #ec407a; --e-mem: #ab47bc; --m-stk: #ef6c8f; --m-abc: #00897b; --g-adv: #43a047; --g-fruit: #ef6c4a; --g-scene: #26a69a; --g-snd: #8d6e63; --g-rhy: #e57373;
   --font: "Baloo 2", "Comic Sans MS", system-ui, sans-serif;
   color-scheme: light;
 }
@@ -188,6 +188,37 @@ button:active { transform: scale(.92); }
 .card.ok { box-shadow: 0 0 0 5px #7cd67a; }
 @keyframes flip { 50% { transform: scaleX(0) } }
 #bubbleCv { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 24px; background: linear-gradient(#9fdcff, #e6f6ff); touch-action: none; }
+/* cena de adesivos */
+.scenePick { display: flex; gap: 6px; margin-left: auto; }
+.scenePick .round.on, [data-snd].on { box-shadow: 0 0 0 4px #ff6b3d; }
+.scenePlay { border-radius: 24px; overflow: hidden; touch-action: none; }
+#sceneCv, #sceneLayer { position: absolute; inset: 0; width: 100%; height: 100%; }
+.sk { position: absolute; transform: translate(-50%, -50%); font-size: clamp(44px, 9vmin, 96px); line-height: 1; touch-action: none; user-select: none; cursor: grab; }
+.sk .ski { display: inline-block; }
+.sk canvas { width: 1.1em; height: 1.65em; display: block; }
+.sk.drag { transform: translate(-50%, -50%) scale(1.15); filter: drop-shadow(0 8px 6px rgba(0,0,0,.3)); z-index: 2; }
+#sceneTrash { position: absolute; right: 12px; bottom: 12px; font-size: 44px; width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center;
+  background: rgba(255,255,255,.75); opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; }
+#sceneTrash.show { opacity: 1; } #sceneTrash.over { transform: scale(1.3); background: #ffcdd2; }
+.sceneTray { display: flex; gap: 8px; overflow-x: auto; padding: 8px 2px 2px; flex: none; }
+.stItem { flex: none; font-size: 46px; width: 74px; height: 74px; border-radius: 18px; background: #fff; box-shadow: 0 4px 0 rgba(0,0,0,.12); display: grid; place-items: center; }
+.stItem canvas { width: 44px; height: 66px; }
+/* sons dos bichos */
+#sndScore:empty { display: none; }
+.sndGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 12px; height: 100%; overflow-y: auto; align-content: start; }
+.sndGrid.guess { grid-template-columns: repeat(3, 1fr); align-content: center; }
+.sndCard { background: #fff; border-radius: 24px; box-shadow: 0 5px 0 rgba(0,0,0,.12); display: grid; place-items: center; padding: 10px 4px; gap: 2px; }
+.sndCard span { font-size: 58px; line-height: 1.1; } .sndCard b { font-size: 17px; }
+.sndGrid.guess .sndCard span { font-size: clamp(70px, 20vmin, 150px); }
+.sndCard.hit span { animation: l-hop 1s ease-in-out; } .sndCard.ok { background: #c8f7c5; } .sndCard.no { animation: l-wiggle .5s; }
+/* repita o ritmo */
+.rhyPlay { display: flex; flex-direction: column; gap: 10px; }
+.rhyMsg { margin: 0; text-align: center; font-size: 30px; font-weight: 800; min-height: 1.3em; }
+.pads { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.rpad { border-radius: 30px; box-shadow: 0 7px 0 rgba(0,0,0,.2); touch-action: none; display: grid; place-items: center; transition: transform .1s, filter .1s; }
+.rpad span { font-size: clamp(50px, 14vmin, 120px); }
+.rpad.on { transform: translateY(5px) scale(.95); filter: brightness(1.35); box-shadow: 0 2px 0 rgba(0,0,0,.2), 0 0 0 6px #fff; }
+@media (orientation: portrait) { .pads { grid-template-columns: repeat(2, 1fr); } }
 .keys { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; height: 100%; }
 .key { border-radius: 20px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 16px; font-size: clamp(30px, 6vw, 56px); box-shadow: 0 6px 0 rgba(0,0,0,.2); touch-action: none; }
 .key span { display: block; }
@@ -371,6 +402,9 @@ button:active { transform: scale(.92); }
     <button class="mode" style="background:var(--g-shape)" data-game="shapes"><span>🔺</span>Encaixe as formas</button>
     <button class="mode" style="background:var(--g-puz)" data-game="puzzle"><span>🧩</span>Quebra-cabeça</button>
     <button class="mode" style="background:var(--g-fruit)" data-game="fruit"><span>🍉</span>Corta frutas</button>
+    <button class="mode" style="background:var(--g-scene)" data-game="scene"><span>🏞️</span>Cena de adesivos</button>
+    <button class="mode" style="background:var(--g-snd)" data-game="sounds"><span>🐮</span>Sons dos bichos</button>
+    <button class="mode" style="background:var(--g-rhy)" data-game="rhythm"><span>🥁</span>Repita o ritmo</button>
   </div>
   <h3 class="shelf">🔤 Inglês</h3>
   <div class="modes">
@@ -441,6 +475,22 @@ button:active { transform: scale(.92); }
 <section id="g-piano" class="screen game" hidden>
   <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Piano dos bichos</h2><button class="round wide" id="song">🎵 Música</button></div>
   <div class="play"><div class="keys" id="keys"></div></div>
+</section>
+<section id="g-scene" class="screen game" hidden>
+  <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Cena de adesivos</h2>
+    <span class="scenePick"><button class="round" data-scene="farm" aria-label="Fazenda">🌾</button><button class="round" data-scene="city" aria-label="Cidade">🏙️</button><button class="round" data-scene="sea" aria-label="Fundo do mar">🌊</button><button class="round" data-scene="space" aria-label="Espaço">🚀</button></span>
+    <button class="round" id="sceneClear" aria-label="Tirar todos os adesivos">🧽</button></div>
+  <div class="play scenePlay"><canvas id="sceneCv"></canvas><div id="sceneLayer"></div><div id="sceneTrash" aria-hidden="true">🗑️</div></div>
+  <div class="sceneTray" id="sceneTray"></div>
+</section>
+<section id="g-sounds" class="screen game" hidden>
+  <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Sons dos bichos</h2><span class="score" id="sndScore"></span>
+    <button class="round wide" data-snd="listen">🔊 Ouvir</button><button class="round wide" data-snd="guess">❓ Quem é?</button><button class="round" id="sndAgain" aria-label="Ouvir de novo">🔁</button></div>
+  <div class="play"><div class="sndGrid" id="sndGrid"></div></div>
+</section>
+<section id="g-rhythm" class="screen game" hidden>
+  <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Repita o ritmo</h2><span class="score" id="rhyScore"></span><button class="round" id="rhyAgain" aria-label="Ouvir de novo">🔁</button></div>
+  <div class="play rhyPlay"><p class="rhyMsg" id="rhyMsg"></p><div class="pads" id="pads"></div></div>
 </section>
 <section id="g-count" class="screen game" hidden>
   <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Vamos contar</h2><span class="score" id="countScore"></span></div>
@@ -2213,7 +2263,7 @@ if (hadPrefs && !prefs.setup) prefs.setup = true;   // quem já usava o app não
 // troca "Oliver" pelo nome da criança nos títulos dos desenhos e nas falas
 const nm = t => String(t).replace(/Oliver/g, prefs.name);
 const prog = load('oliver-progress', {});
-function saveProg() { keep('oliver-progress', { mem: memLvl, count: countLvl, shapes: shapesLvl, puz: puzLvl, adv: advMax, advBest, fruitBest: prog.fruitBest || 0 }); }
+function saveProg() { keep('oliver-progress', { mem: memLvl, count: countLvl, shapes: shapesLvl, puz: puzLvl, adv: advMax, advBest, fruitBest: prog.fruitBest || 0, rhythmBest: prog.rhythmBest || 0 }); }
 st.sound = prefs.sound;
 
 function show(id) { for (const s of document.querySelectorAll('.screen')) s.hidden = s.id !== id; }
@@ -2984,10 +3034,11 @@ function say(t, lang = 'pt-BR', rate = .9) {
 loadVoices(); try { speechSynthesis.onvoiceschanged = loadVoices; } catch (e) {}
 const sayEn = (t, rate) => say(t, 'en-US', rate);
 const GAME_INTRO = { memory: 'Encontre os pares!', bubbles: 'Estoure os balões!', piano: 'Toque o piano dos bichos!',
-  shapes: 'Arraste cada forma para o seu lugar!', puzzle: 'Monte o quebra-cabeça!', fruit: 'Passe o dedo nas frutas para cortar!' };
+  shapes: 'Arraste cada forma para o seu lugar!', puzzle: 'Monte o quebra-cabeça!', fruit: 'Passe o dedo nas frutas para cortar!',
+  scene: 'Toque nos adesivos para colocar na cena e arraste para mudar de lugar!', sounds: 'Toque nos bichos para ouvir o som deles!', rhythm: 'Escute o ritmo e depois repita!' };
 const COLOR_PT = ['vermelho', 'laranja', 'amarelo', 'verde-claro', 'verde', 'azul-claro', 'azul', 'roxo', 'rosa', 'rosa-claro', 'marrom', 'branco', 'preto'];
 const SCENE_PT = ['O Oliver e a betoneira!', 'Um dinossauro!', 'Um foguete!', 'Uma baleia!', 'Um cachorro!', 'Um caminhão de bombeiro!', 'Um unicórnio!'];
-const GAMES = { memory: memStart, bubbles: bubStart, piano: pianoStart, count: countStart, shapes: shapesStart, puzzle: puzStart, adventure: () => openAdvMap(), fruit: fruitStart };
+const GAMES = { scene: sceneStart, sounds: soundsStart, rhythm: rhythmStart, memory: memStart, bubbles: bubStart, piano: pianoStart, count: countStart, shapes: shapesStart, puzzle: puzStart, adventure: () => openAdvMap(), fruit: fruitStart };
 let curGame = null;
 document.querySelectorAll('[data-game]').forEach(b => b.onclick = () => {
   blip(560); curGame = b.dataset.game; memLang = b.dataset.lang || 'pt'; show('g-' + curGame); requestAnimationFrame(() => GAMES[curGame]());
@@ -4690,10 +4741,253 @@ $('#pVoiceGet').onclick = () => { try { plug('TextToSpeech')?.openInstall(); } c
 $('#pAv').onclick = () => { $('#parents').hidden = true; openAvatar('home'); };
 if (!prefs.setup) setTimeout(openSetup, 300);
 
+/* ================= sons dos bichos: cada bicho tem um som feito pelo próprio app (sem gravação) ================= */
+// vibrato: som com "tremidinho", para ovelha, cavalo, abelha e elefante
+function vib(type, f0, f1, t, dur, vol, rate, depth, cut) {
+  const o = ac.createOscillator(), g = ac.createGain(), l = ac.createOscillator(), lg = ac.createGain(); o.type = type;
+  o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+  l.frequency.value = rate; lg.gain.value = depth; l.connect(lg).connect(o.frequency);
+  g.gain.setValueAtTime(.001, t); g.gain.exponentialRampToValueAtTime(vol, t + .05); g.gain.setValueAtTime(vol, t + dur * .7); g.gain.exponentialRampToValueAtTime(.001, t + dur);
+  let out = o; if (cut) { const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = cut; o.connect(f); out = f; }
+  out.connect(g).connect(ac.destination); o.start(t); o.stop(t + dur); l.start(t); l.stop(t + dur);
+}
+// [emoji, nome, "a vaca faz...", som]
+const ANIMAL_SOUNDS = [
+  ['🐄', 'vaca', 'muuu', t => { tone('sawtooth', 120, 150, t, .35, .14, 500); tone('sawtooth', 150, 100, t + .3, .9, .14, 500); }],
+  ['🐶', 'cachorro', 'au au', t => { for (const d of [0, .3]) { tone('square', 520, 260, t + d, .13, .09, 1400); noise(t + d, .12, 1200, 600, .15); } }],
+  ['🐱', 'gato', 'miau', t => { tone('triangle', 500, 900, t, .25, .12); vib('triangle', 900, 420, t + .22, .5, .12, 7, 20); }],
+  ['🦆', 'pato', 'quá quá', t => { for (const d of [0, .25, .5]) tone('sawtooth', 620, 430, t + d, .16, .08, 1800); }],
+  ['🐔', 'galinha', 'có có có', t => { for (let i = 0; i < 4; i++) tone('square', 720 - i * 20, 520, t + i * .16, .08, .06, 2400); tone('square', 900, 600, t + .7, .3, .06, 2400); }],
+  ['🐷', 'porco', 'óinc óinc', t => { for (const d of [0, .4]) { noise(t + d, .28, 500, 250, .3); tone('sawtooth', 220, 150, t + d, .28, .08, 700); } }],
+  ['🐑', 'ovelha', 'méé', t => vib('sawtooth', 380, 340, t, .9, .1, 9, 25, 1600)],
+  ['🐴', 'cavalo', 'iiirrí', t => { vib('sawtooth', 700, 1000, t, .4, .08, 14, 60, 2500); vib('sawtooth', 1000, 400, t + .35, .7, .08, 16, 70, 2500); }],
+  ['🐸', 'sapo', 'croac', t => { for (const d of [0, .35]) { tone('square', 200, 120, t + d, .14, .1, 900); noise(t + d, .14, 700, 300, .15); } }],
+  ['🐦', 'passarinho', 'piu piu', t => { for (const d of [0, .18, .36]) tone('sine', 2300, 3300, t + d, .1, .1); }],
+  ['🦁', 'leão', 'rooar', t => { noise(t, 1.1, 320, 110, .45); tone('sawtooth', 95, 60, t, 1.1, .16, 380); }],
+  ['🦉', 'coruja', 'uh uuh', t => { tone('sine', 430, 400, t, .35, .18); tone('sine', 430, 370, t + .5, .55, .18); }],
+  ['🐘', 'elefante', 'fuuun', t => vib('sawtooth', 380, 820, t, .8, .1, 6, 30, 1800)],
+  ['🐝', 'abelha', 'zzzz', t => vib('sawtooth', 210, 230, t, 1, .06, 30, 15, 900)],
+  ['🐵', 'macaco', 'uh uh ah ah', t => [300, 360, 520, 600].forEach((f, i) => tone('triangle', f, f * 1.5, t + i * .18, .15, .12))],
+  ['🐓', 'galo', 'cocoricó', t => { [600, 800, 700].forEach((f, i) => tone('square', f, f, t + i * .15, .12, .05, 2400)); vib('square', 1000, 750, t + .45, .6, .05, 8, 30, 2400); }]
+];
+function animalSound(a) {
+  if (!st.sound) return;
+  try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); a[3](ac.currentTime + .02); } catch (e) {}
+}
+const artigo = a => ['vaca', 'ovelha', 'galinha', 'coruja', 'abelha'].includes(a[1]) ? 'A' : 'O';
+let sndMode = 'listen', sndTarget = null, sndScore = 0;
+function soundsStart() { sndScore = 0; renderSounds(); }
+function renderSounds() {
+  const box = $('#sndGrid'); box.innerHTML = '';
+  document.querySelectorAll('[data-snd]').forEach(b => b.classList.toggle('on', b.dataset.snd === sndMode));
+  $('#sndAgain').hidden = sndMode !== 'guess';
+  $('#sndScore').textContent = sndMode === 'guess' ? `⭐ ${sndScore}` : '';
+  if (sndMode === 'listen') {
+    box.className = 'sndGrid';
+    for (const a of ANIMAL_SOUNDS) {
+      const b = btn(box, 'sndCard', `<span>${a[0]}</span><b>${a[1]}</b>`, a[1], () => {
+        animalSound(a); bounce(b); setTimeout(() => say(`${artigo(a)} ${a[1]} faz ${a[2]}!`), 1100);
+      });
+    }
+    return;
+  }
+  // quem faz esse som? o som toca e a criança escolhe entre 3 bichos
+  box.className = 'sndGrid guess';
+  const opts = shuffle([...ANIMAL_SOUNDS]).slice(0, 3); sndTarget = pick(opts);
+  for (const a of opts) {
+    const b = btn(box, 'sndCard', `<span>${a[0]}</span>`, a[1], () => {
+      if (a === sndTarget) {
+        bounce(b); b.classList.add('ok'); sndScore++; $('#sndScore').textContent = `⭐ ${sndScore}`;
+        say(`Isso! ${artigo(a)} ${a[1]} faz ${a[2]}!`); celebrate(sndScore % 5 === 0);
+        setTimeout(() => alive('sounds') && sndMode === 'guess' && renderSounds(), 2600);
+      } else { blip(200, .15); b.classList.add('no'); setTimeout(() => b.classList.remove('no'), 500); say('Quase! Escute de novo'); setTimeout(() => animalSound(sndTarget), 1300); }
+    });
+  }
+  setTimeout(() => { if (alive('sounds')) { say('Quem faz esse som?'); setTimeout(() => animalSound(sndTarget), 1300); } }, 300);
+}
+function bounce(el) { el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); }
+document.querySelectorAll('[data-snd]').forEach(b => b.onclick = () => { blip(620); sndMode = b.dataset.snd; renderSounds(); });
+$('#sndAgain').onclick = () => sndTarget && animalSound(sndTarget);
+
+/* ================= repita o ritmo: o app toca uma sequência e a criança repete (começa com 2 batidas) ================= */
+const PADS = [
+  ['🥁', 'tum', '#e53935', t => { tone('sine', 160, 45, t, .35, .5); noise(t, .06, 400, 200, .15); }],
+  ['👏', 'palma', '#fb8c00', t => { for (const d of [0, .012, .025]) noise(t + d, .1, 2200, 1500, .35); }],
+  ['🔔', 'blim', '#fdd835', t => { tone('triangle', 1320, 1320, t, .8, .14); tone('sine', 2640, 2640, t, .5, .05); }],
+  ['🐶', 'au', '#1e88e5', t => { tone('square', 520, 260, t, .13, .09, 1400); noise(t, .12, 1200, 600, .15); }]
+];
+let rhy = null;
+function padSound(i) { if (!st.sound) return; try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); PADS[i][3](ac.currentTime + .02); } catch (e) {} }
+function rhythmStart() {
+  const box = $('#pads'); box.innerHTML = '';
+  rhy = { seq: [], pos: 0, len: 2, listen: true, els: PADS.map(([e, w, c], i) => {
+    const b = document.createElement('button'); b.className = 'rpad'; b.style.background = c; b.innerHTML = `<span>${e}</span>`; b.setAttribute('aria-label', w);
+    b.addEventListener('pointerdown', ev => { ev.preventDefault(); padTap(i); }); box.appendChild(b); return b;
+  }) };
+  updateRhy(); setTimeout(newRhythm, 900);
+}
+function updateRhy() { $('#rhyScore').textContent = `🥁 ${rhy.len}   🏆 ${Math.max(prog.rhythmBest || 0, rhy.len - 1)}`; }
+function flashPad(i) { const b = rhy.els[i]; padSound(i); b.classList.remove('on'); void b.offsetWidth; b.classList.add('on'); setTimeout(() => b.classList.remove('on'), 300); }
+function newRhythm() {
+  if (!alive('rhythm')) return;
+  rhy.seq = Array.from({ length: rhy.len }, () => Math.random() * PADS.length | 0); playRhythm();
+}
+function playRhythm() {
+  rhy.listen = true; rhy.pos = 0; $('#rhyMsg').textContent = '👂 Escute...';
+  rhy.seq.forEach((n, k) => setTimeout(() => alive('rhythm') && flashPad(n), 700 + k * 700));
+  setTimeout(() => { if (!alive('rhythm')) return; rhy.listen = false; $('#rhyMsg').textContent = '👉 Sua vez!'; }, 700 + rhy.seq.length * 700);
+}
+function padTap(i) {
+  flashPad(i);
+  if (rhy.listen) return;   // enquanto o app toca, os tambores só fazem barulho
+  if (i !== rhy.seq[rhy.pos]) { rhy.listen = true; $('#rhyMsg').textContent = 'Quase! 🙂'; say('Quase! Escute de novo'); setTimeout(playRhythm, 1600); return; }
+  if (++rhy.pos < rhy.seq.length) return;
+  rhy.listen = true; $('#rhyMsg').textContent = 'Muito bem! 🎉';
+  if (rhy.len > (prog.rhythmBest || 0)) { prog.rhythmBest = rhy.len; saveProg(); }
+  celebrate(rhy.len % 3 === 0); say(pick(['Muito bem!', 'Isso aí!', 'Que ritmo!']));
+  rhy.len = Math.min(rhy.len + 1, 9); updateRhy(); setTimeout(newRhythm, 2400);
+}
+$('#rhyAgain').onclick = () => { if (rhy && rhy.seq.length) { blip(500); playRhythm(); } };
+
+/* ================= cena de adesivos: escolhe um cenário, toca nos adesivos para colocar e arrasta para mudar de lugar ================= */
+// [emoji, nome, animação ao tocar, som ao tocar ('bicho' usa o som do bicho)]
+const STICKER_SCENES = {
+  farm: { name: 'Fazenda', emoji: '🌾', items: [['🐄', 'vaca', 'walk'], ['🐷', 'porco', 'hop'], ['🐑', 'ovelha', 'hop'], ['🐔', 'galinha', 'flap'], ['🐤', 'pintinho', 'hop'],
+    ['🦆', 'pato', 'walk'], ['🐴', 'cavalo', 'walk'], ['🐶', 'cachorro', 'hop'], ['🐱', 'gato', 'wiggle'], ['🚜', 'trator', 'drive'], ['🌻', 'girassol', 'sway'], ['🌳', 'árvore', 'sway'], ['🍎', 'maçã', 'wiggle'], ['🐓', 'galo', 'flap']] },
+  city: { name: 'Cidade', emoji: '🏙️', items: [['🚗', 'carro', 'drive'], ['🚌', 'ônibus', 'drive'], ['🚒', 'caminhão de bombeiros', 'drive'], ['🚓', 'carro de polícia', 'drive'], ['🚑', 'ambulância', 'drive'],
+    ['🚚', 'caminhão', 'drive'], ['🚲', 'bicicleta', 'drive'], ['🚦', 'semáforo', 'pulse'], ['🏠', 'casa', 'wiggle'], ['🏢', 'prédio', 'wiggle'], ['🌳', 'árvore', 'sway'], ['🐶', 'cachorro', 'hop'], ['🐱', 'gato', 'wiggle'], ['🎈', 'balão', 'fly']] },
+  sea: { name: 'Fundo do mar', emoji: '🌊', items: [['🐠', 'peixe', 'swim'], ['🐟', 'peixinho', 'swim'], ['🐙', 'polvo', 'float'], ['🦀', 'caranguejo', 'walk'], ['🐳', 'baleia', 'swim'], ['🦈', 'tubarão', 'swim'],
+    ['🐢', 'tartaruga', 'swim'], ['🐬', 'golfinho', 'swim'], ['🐡', 'baiacu', 'pulse'], ['🦑', 'lula', 'float'], ['🐚', 'concha', 'wiggle'], ['🌿', 'alga', 'sway'], ['⛵', 'barco', 'drive'], ['🧜', 'sereia', 'float']] },
+  space: { name: 'Espaço', emoji: '🚀', items: [['🚀', 'foguete', 'launch'], ['🛸', 'disco voador', 'fly'], ['🪐', 'planeta', 'spin'], ['🌙', 'lua', 'wiggle'], ['⭐', 'estrela', 'spin'], ['☄️', 'cometa', 'fly'],
+    ['👽', 'etezinho', 'hop'], ['🛰️', 'satélite', 'spin'], ['🌍', 'Terra', 'spin'], ['🤖', 'robô', 'walk'], ['🧑‍🚀', 'astronauta', 'float'], ['🌞', 'sol', 'pulse']] }
+};
+const SOUNDY = Object.fromEntries(ANIMAL_SOUNDS.map(a => [a[1], a]));
+let sceneKey = 'farm', sceneDrag = null;
+const scenes = load('oliver-scenes', {});
+function saveScenes() { keep('oliver-scenes', scenes); }
+function sceneStart() { drawSceneBg(); renderScene(); }
+function renderScene() {
+  document.querySelectorAll('[data-scene]').forEach(b => b.classList.toggle('on', b.dataset.scene === sceneKey));
+  const tray = $('#sceneTray'); tray.innerHTML = '';
+  btn(tray, 'stItem', '<canvas width="100" height="150"></canvas>', prefs.name, () => addSticker('kid'));
+  drawKidSticker(tray.querySelector('canvas'));
+  for (const it of STICKER_SCENES[sceneKey].items) btn(tray, 'stItem', it[0], it[1], () => addSticker(it[0]));
+  const layer = $('#sceneLayer'); layer.innerHTML = '';
+  for (const s of scenes[sceneKey] || []) makeSticker(s);
+  drawSceneBg();
+}
+function drawKidSticker(cv) { const x = cv.getContext('2d'); x.clearRect(0, 0, 100, 150); drawAvatar(x, 2, 0, .96, 1, 0, false, 'wave'); }
+const itemOf = e => e === 'kid' ? ['kid', prefs.name, 'hop'] : Object.values(STICKER_SCENES).flatMap(s => s.items).find(i => i[0] === e) || [e, '', 'wiggle'];
+function addSticker(e) {
+  const list = scenes[sceneKey] = scenes[sceneKey] || [];
+  if (list.length >= 40) { toast('A cena está cheia! Tire alguns adesivos 🗑️'); return; }
+  const s = { e, x: 30 + Math.random() * 40, y: 35 + Math.random() * 35 };
+  list.push(s); saveScenes(); tapSticker(makeSticker(s), s);
+}
+function makeSticker(s) {
+  const el = document.createElement('div'); el.className = 'sk';
+  el.innerHTML = s.e === 'kid' ? '<span class="ski"><canvas width="100" height="150"></canvas></span>' : `<span class="ski">${s.e}</span>`;
+  el.style.left = s.x + '%'; el.style.top = s.y + '%';
+  $('#sceneLayer').appendChild(el);
+  if (s.e === 'kid') drawKidSticker(el.querySelector('canvas'));
+  el.addEventListener('pointerdown', ev => {
+    ev.preventDefault(); try { el.setPointerCapture(ev.pointerId); } catch (e) {}
+    sceneDrag = { el, s, x0: ev.clientX, y0: ev.clientY, moved: false }; el.classList.add('drag'); $('#sceneTrash').classList.add('show');
+  });
+  el.addEventListener('pointermove', ev => {
+    if (!sceneDrag || sceneDrag.el !== el) return;
+    if (Math.hypot(ev.clientX - sceneDrag.x0, ev.clientY - sceneDrag.y0) > 8) sceneDrag.moved = true;
+    const r = $('#sceneLayer').getBoundingClientRect();
+    s.x = Math.max(0, Math.min(100, (ev.clientX - r.left) / r.width * 100)); s.y = Math.max(0, Math.min(100, (ev.clientY - r.top) / r.height * 100));
+    el.style.left = s.x + '%'; el.style.top = s.y + '%';
+    $('#sceneTrash').classList.toggle('over', overTrash(ev));
+  });
+  const up = ev => {
+    if (!sceneDrag || sceneDrag.el !== el) return;
+    el.classList.remove('drag'); $('#sceneTrash').classList.remove('show', 'over');
+    if (!sceneDrag.moved) tapSticker(el, s);
+    else if (overTrash(ev)) { scenes[sceneKey] = scenes[sceneKey].filter(o => o !== s); el.remove(); blip(300, .15); }
+    else { // quem foi arrastado por último fica na frente
+      const list = scenes[sceneKey]; list.splice(list.indexOf(s), 1); list.push(s); $('#sceneLayer').appendChild(el);
+    }
+    sceneDrag = null; saveScenes();
+  };
+  el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+  return el;
+}
+function overTrash(ev) { const r = $('#sceneTrash').getBoundingClientRect(); return ev.clientX > r.left - 20 && ev.clientX < r.right + 20 && ev.clientY > r.top - 20 && ev.clientY < r.bottom + 20; }
+function tapSticker(el, s) {
+  const [, name, anim] = itemOf(s.e), ski = el.querySelector('.ski');
+  ski.style.animation = 'none'; void ski.offsetWidth; ski.style.animation = `l-${anim} 1.4s ease-in-out`;
+  const a = SOUNDY[name];
+  if (a) { animalSound(a); setTimeout(() => say(name), 900); }
+  else {
+    if (st.sound) try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); const t = ac.currentTime;
+      if (anim === 'drive') { tone('square', 440, 440, t, .15, .05, 1500); tone('square', 440, 440, t + .22, .2, .05, 1500); }
+      else [784, 988, 1319].forEach((f, i) => tone('triangle', f, f, t + i * .07, .14, .08));
+    } catch (e) {}
+    say(s.e === 'kid' ? `Oi! Eu sou ${prefs.name}!` : name);
+  }
+}
+document.querySelectorAll('[data-scene]').forEach(b => b.onclick = () => { blip(600); sceneKey = b.dataset.scene; renderScene(); say(STICKER_SCENES[sceneKey].name); });
+$('#sceneClear').onclick = () => confirmAsk('Tirar todos os adesivos desta cena?', () => { scenes[sceneKey] = []; saveScenes(); renderScene(); });
+// cenários desenhados pelo app
+function drawSceneBg() {
+  const cv = $('#sceneCv'), r = cv.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2);
+  cv.width = Math.max(1, Math.round(r.width * d)); cv.height = Math.max(1, Math.round(r.height * d));
+  const x = cv.getContext('2d'), W = cv.width, H = cv.height, U = Math.min(W, H) / 10;
+  const grad = (c0, c1, y0 = 0, y1 = H) => { const g = x.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, c0); g.addColorStop(1, c1); return g; };
+  const cloud = (cx, cy, s) => { x.fillStyle = 'rgba(255,255,255,.95)'; x.beginPath(); x.arc(cx, cy, s, 0, TAU); x.arc(cx + s, cy - s * .4, s * 1.2, 0, TAU); x.arc(cx + s * 2.1, cy, s, 0, TAU); x.fill(); };
+  x.lineJoin = x.lineCap = 'round'; x.strokeStyle = INK; x.lineWidth = Math.max(2, U * .05);
+  if (sceneKey === 'farm' || sceneKey === 'city') {
+    x.fillStyle = grad('#7fd3ff', '#e3f7ff', 0, H * .7); x.fillRect(0, 0, W, H);
+    x.fillStyle = '#ffe066'; x.beginPath(); x.arc(W * .88, H * .14, U * .9, 0, TAU); x.fill();
+    cloud(W * .12, H * .14, U * .5); cloud(W * .5, H * .1, U * .4);
+  }
+  if (sceneKey === 'farm') {
+    x.fillStyle = '#8fd47e'; x.beginPath(); x.ellipse(W * .2, H * .62, W * .4, H * .2, 0, 0, TAU); x.ellipse(W * .8, H * .64, W * .45, H * .22, 0, 0, TAU); x.fill();
+    x.fillStyle = '#6cc24a'; x.fillRect(0, H * .62, W, H);
+    // celeiro
+    const bx = W * .72, by = H * .62, bw = U * 2.6, bh = U * 2;
+    x.fillStyle = '#d84a3a'; x.beginPath(); x.rect(bx, by - bh, bw, bh); x.fill(); x.stroke();
+    x.beginPath(); x.moveTo(bx - U * .2, by - bh); x.lineTo(bx + bw / 2, by - bh - U * 1.2); x.lineTo(bx + bw + U * .2, by - bh); x.closePath(); x.fill(); x.stroke();
+    x.fillStyle = '#fff'; x.beginPath(); x.rect(bx + bw * .32, by - bh * .6, bw * .36, bh * .6); x.fill(); x.stroke();
+    x.beginPath(); x.moveTo(bx + bw * .32, by - bh * .6); x.lineTo(bx + bw * .68, by); x.moveTo(bx + bw * .68, by - bh * .6); x.lineTo(bx + bw * .32, by); x.stroke();
+    // cerca
+    x.fillStyle = '#fff';
+    for (let fx = 0; fx < W * .6; fx += U * .7) { x.beginPath(); x.roundRect(fx, H * .55, U * .22, U * .9, U * .1); x.fill(); x.stroke(); }
+    x.fillRect(0, H * .58, W * .6, U * .14); x.fillRect(0, H * .63, W * .6, U * .14);
+  } else if (sceneKey === 'city') {
+    const cols = ['#ffd6a5', '#bde0fe', '#caffbf', '#ffc6ff', '#fdffb6', '#a0c4ff'];
+    for (let i = 0, bx = 0; bx < W; i++) {
+      const bw = U * (1.4 + (i * 37 % 10) / 10), bh = U * (2.5 + (i * 53 % 25) / 10);
+      x.fillStyle = cols[i % cols.length]; x.beginPath(); x.rect(bx, H * .68 - bh, bw, bh); x.fill(); x.stroke();
+      x.fillStyle = '#fff8e1';
+      for (let wy = H * .68 - bh + U * .35; wy < H * .68 - U * .5; wy += U * .6) for (let wx = bx + U * .25; wx < bx + bw - U * .4; wx += U * .55) { x.beginPath(); x.rect(wx, wy, U * .28, U * .3); x.fill(); x.stroke(); }
+      bx += bw + U * .15;
+    }
+    x.fillStyle = '#cfd8dc'; x.fillRect(0, H * .68, W, H * .07); x.fillStyle = '#546e7a'; x.fillRect(0, H * .75, W, H);
+    x.fillStyle = '#fff'; for (let rx = U * .3; rx < W; rx += U * 1.4) x.fillRect(rx, H * .86, U * .7, U * .12);
+  } else if (sceneKey === 'sea') {
+    x.fillStyle = grad('#4fc3f7', '#0d47a1'); x.fillRect(0, 0, W, H);
+    x.fillStyle = 'rgba(255,255,255,.12)'; for (let i = 0; i < 5; i++) { const sx = W * (i * .22); x.beginPath(); x.moveTo(sx, 0); x.lineTo(sx + U, 0); x.lineTo(sx + U * 2.6, H); x.lineTo(sx + U * 1.8, H); x.fill(); }
+    x.strokeStyle = 'rgba(255,255,255,.6)'; for (let i = 0; i < 14; i++) { x.beginPath(); x.arc((i * 137) % W, H * (.15 + (i * 53 % 60) / 100), U * (.08 + (i % 3) * .05), 0, TAU); x.stroke(); }
+    x.strokeStyle = INK; x.fillStyle = '#f3d79b'; x.beginPath(); x.moveTo(0, H * .85); for (let k = 0; k <= 8; k++) x.quadraticCurveTo(W * (k + .5) / 8, H * (.8 + (k % 2) * .03), W * (k + 1) / 8, H * .85); x.lineTo(W, H); x.lineTo(0, H); x.fill();
+  } else {
+    x.fillStyle = grad('#0f1240', '#3a2f7a'); x.fillRect(0, 0, W, H);
+    x.fillStyle = '#fff'; for (let i = 0; i < 90; i++) { const s = 1 + (i % 3); x.globalAlpha = .4 + (i % 5) / 8; x.fillRect((i * 197) % W, (i * 89) % H, s * d, s * d); }
+    x.globalAlpha = 1; x.fillStyle = '#e76f51'; x.beginPath(); x.arc(W * .08, H * .95, U * 2.4, 0, TAU); x.fill();
+    x.fillStyle = 'rgba(0,0,0,.12)'; x.beginPath(); x.arc(W * .05, H * .85, U * .5, 0, TAU); x.arc(W * .13, H * .98, U * .35, 0, TAU); x.fill();
+    x.fillStyle = '#8ecae6'; x.beginPath(); x.arc(W * .9, H * .2, U * .8, 0, TAU); x.fill();
+    x.strokeStyle = '#ffd166'; x.lineWidth = U * .12; x.beginPath(); x.ellipse(W * .9, H * .2, U * 1.4, U * .35, -.3, 0, TAU); x.stroke();
+  }
+}
+addEventListener('resize', () => { if (shown('g-scene')) drawSceneBg(); });
+
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir e ao voltar para ele.
    O jogo (este arquivo) chega sozinho e entra quando o app abre de novo ou volta para a tela inicial;
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 20, name: '4.3' };
+const APP_VERSION = { code: 21, name: '4.4' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 const pendingUpdate = () => { try { const p = JSON.parse(localStorage.getItem('oliver-update')); return p && p.code > APP_VERSION.code ? p : null; } catch (e) { return null; } };
