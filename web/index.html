@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 46, name: '6.11' }; -->
+<!-- const APP_VERSION = { code: 47, name: '6.12' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -1258,6 +1258,9 @@ button:active { transform: scale(.92); }
     <details class="aiBox pHide"><summary><b>🙈 Jogos que aparecem no menu</b></summary>
       <p class="pused">Desmarque o que não quer que apareça para a criança. A porta some quando todos os jogos dela estão escondidos.</p>
       <div id="pHideList"></div></details>
+    <details class="aiBox pHide"><summary><b>🔄 Recomeçar um jogo</b></summary>
+      <p class="pused">Apaga só o que aquele jogo guardou (moedas, filhotes, fases, músicas...), para a criança começar do zero. O app reabre em seguida.</p>
+      <div class="pbtns" id="pResetList"></div></details>
     <div class="aiBox">
       <h3>🦉 Conversar: IA no tablet (opcional)</h3>
       <p class="pused">Sem a IA, o amigo do jogo Conversar responde com falas prontas, escritas para crianças. Com a IA, ele inventa respostas novas, sem internet, mas pode errar ou falar algo sem sentido. Dor, medo e tristeza continuam sempre com as respostas prontas, que pedem ajuda a um adulto.</p>
@@ -1393,6 +1396,8 @@ function smile(c, x, y, w) { c.beginPath(); c.moveTo(x - w, y); c.quadraticCurve
 let ART_TRACE = false, ART_COLOR = false;   // ART_COLOR: desenha o modelo já pintado (o Oliver com as cores da roupa)
 // no modelo colorido, pinta a forma que acabou de ser desenhada (chapéus e capacetes que ficam por cima do Oliver)
 const tint = (c, col) => { if (ART_COLOR) { c.fillStyle = col; c.fill(); c.stroke(); } };
+// chapéu por cima do Oliver: apaga os traços do cabelo que ficariam dentro dele (senão o chapéu vira vários pedacinhos na hora de pintar)
+const cover = c => { c.save(); c.globalAlpha = 1; if (ART_COLOR) { c.fillStyle = '#fff'; c.fill(); } else { c.globalCompositeOperation = 'destination-out'; c.fill(); } c.restore(); c.stroke(); };
 function pens(c) {
   const L = c.lineWidth;
   return { thick: () => { c.lineWidth = L * 1.15; if (ART_TRACE) c.globalAlpha = 1; }, thin: () => { c.lineWidth = L * .6; if (ART_TRACE) c.globalAlpha = 0; } };
@@ -2077,7 +2082,7 @@ const ART = {
     smooth(c, [410, 690, 260, 760, 110, 690, 170, 800, 410, 790]);
     kid(c, 250, 100, 5, 'wave', 0, { outfit: 'galo' });
     thick();
-    c.beginPath(); c.arc(500, 315, 185, Math.PI * 1.02, Math.PI * 1.98); c.arc(500, 315, 150, Math.PI * 1.98, Math.PI * 1.02, true); c.closePath(); c.stroke();   // capuz de dino
+    c.beginPath(); c.arc(500, 315, 185, Math.PI * 1.02, Math.PI * 1.98); c.arc(500, 315, 150, Math.PI * 1.98, Math.PI * 1.02, true); c.closePath(); cover(c);   // capuz de dino
     for (let i = 0; i < 6; i++) { const a = Math.PI * (1.12 + i * .15), x = 500 + 185 * Math.cos(a), y = 315 + 185 * Math.sin(a); smooth(c, [x - 26, y + 12, x + 40 * Math.cos(a), y + 40 * Math.sin(a), x + 26, y + 12]); }
     thin();
     c.beginPath(); c.ellipse(500, 560, 60, 70, 0, 0, TAU); c.stroke();
@@ -2087,7 +2092,7 @@ const ART = {
     const { thick, thin } = pens(c);
     kid(c, 250, 110, 5, 'wave', 0, { outfit: 'polo' });
     thick();
-    smooth(c, [300, 270, 360, 175, 500, 145, 640, 175, 700, 270, 500, 228]);
+    smooth(c, [300, 270, 360, 175, 500, 145, 640, 175, 700, 270, 500, 228]); cover(c);
     c.beginPath(); c.ellipse(548, 335, 34, 30, 0, 0, TAU); inkFill(c);
     c.beginPath(); c.roundRect(60, 700, 280, 190, 20); c.stroke();
     c.beginPath(); c.moveTo(60, 760); c.quadraticCurveTo(200, 620, 340, 760); c.stroke();
@@ -2101,8 +2106,8 @@ const ART = {
     const { thick, thin } = pens(c);
     kid(c, 250, 150, 4.8, 'wave', 0, { outfit: 'galo' });
     thick();
-    smooth(c, [385, 235, 360, 145, 420, 95, 500, 72, 580, 95, 640, 145, 615, 235]); tint(c, '#ffffff');
-    c.beginPath(); c.roundRect(380, 225, 240, 52, 16); c.stroke(); tint(c, '#ffffff');
+    smooth(c, [385, 235, 360, 145, 420, 95, 500, 72, 580, 95, 640, 145, 615, 235]); cover(c); tint(c, '#ffffff');
+    c.beginPath(); c.roundRect(380, 225, 240, 52, 16); cover(c); tint(c, '#ffffff');
     c.beginPath(); c.ellipse(790, 650, 150, 60, 0, 0, TAU); c.stroke();
     thin();
     c.beginPath(); c.ellipse(790, 645, 120, 44, 0, 0, TAU); c.stroke();
@@ -2266,8 +2271,8 @@ const ART = {
     const { thick, thin } = pens(c);
     kid(c, 250, 60, 5, '', 0, { outfit: 'bombeiro' });
     thick();
-    c.beginPath(); c.ellipse(500, 250, 205, 42, 0, 0, TAU); c.stroke();
-    smooth(c, [335, 250, 352, 130, 500, 88, 648, 130, 665, 250]); tint(c, '#e53935');
+    c.beginPath(); c.ellipse(500, 250, 205, 42, 0, 0, TAU); cover(c);
+    smooth(c, [335, 250, 352, 130, 500, 88, 648, 130, 665, 250]); cover(c); tint(c, '#e53935');
     smooth(c, [612, 615, 720, 600, 800, 520, 850, 450, 885, 470, 830, 560, 735, 640, 615, 655]);
     thin();
     smooth(c, [500, 140, 540, 160, 530, 210, 500, 225, 470, 210, 460, 160]); tint(c, '#ffd23f');
@@ -2284,15 +2289,15 @@ const ART = {
     smooth(c, [230, 120, 295, 200, 270, 280, 230, 305, 190, 280, 165, 200]);
     kid(c, 260, 80, 4.6, 'wave', 0, { outfit: 'polo' });
     thick();
-    c.beginPath(); c.moveTo(490, 115); c.lineTo(400, 300); c.quadraticCurveTo(495, 330, 590, 300); c.closePath(); c.stroke(); tint(c, '#ab47bc');
-    circ(c, 490, 105, 26); tint(c, '#ffd23f');
+    c.beginPath(); c.moveTo(490, 40); c.lineTo(412, 210); c.quadraticCurveTo(495, 238, 578, 210); c.closePath(); cover(c); tint(c, '#ab47bc');
+    circ(c, 490, 32, 24); cover(c); tint(c, '#ffd23f');
     c.beginPath(); c.ellipse(780, 880, 190, 30, 0, 0, TAU); c.stroke();
     c.beginPath(); c.roundRect(620, 700, 320, 170, 24); c.stroke();
     c.beginPath(); c.moveTo(800, 700); c.lineTo(760, 590); c.lineTo(760, 620); c.lineTo(830, 620); c.moveTo(810, 560); c.lineTo(810, 700); c.stroke();
     smooth(c, [810, 470, 836, 520, 810, 548, 784, 520]);
     thin();
     c.beginPath(); c.moveTo(620, 750); for (let i = 0; i < 8; i++) c.quadraticCurveTo(640 + i * 40, 790, 660 + i * 40, 750); c.stroke();
-    c.beginPath(); c.moveTo(440, 220); c.lineTo(540, 230); c.moveTo(420, 270); c.lineTo(565, 280); c.stroke();
+    c.beginPath(); c.moveTo(457, 115); c.lineTo(525, 122); c.moveTo(437, 162); c.lineTo(548, 170); c.stroke();
   },
   oliverdog(c) {
     const { thick, thin } = pens(c);
@@ -3086,7 +3091,7 @@ const FILL = {
   oliveramigos: { bg: fField(840), f: [[500, 165, '#e53935'], [420, 95, '#e53935'], [580, 95, '#e53935'], [880, 110, GOLD]] },
   oliverastro: { bg: '#e3dcff', f: [[500, 105, '#e3f2fd'], [385, 520, '#b0bec5'], [615, 520, '#b0bec5'], [150, 200, '#ff8a65'], ...fAll([[860, 160], [840, 620], [140, 620], [900, 400]], GOLD)] },
   oliverbombeiro: { bg: FB.sky, f: [[320, 252, '#e53935'], [680, 252, '#e53935'], [740, 615, GOLD], ...fAll([[900, 400], [930, 350], [870, 330], [950, 420], [910, 290]], '#4fc3f7')] },
-  oliverniver: { bg: '#fff3e0', f: [[130, 230, '#e53935'], [230, 210, '#1e88e5'], [490, 95, GOLD], [600, 882, '#eceff1'], [700, 720, '#f8bbd0'], [700, 820, '#8d6e63'], [810, 510, '#ffb300']] },
+  oliverniver: { bg: '#fff3e0', f: [[130, 230, '#e53935'], [230, 210, '#1e88e5'], [490, 32, GOLD], [600, 882, '#eceff1'], [700, 720, '#f8bbd0'], [700, 820, '#8d6e63'], [810, 510, '#ffb300']] },
   oliverdog: { bg: fField(905), f: [[860, 150, '#e53935']], sub: [['dog', 520, 350, .45]] },
   oliverestadio: { bg: fField(880, '#7cb342'), f: [[130, 470, '#212121'], [167, 470, '#ffffff'], [207, 470, '#212121'], [242, 470, '#ffffff'], [728, 770, '#e53935'], [767, 770, '#ffffff'], [817, 770, '#e53935'], [872, 770, '#ffffff'], [800, 610, '#fff59d']] },
   oliverbetoneira: { bg: fField(810, '#d7ccc8'), f: [[300, 165, '#eceff1']] },
@@ -4527,6 +4532,19 @@ function openParents() {
   $('#parents').hidden = false;
 }
 function savePrefs() { keep('oliver-prefs', prefs); }
+// o que cada jogo guarda no tablet: [emoji, nome, chaves do localStorage, gravações no IndexedDB]
+const GAME_RESETS = [['🥚', 'Corre-Corre dos Bichos', ['oliver-corre']], ['🦖', 'Ovos de dinossauro', ['oliver-dinos']], ['🚒', 'Bombeiro mirim', ['oliver-bombeiro']],
+  ['🐶', 'Meu bichinho', ['oliver-pet']], ['🎛️', 'Músicas do Estúdio', ['oliver-musicas'], 'mus'], ['🎤', 'Gravação das Vozes mágicas', [], 'voz'],
+  ['🏃', 'Aventura e fases (memória, contar, formas, quebra-cabeça)', ['oliver-progress']], ['🏞️', 'Cena de adesivos', ['oliver-scenes']], ['⭐', 'Minha rotina', ['oliver-rotina']],
+  ['🍕', 'Cozinha', ['oliver-cook']], ['🧽', 'Lava-rápido da obra', ['oliver-wash']], ['📦', 'Separar e guardar', ['oliver-sort']], ['👤', 'Qual é a sombra?', ['oliver-shadow']],
+  ['🧭', 'Labirinto', ['oliver-maze']], ['🔢', 'Ligue os pontos', ['oliver-dots']], ['🧱', 'Encaixa blocos', ['oliver-blocks']], ['🐍', 'Cobrinha', ['oliver-snake']],
+  ['🏎️', 'Corrida (opções escolhidas)', ['oliver-kart']], ['🧠', 'Aprender brincando', ['oliver-learn']], ['🔤', 'Estrelas do inglês', ['en-stars']]];
+for (const [e, name, keys, audio] of GAME_RESETS) btn($('#pResetList'), 'pbtn', `${e} ${name}`, 'Recomeçar ' + name, () => confirmAsk(`Recomeçar ${name}? O que foi guardado nele será apagado.`, async () => {
+  if (audio === 'mus') for (const m of load('oliver-musicas', { l: [] }).l) { await idb.del('mus-' + m.id); await idb.del('musv-' + m.id); }
+  if (audio === 'voz') await idb.del('voz');
+  for (const k of keys) try { localStorage.removeItem(k); } catch (e) {}
+  toast(`${e} ${name}: recomeçado`); setTimeout(() => location.reload(), 900);
+}));
 function renderHideList() {
   const box = $('#pHideList'), hide = prefs.hide || []; box.innerHTML = '';
   for (const d of document.querySelectorAll('.door')) {
@@ -11447,7 +11465,7 @@ GAME_INTRO.studio = 'Toque nos quadradinhos para criar a sua música, e aperte o
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 46, name: '6.11' };
+const APP_VERSION = { code: 47, name: '6.12' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)

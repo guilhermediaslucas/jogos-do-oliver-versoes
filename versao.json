@@ -1,8 +1,8 @@
 {
-  "code": 46,
-  "name": "6.11",
+  "code": 47,
+  "name": "6.12",
   "minApk": 41,
-  "notes": "Versão 6.11: seis jogos novos! Corre-Corre dos Bichos (pegue o ovo ou o filhote e corra para casa antes da mamãe alcançar, em 7 lugares: fazenda, selva, floresta, montanha, gelo, safári e dinossauros, com moedas e tênis para correr mais), Construtor da obra, Ovos de dinossauro, Bombeiro mirim, Esconde-esconde e Parquinho.",
+  "notes": "Versão 6.12: na área dos pais, Recomeçar um jogo zera só o jogo escolhido (Corre-Corre, Ovos de dinossauro, Bombeiro, bichinho, músicas do Estúdio e outros). Nos desenhos do Oliver, o chapéu de aniversário ficou inteiro em cima da cabeça, e os chapéus de bombeiro, cozinheiro, pirata e o capuz de dino não ficam mais cortados pelo cabelo na hora de pintar.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/MundoDoOliver.apk"
 }
