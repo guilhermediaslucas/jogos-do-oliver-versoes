@@ -1,8 +1,8 @@
 {
-  "code": 30,
-  "name": "5.3",
+  "code": 31,
+  "name": "5.4",
   "minApk": 19,
-  "notes": "Corta frutas mais leve no tablet; no mapa da aventura a fase abre assim que o dedo encosta; opção nos pais para liberar todas as fases.",
+  "notes": "Jogo novo: Encaixa blocos (estilo Tetris para criança), com modo fácil e normal, sombra da peça e sem fim de jogo.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/JogosDoOliver.apk"
 }

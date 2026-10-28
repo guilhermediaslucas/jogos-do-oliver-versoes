@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 30, name: '5.3' }; -->
+<!-- const APP_VERSION = { code: 31, name: '5.4' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -447,6 +447,14 @@ button:active { transform: scale(.92); }
 .k-step span { font-size: 52px; margin-top: -44px; } .k-step b { font-size: 26px; }
 .k-step.s1 { height: 130px; background: var(--sun); } .k-step.s2 { height: 95px; background: #e0e0e0; } .k-step.s3 { height: 70px; background: #e8b98a; }
 @media (prefers-reduced-motion: reduce) { #kItem.full, #kBanner.kpop { animation: none; } }
+/* encaixa blocos */
+.blkPlay { border-radius: 24px; overflow: hidden; background: linear-gradient(#c9e9ff, #e9f7ff); touch-action: none; }
+#blkCv { position: absolute; inset: 0; width: 100%; height: 100%; }
+.blkPad { position: absolute; left: 14px; bottom: 14px; display: flex; flex-direction: column; gap: 14px; }
+.blkPad.right { left: auto; right: 14px; }
+#blkMode { white-space: nowrap; width: auto; padding: 0 14px; }
+.blkPad .padBtn { background: rgba(255,255,255,.75); border-color: rgba(42,29,18,.25); color: var(--ink); }
+@media (max-height: 560px) { .blkPad { gap: 8px; left: 8px; bottom: 8px; } .blkPad.right { right: 8px; } }
 .keys { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; height: 100%; }
 .key { border-radius: 20px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 16px; font-size: clamp(30px, 6vw, 56px); box-shadow: 0 6px 0 rgba(0,0,0,.2); touch-action: none; }
 .key span { display: block; }
@@ -632,6 +640,7 @@ button:active { transform: scale(.92); }
   <div class="modes">
     <button class="mode" style="background:var(--g-adv)" data-game="adventure"><span>🏃</span>Aventura do <span class="advName">Oliver</span></button>
     <button class="mode" style="background:#e53935" data-game="kart"><span>🏎️</span>Corrida do <span class="advName">Oliver</span></button>
+    <button class="mode" style="background:#5c6bc0" data-game="blocks"><span>🧱</span>Encaixa blocos</button>
     <button class="mode" style="background:var(--g-mem)" data-game="memory"><span>🃏</span>Memória</button>
     <button class="mode" style="background:var(--g-bal)" data-game="bubbles"><span>🎈</span>Estoura balão</button>
     <button class="mode" style="background:var(--g-piano)" data-game="piano"><span>🎹</span>Piano dos bichos</button>
@@ -830,6 +839,14 @@ button:active { transform: scale(.92); }
   <p class="k-note" id="kEndText"></p>
   <div class="k-row"><button class="k-go" id="kAgain">🔁 De novo</button><button class="k-go" id="kToMenu">⚙️ Escolher outra</button></div>
 </div></div>
+</section>
+<section id="g-blocks" class="screen game" hidden>
+  <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Encaixa blocos</h2><span class="score" id="blkScore"></span>
+    <button class="round wide" id="blkMode">😊 Fácil</button><button class="round musicBtn" aria-label="Música de fundo">🎵</button><button class="round trackBtn" aria-label="Trocar a música">🔀</button></div>
+  <div class="play blkPlay"><canvas id="blkCv"></canvas>
+    <div class="blkPad"><button class="padBtn" id="blkL" aria-label="Para a esquerda">◀</button><button class="padBtn" id="blkR" aria-label="Para a direita">▶</button></div>
+    <div class="blkPad right"><button class="padBtn" id="blkRot" aria-label="Girar">🔄</button><button class="padBtn" id="blkDown" aria-label="Descer rápido">⬇</button></div>
+  </div>
 </section>
 <section id="g-count" class="screen game" hidden>
   <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Vamos contar</h2><span class="score" id="countScore"></span></div>
@@ -8662,10 +8679,153 @@ let kSlow = [];
 function kartStart() { if (!kCv) kInit(); else { kResize(); if (!kRaf) kLoop(); kMenu(); } }
 GAMES.kart = kartStart; GAME_INTRO.kart = 'Vamos correr! Escolha a pista.';
 
+/* ================= encaixa blocos (estilo Tetris, para criança pequena): peças grandes, descida devagar e sem "fim de jogo" ================= */
+const BLK_SHAPES = {
+  O: { c: '#fdd835', cells: [[0, 0], [1, 0], [0, 1], [1, 1]] }, I: { c: '#29b6f6', cells: [[0, 1], [1, 1], [2, 1], [3, 1]] },
+  L: { c: '#fb8c00', cells: [[0, 1], [1, 1], [2, 1], [2, 0]] }, J: { c: '#1e88e5', cells: [[0, 0], [0, 1], [1, 1], [2, 1]] },
+  T: { c: '#ab47bc', cells: [[0, 1], [1, 1], [2, 1], [1, 0]] }, S: { c: '#66bb6a', cells: [[0, 1], [1, 1], [1, 0], [2, 0]] },
+  Z: { c: '#ef5350', cells: [[0, 0], [1, 0], [1, 1], [2, 1]] }
+};
+const BLK_LINES = ['', 'Uma linha!', 'Duas linhas!', 'Três linhas!', 'Quatro linhas! Uau!'];
+const blkSave = load('oliver-blocks', { easy: true, best: 0 });
+let blk = null, blkRaf = 0, blkHoldT = 0;
+function blocksStart() {
+  const easy = blkSave.easy, W = easy ? 8 : 10, H = easy ? 14 : 16;
+  blk = { W, H, easy, grid: Array.from({ length: H }, () => Array(W).fill(null)), cur: null, next: null, t: 0, fall: 0, score: 0, lines: 0, flash: [], flashT: 0, parts: [], clearT: 0 };
+  $('#blkMode').textContent = easy ? '😊 Fácil' : '😎 Normal';
+  blkNext(); blkScore(); blkResize(); startMusic('g-blocks');
+  cancelAnimationFrame(blkRaf);
+  let last = performance.now();
+  const loop = t => { if (!alive('blocks')) { blkRaf = 0; return; } blkStep(Math.min(.05, (t - last) / 1000)); last = t; blkDraw(); blkRaf = requestAnimationFrame(loop); };
+  blkRaf = requestAnimationFrame(loop);
+}
+function blkResize() { const cv = $('#blkCv'), r = cv.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2, 1100 / Math.max(1, r.width)); cv.width = Math.max(1, r.width * d | 0); cv.height = Math.max(1, r.height * d | 0); }
+addEventListener('resize', () => { if (shown('g-blocks')) blkResize(); });
+function blkScore() { $('#blkScore').textContent = `🧱 ${blk.score}   🏆 ${Math.max(blkSave.best, blk.score)}`; }
+const blkBag = () => shuffle(Object.keys(BLK_SHAPES).filter(k => !blk.easy || !'SZ'.includes(k)));   // no fácil não vem as peças tortinhas
+function blkNext() {
+  if (!blk.bag || !blk.bag.length) blk.bag = blkBag();
+  const k = blk.next || blk.bag.pop(); blk.next = (blk.bag.length ? blk.bag : (blk.bag = blkBag())).pop();
+  const cells = BLK_SHAPES[k].cells.map(c => [...c]), w = Math.max(...cells.map(c => c[0])) + 1;
+  blk.cur = { k, cells, x: Math.floor((blk.W - w) / 2), y: k === 'I' ? -1 : 0 };
+  if (blkHit(blk.cur, 0, 0)) {   // encheu: limpa tudo com festa e começa de novo
+    blk.clearT = 1.2; say('Encheu! Vamos de novo!'); blip(400, .2);
+    blk.grid.forEach((row, y) => row.forEach((c, x) => { if (c) blk.parts.push({ x: x + .5, y: y + .5, vx: (Math.random() - .5) * 8, vy: -Math.random() * 8, c, life: 1.4 }); }));
+    blk.grid = Array.from({ length: blk.H }, () => Array(blk.W).fill(null));
+  }
+}
+function blkHit(p, dx, dy, cells = p.cells) {
+  return cells.some(([cx, cy]) => { const x = p.x + cx + dx, y = p.y + cy + dy; return x < 0 || x >= blk.W || y >= blk.H || (y >= 0 && blk.grid[y][x]); });
+}
+function blkMove(dx) { if (blk && blk.cur && !blk.clearT && !blkHit(blk.cur, dx, 0)) { blk.cur.x += dx; blip(520, .03); } }
+function blkRotate() {
+  const p = blk && blk.cur; if (!p || p.k === 'O' || blk.clearT) return;
+  const mx = Math.max(...p.cells.map(c => c[0])), rot = p.cells.map(([x, y]) => [mx - y, x]);   // gira 90° e tenta se encaixar se bater na parede
+  for (const kick of [0, -1, 1, -2, 2]) if (!blkHit(p, kick, 0, rot)) { p.cells = rot; p.x += kick; blip(700, .04); return; }
+}
+function blkDrop() { if (!blk || !blk.cur || blk.clearT) return; while (!blkHit(blk.cur, 0, 1)) blk.cur.y++; blkLock(); }
+function blkLock() {
+  const p = blk.cur;
+  for (const [cx, cy] of p.cells) if (p.y + cy >= 0) blk.grid[p.y + cy][p.x + cx] = BLK_SHAPES[p.k].c;
+  if (st.sound) try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); tone('sine', 220, 110, ac.currentTime, .12, .2); } catch (e) {}
+  const full = blk.grid.map((r, y) => r.every(Boolean) ? y : -1).filter(y => y >= 0);
+  if (full.length) {
+    blk.flash = full; blk.flashT = .35;
+    for (const y of full) blk.grid[y].forEach((c, x) => blk.parts.push({ x: x + .5, y: y + .5, vx: (Math.random() - .5) * 7, vy: -2 - Math.random() * 6, c, life: 1 }));
+    blk.lines += full.length; blk.score += [0, 1, 3, 5, 8][full.length] * 10;
+    if (blk.score > blkSave.best) { blkSave.best = blk.score; keep('oliver-blocks', blkSave); }
+    [523, 659, 784, 1047].slice(0, full.length + 1).forEach((f, i) => blip(f, .15, i * .08));
+    say(BLK_LINES[full.length]); if (Math.floor(blk.lines / 5) > Math.floor((blk.lines - full.length) / 5)) celebrate();
+    blkScore();
+  }
+  blk.cur = null;
+}
+function blkStep(dt) {
+  blk.t += dt;
+  for (const q of blk.parts) { q.vy += 18 * dt; q.x += q.vx * dt; q.y += q.vy * dt; q.life -= dt; }
+  blk.parts = blk.parts.filter(q => q.life > 0);
+  if (blk.clearT > 0) { blk.clearT -= dt; return; }
+  if (blk.flashT > 0) {   // as linhas cheias piscam e depois somem
+    blk.flashT -= dt; if (blk.flashT > 0) return;
+    for (const y of blk.flash) { blk.grid.splice(y, 1); blk.grid.unshift(Array(blk.W).fill(null)); }
+    blk.flash = [];
+  }
+  if (!blk.cur) { blkNext(); return; }
+  const speed = Math.max(.3, (blk.easy ? 1.1 : .8) - blk.lines * .02);
+  if ((blk.fall += dt) >= (blkHoldT > 0 ? .05 : speed)) { blk.fall = 0; if (blkHit(blk.cur, 0, 1)) blkLock(); else blk.cur.y++; }
+}
+function blkCell(x, X, Y, S, c, face) {
+  x.fillStyle = c; x.beginPath(); x.roundRect(X + S * .04, Y + S * .04, S * .92, S * .92, S * .2); x.fill(); x.stroke();
+  x.fillStyle = 'rgba(255,255,255,.4)'; x.beginPath(); x.roundRect(X + S * .16, Y + S * .12, S * .4, S * .16, S * .08); x.fill();
+  if (face) { x.fillStyle = INK; x.beginPath(); x.arc(X + S * .36, Y + S * .5, S * .07, 0, TAU); x.arc(X + S * .64, Y + S * .5, S * .07, 0, TAU); x.fill();
+    x.beginPath(); x.arc(X + S * .5, Y + S * .62, S * .13, .15 * Math.PI, .85 * Math.PI); x.stroke(); }
+}
+function blkDraw() {
+  const cv = $('#blkCv'), x = cv.getContext('2d'), CW = cv.width, CH = cv.height;
+  const S = Math.floor(Math.min(CH * .96 / blk.H, CW * .62 / blk.W)), BW = S * blk.W, BH = S * blk.H, ox = Math.floor((CW - BW) / 2 - S), oy = Math.floor((CH - BH) / 2);
+  x.clearRect(0, 0, CW, CH);
+  x.fillStyle = '#fff7ea'; x.strokeStyle = INK; x.lineWidth = Math.max(2, S * .06); x.lineJoin = 'round';
+  x.beginPath(); x.roundRect(ox - S * .2, oy - S * .2, BW + S * .4, BH + S * .4, S * .4); x.fill(); x.stroke();
+  x.strokeStyle = 'rgba(42,29,18,.07)'; x.lineWidth = 1;
+  for (let i = 1; i < blk.W; i++) { x.beginPath(); x.moveTo(ox + i * S, oy); x.lineTo(ox + i * S, oy + BH); x.stroke(); }
+  for (let j = 1; j < blk.H; j++) { x.beginPath(); x.moveTo(ox, oy + j * S); x.lineTo(ox + BW, oy + j * S); x.stroke(); }
+  x.strokeStyle = INK; x.lineWidth = Math.max(1.5, S * .05);
+  blk.grid.forEach((row, y) => row.forEach((c, gx) => { if (c) blkCell(x, ox + gx * S, oy + y * S, S, blk.flash.includes(y) && Math.floor(blk.t * 16) % 2 ? '#fff' : c); }));
+  const p = blk.cur;
+  if (p) {
+    let gy = 0; while (!blkHit(p, 0, gy + 1)) gy++;   // sombra mostrando onde a peça vai cair
+    x.save(); x.setLineDash([S * .15, S * .12]); x.strokeStyle = BLK_SHAPES[p.k].c; x.lineWidth = Math.max(2, S * .08);
+    for (const [cx, cy] of p.cells) if (p.y + cy + gy >= 0) { x.beginPath(); x.roundRect(ox + (p.x + cx) * S + S * .1, oy + (p.y + cy + gy) * S + S * .1, S * .8, S * .8, S * .18); x.stroke(); }
+    x.restore();
+    const mid = p.cells[Math.floor(p.cells.length / 2)];
+    for (const [cx, cy] of p.cells) if (p.y + cy >= 0) blkCell(x, ox + (p.x + cx) * S, oy + (p.y + cy) * S, S, BLK_SHAPES[p.k].c, cx === mid[0] && cy === mid[1]);
+  }
+  // próxima peça
+  const nx = ox + BW + S * .9, ny = oy + S * .2, ns = S * .8;
+  x.fillStyle = '#fff7ea'; x.beginPath(); x.roundRect(nx, ny, ns * 5, ns * 4.4, ns * .4); x.fill(); x.stroke();
+  x.fillStyle = INK; x.font = `800 ${ns * .6}px "Baloo 2", system-ui, sans-serif`; x.textAlign = 'center'; x.fillText('Próxima', nx + ns * 2.5, ny + ns * .9);
+  if (blk.next) { const n = BLK_SHAPES[blk.next], w = Math.max(...n.cells.map(c => c[0])) + 1, h = Math.max(...n.cells.map(c => c[1])) + 1;
+    for (const [cx, cy] of n.cells) blkCell(x, nx + ns * 2.5 - w * ns / 2 + cx * ns, ny + ns * 2.6 - h * ns / 2 + cy * ns, ns, n.c); }
+  for (const q of blk.parts) { x.globalAlpha = Math.max(0, Math.min(1, q.life)); x.fillStyle = q.c; x.beginPath(); x.arc(ox + q.x * S, oy + q.y * S, S * .22, 0, TAU); x.fill(); }
+  x.globalAlpha = 1;
+}
+// botões (segurar ◀ ▶ repete; segurar ⬇ desce rápido), arrastar o dedo no tabuleiro e teclado
+function blkRepeat(id, fn) {
+  const b = $(id); let iv = 0;
+  b.addEventListener('pointerdown', e => { e.preventDefault(); fn(); clearInterval(iv); iv = setInterval(fn, 160); b.classList.add('on'); });
+  for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) b.addEventListener(ev, () => { clearInterval(iv); b.classList.remove('on'); });
+}
+blkRepeat('#blkL', () => blkMove(-1)); blkRepeat('#blkR', () => blkMove(1));
+$('#blkRot').addEventListener('pointerdown', e => { e.preventDefault(); blkRotate(); });
+$('#blkDown').addEventListener('pointerdown', e => { e.preventDefault(); blkHoldT = 1; $('#blkDown').classList.add('on'); });
+for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) $('#blkDown').addEventListener(ev, () => { blkHoldT = 0; $('#blkDown').classList.remove('on'); });
+{
+  const cv = $('#blkCv'); let s = null;
+  cv.addEventListener('pointerdown', e => { s = { x: e.clientX, y: e.clientY, mx: 0, t: performance.now() }; try { cv.setPointerCapture(e.pointerId); } catch (er) {} });
+  cv.addEventListener('pointermove', e => {
+    if (!s || !blk) return; const cell = cv.getBoundingClientRect().width / 14, dx = Math.round((e.clientX - s.x) / cell);
+    while (s.mx < dx) { blkMove(1); s.mx++; } while (s.mx > dx) { blkMove(-1); s.mx--; }
+  });
+  cv.addEventListener('pointerup', e => {
+    if (!s || !blk) return; const dy = e.clientY - s.y, dx = e.clientX - s.x;
+    if (dy > 80 && Math.abs(dy) > Math.abs(dx)) blkDrop(); else if (Math.abs(dx) < 12 && Math.abs(dy) < 12) blkRotate();   // tocar gira; arrastar para baixo derruba
+    s = null;
+  });
+}
+addEventListener('keydown', e => {
+  if (!shown('g-blocks')) return;
+  if (e.key === 'ArrowLeft') blkMove(-1); else if (e.key === 'ArrowRight') blkMove(1); else if (e.key === 'ArrowUp') blkRotate();
+  else if (e.key === ' ') blkDrop(); else if (e.key === 'ArrowDown') blkHoldT = 1; else return;
+  e.preventDefault();
+});
+addEventListener('keyup', e => { if (e.key === 'ArrowDown') blkHoldT = 0; });
+$('#blkMode').onclick = () => { blkSave.easy = !blkSave.easy; keep('oliver-blocks', blkSave); blip(620); blocksStart(); say(blkSave.easy ? 'Fácil' : 'Normal'); };
+GAMES.blocks = blocksStart; GAME_INTRO.blocks = 'Encaixe os blocos e complete as linhas!';
+
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 30, name: '5.3' };
+const APP_VERSION = { code: 31, name: '5.4' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)
