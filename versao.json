@@ -1,8 +1,8 @@
 {
-  "code": 39,
-  "name": "6.4",
+  "code": 40,
+  "name": "6.5",
   "minApk": 39,
-  "notes": "Versão 6.4: na conversa, pedir um jogo pelo nome (\"quero jogar a corrida\") abre o jogo na hora. A IA do tablet ficou mais rápida (já carrega ao entrar e responde com frases curtas) e mais coerente. O botão de conversar não tampa mais o \"Oi\" da tela inicial. Precisa instalar o APK novo para a IA melhorar.",
+  "notes": "Versão 6.5: a voz escolhida pelos pais vale desde a abertura do app (antes caía na voz padrão). Cada amigo da conversa tem seu tom de voz e, com a IA instalada, é ele quem dá oi ao abrir. Os desenhos coloridos e o adesivo do Oliver seguem a pele e o cabelo do personagem. A foto da tela inicial ficou sem o lápis.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/JogosDoOliver.apk"
 }

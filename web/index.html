@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 39, name: '6.4' }; -->
+<!-- const APP_VERSION = { code: 40, name: '6.5' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -583,6 +583,8 @@ button:active { transform: scale(.92); }
 .chatTop small { font-size: 13px; font-weight: 700; opacity: .9; }
 .chatTop b { font-size: 20px; font-weight: 800; }
 .chatTop:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0, 0, 0, .2); }
+.chatTop .ctF.hop { animation: ctHop .5s ease 3, ctBob 2.4s ease-in-out 1.5s infinite; }
+@keyframes ctHop { 0%, 100% { transform: translateY(0) scale(1); } 40% { transform: translateY(-12px) scale(1.15); } }
 @keyframes ctBob { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-4px) rotate(-6deg); } }
 @media (max-width: 560px) { .chatTop .ctTxt { display: none; } .chatTop { padding: 0 10px; } }
 #parentBtn.hasUpd::after { content: ''; position: absolute; top: 2px; right: 2px; width: 14px; height: 14px; border-radius: 50%; background: #e53935; border: 2px solid #fff; }
@@ -2930,7 +2932,8 @@ function refPaint(img, w, h, seeds, bgAt) {
 }
 const refCache = {};
 function refImage(id, w, h) {
-  const key = id + w + 'x' + h; if (refCache[key]) return refCache[key];
+  // a chave leva a pele, o cabelo e o penteado: se o personagem muda, os desenhos coloridos acompanham
+  const key = [id, w, h, avatar.skin, avatar.hair, avatar.style].join('|'); if (refCache[key]) return refCache[key];
   const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d', { willReadFrequently: true });
   x.fillStyle = '#fff'; x.fillRect(0, 0, w, h); x.strokeStyle = INK;
   ART_COLOR = true; try { drawArt(x, id, w, h, 11); } finally { ART_COLOR = false; }
@@ -3732,11 +3735,18 @@ async function loadVoices() {
 }
 const voicesFor = lang => ttsVoices.map((v, i) => ({ ...v, i })).filter(v => v.lang.replace('_', '-').toLowerCase().startsWith(lang.slice(0, 2).toLowerCase())
   && (lang === 'pt-BR' ? /br/i.test(v.lang) : /us|gb/i.test(v.lang)));
-function say(t, lang = 'pt-BR', rate = .9) {
+// tune: multiplica o tom (cada amigo da conversa tem o seu)
+function say(t, lang = 'pt-BR', rate = .9, tune = 1) {
   if (prefs.voice === false) return;   // falas desligadas pelo botão 🤐
   if (!st.sound) return;
-  const want = prefs[lang === 'pt-BR' ? 'voicePt' : 'voiceEn'], v = want ? ttsVoices.findIndex(x => x.voiceURI === want) : -1;
-  const pitch = prefs.pitch || 1.1;
+  const want = prefs[lang === 'pt-BR' ? 'voicePt' : 'voiceEn'];
+  // logo que o app abre o Android ainda não listou as vozes: espera a lista para não cair na voz padrão
+  if (want && !ttsVoices.length && plug('TextToSpeech')) return loadVoices().then(() => sayNow(t, lang, rate, tune, want));
+  return sayNow(t, lang, rate, tune, want);
+}
+function sayNow(t, lang, rate, tune, want) {
+  const v = want ? ttsVoices.findIndex(x => x.voiceURI === want) : -1;
+  const pitch = (prefs.pitch || 1.1) * tune;
   try {
     const tts = plug('TextToSpeech');
     if (tts) return tts.speak({ text: t, lang, rate, pitch, ...(v >= 0 ? { voice: v } : {}) }).catch(() => {});   // a promessa termina quando acaba de falar
@@ -3745,7 +3755,7 @@ function say(t, lang = 'pt-BR', rate = .9) {
     return new Promise(res => { u.onend = u.onerror = res; speechSynthesis.speak(u); setTimeout(res, 600 + t.length * 110); });
   } catch (e) {}
 }
-loadVoices(); try { speechSynthesis.onvoiceschanged = loadVoices; } catch (e) {}
+loadVoices().then(l => { if (!l.length) setTimeout(loadVoices, 1500); }); try { speechSynthesis.onvoiceschanged = loadVoices; } catch (e) {}
 const sayEn = (t, rate) => say(t, 'en-US', rate);
 const GAME_INTRO = { memory: 'Encontre os pares!', bubbles: 'Estoure os balões!', piano: 'Toque o piano dos bichos!',
   shapes: 'Arraste cada forma para o seu lugar!', puzzle: 'Monte o quebra-cabeça!', fruit: 'Passe o dedo nas frutas para cortar!',
@@ -4174,13 +4184,14 @@ function playSong(id) {
 const STK_IMG = {};
 function stickerHTML(s) {
   if (!['OLIVER', 'MIXER'].includes(s)) return s;
-  if (!STK_IMG[s]) {
+  const sk = s === 'OLIVER' ? [s, avatar.skin, avatar.hair, avatar.style].join('|') : s;
+  if (!STK_IMG[sk]) {
     const c = document.createElement('canvas'); c.width = c.height = 160; const x = c.getContext('2d');
-    if (s === 'OLIVER') { const k = 160 * .3 / 30; x.translate(80 - 50 * k, 84 - 42 * k); x.scale(k, k); x.lineWidth = 4; x.lineJoin = x.lineCap = 'round'; x.strokeStyle = INK; oliverHead(x, LOGO_KID); }
+    if (s === 'OLIVER') { const k = 160 * .3 / 30; x.translate(80 - 50 * k, 84 - 42 * k); x.scale(k, k); x.lineWidth = 4; x.lineJoin = x.lineCap = 'round'; x.strokeStyle = INK; oliverHead(x, { ...LOGO_KID, skin: avatar.skin, hair: avatar.hair, style: avatar.style }); }
     else drawMixer(x, 5, 45, 1.5, '#ffd23f', 4);
-    STK_IMG[s] = c.toDataURL();
+    STK_IMG[sk] = c.toDataURL();
   }
-  return `<img src="${STK_IMG[s]}" alt="" style="width:1em;height:1em;display:block">`;
+  return `<img src="${STK_IMG[sk]}" alt="" style="width:1em;height:1em;display:block">`;
 }
 const STICKERS = ['OLIVER', 'MIXER', '🦄', '🐳', '🦖', '🚀', '🌈', '🍩', '🐙', '🦋', '🐯', '🚒', '⚽', '🎈', '🍓', '🐢', '🦕', '🌻', '🐝', '🐞',
   '🍦', '🎸', '🛸', '🐧', '🦉', '🐠', '🌟', '🍉', '🧸', '🚂', '🐬', '🦒', '🦓', '🐘', '🐼', '🦜', '🍪', '🎁'];
@@ -4496,6 +4507,8 @@ function drawLogo(x, S, bg = 'square', zoom = 1, usePhoto = false) {
     x.save(); x.translate(S * .48 - 50 * s, S * .5 - 42 * s); x.scale(s, s); x.lineJoin = x.lineCap = 'round'; x.lineWidth = 4; x.strokeStyle = INK;
     oliverHead(x, usePhoto ? { ...avatar } : LOGO_KID); x.restore();
   }
+  // o lápis é só da logo (ícone); na tela inicial fica só o rosto
+  if (!usePhoto) {
   x.save(); x.translate(S * .79, S * .79); x.rotate(-Math.PI / 4); const k = S / 512 * 1.15; x.scale(k, k);
   x.lineWidth = 6; x.strokeStyle = INK; x.lineJoin = 'round';
   x.fillStyle = '#2fa8e8'; x.beginPath(); x.roundRect(-20, -55, 40, 110, 8); x.fill(); x.stroke();
@@ -4503,6 +4516,7 @@ function drawLogo(x, S, bg = 'square', zoom = 1, usePhoto = false) {
   x.fillStyle = '#f6d9a8'; x.beginPath(); x.moveTo(-20, -55); x.lineTo(20, -55); x.lineTo(0, -98); x.closePath(); x.fill(); x.stroke();
   x.fillStyle = '#2fa8e8'; x.beginPath(); x.moveTo(-7, -84); x.lineTo(7, -84); x.lineTo(0, -98); x.closePath(); x.fill();
   x.restore();
+  }
   sparkle(S * .16, S * .2, S * .05, '#fff', x); sparkle(S * .84, S * .16, S * .035, '#fff', x);
   x.restore();
 }
@@ -4523,7 +4537,14 @@ loadPhoto();
   requestAnimationFrame(heroLoop);
 })(0);
 $('#heroKid').onclick = () => { blip(700); say(`Oi, ${prefs.name}!`); };
-setTimeout(() => { if (!$('#home').hidden) say(`Oi, ${prefs.name}!`); }, 1200);
+// com a IA instalada, quem dá oi ao abrir é o amigo da conversa
+setTimeout(() => {
+  if ($('#home').hidden) return;
+  if (!chatAiOn()) { say(`Oi, ${prefs.name}!`); return; }
+  const f = CHAT_FRIENDS[Math.min(prefs.chatFriend || 0, CHAT_FRIENDS.length - 1)], b = $('#chatTop .ctF');
+  b.classList.remove('hop'); void b.offsetWidth; b.classList.add('hop');
+  say(`Oi, ${prefs.name}! Sou ${f[2]} ${f[1]}. Quando quiser conversar, é só tocar em mim aqui em cima!`, 'pt-BR', .9, f[4]);
+}, 1200);
 
 /* o Oliver aparece comemorando no canto da tela nas festas de acerto */
 function cheer() {
@@ -9432,7 +9453,8 @@ GAMES.snake = snakeStart; GAME_INTRO.snake = 'Leve a cobrinha até as frutas!';
 // Sem internet: respostas prontas por palavra-chave (sempre seguras). Opcional (área dos pais): IA que roda no tablet;
 // mesmo com ela, dor, medo, tristeza e os pedidos de história, música e jogo continuam com as respostas prontas.
 // [emoji, nome, artigo, o que é]
-const CHAT_FRIENDS = [['🦉', 'Lulu', 'a', 'corujinha'], ['🐶', 'Totó', 'o', 'cachorrinho'], ['🦖', 'Dino', 'o', 'dinossauro'], ['🤖', 'Bip', 'o', 'robô']];
+// [emoji, nome, artigo, o que é, tom da voz (multiplica o tom escolhido pelos pais)]
+const CHAT_FRIENDS = [['🦉', 'Lulu', 'a', 'corujinha', 1.15], ['🐶', 'Totó', 'o', 'cachorrinho', 1.05], ['🦖', 'Dino', 'o', 'dinossauro', .8], ['🤖', 'Bip', 'o', 'robô', .95]];
 const chatNorm = s => ' ' + String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim() + ' ';
 // [palavras, emoji, curiosidade, som (nome em ANIMAL_SOUNDS)]
 const CHAT_ANIMALS = [
@@ -9620,7 +9642,7 @@ function chatChips(list) {
 async function chatSay(r) {
   chatMsg('friend', r.t); chatChips(r.chips);
   const fe = $('#chatFriend'); fe.classList.remove('think'); fe.classList.add('talk');
-  const done = say(r.t.replace(/\p{Extended_Pictographic}/gu, ''));
+  const done = say(r.t.replace(/\p{Extended_Pictographic}/gu, ''), 'pt-BR', .9, chatF()[4]);
   await Promise.race([done, new Promise(res => setTimeout(res, 1200 + r.t.length * 90))]);
   fe.classList.remove('talk');
   if (r.act && alive('chat')) r.act();
@@ -9942,7 +9964,7 @@ GAME_INTRO.statue = 'Estátua! Dance quando a música tocar e fique paradinho qu
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 39, name: '6.4' };
+const APP_VERSION = { code: 40, name: '6.5' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)
