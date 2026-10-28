@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 47, name: '6.12' }; -->
+<!-- const APP_VERSION = { code: 48, name: '6.13' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -413,17 +413,28 @@ button:active { transform: scale(.92); }
 .ch-wcard { display: grid; place-items: center; gap: 2px; padding: 10px; border-radius: 24px; box-shadow: 0 5px 0 rgba(0,0,0,.18); font-size: 21px; font-weight: 800; color: var(--ink); }
 .ch-wcard span { font-size: 58px; line-height: 1.1; }
 .ch-wcard small { font-size: 15px; }
+.ch-wcard.locked { filter: grayscale(.85); opacity: .7; }
 .ch-shop { display: grid; gap: 10px; width: 100%; }
 .ch-item { display: flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 800; padding: 8px 16px; border-radius: 22px; background: #fff; box-shadow: 0 4px 0 var(--shadow); text-align: left; }
 .ch-item b { font-size: 40px; font-weight: 400; }
 .ch-item span { flex: 1; }
 .ch-item.have { background: #d7f0c4; }
 .ch-item.cant { opacity: .55; }
+.bd-menu { position: absolute; inset: 0; z-index: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); grid-auto-rows: minmax(120px, 1fr); gap: 12px; padding: 14px; overflow-y: auto; background: rgba(255,247,234,.94); }
+.bd-card { display: grid; place-items: center; align-content: center; gap: 2px; border-radius: 26px; background: #ffa000; color: #fff; font-size: 19px; font-weight: 800; text-align: center; box-shadow: 0 6px 0 rgba(0,0,0,.16); text-shadow: 0 2px 0 rgba(0,0,0,.18); }
+.bd-card span { font-size: 54px; line-height: 1.1; text-shadow: none; }
+#hdMenu .bd-card { background: #ab47bc; }
 .dn-btns, .pk-tray { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 .dn-btn { font-size: 40px; padding: 4px 20px; border-radius: 22px; background: var(--paper); box-shadow: 0 4px 0 var(--shadow); }
 .dn-btn.big { font-size: 24px; font-weight: 800; background: #ffd23f; }
 .pk-btn { font-size: 34px; width: 64px; height: 64px; border-radius: 18px; background: var(--paper); box-shadow: 0 4px 0 var(--shadow); }
 .pk-btn[aria-pressed="true"] { background: var(--pick); }
+/* continuar ou começar de novo */
+.again h2 { margin: 0; font-size: 30px; }
+.againBtns { display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; }
+.againBtns button { display: grid; place-items: center; gap: 4px; width: 180px; padding: 14px 10px; border-radius: 28px; font-size: 56px; color: #fff; box-shadow: 0 6px 0 rgba(0,0,0,.18); }
+.againBtns small { font-size: 20px; font-weight: 800; }
+.againGo { background: #43a047; } .againNew { background: #ff7043; }
 .statue-btn:active { transform: translateX(-50%) scale(.94); }
 .aiBox { display: grid; gap: 8px; padding: 10px 12px; border-radius: 16px; background: var(--paper); box-shadow: 0 2px 0 var(--shadow); }
 .aiBox h3 { margin: 0; font-size: 20px; }
@@ -471,10 +482,11 @@ button:active { transform: scale(.92); }
 #cookScore:empty { display: none; }
 .cook-play { border-radius: 24px; overflow: hidden; }
 #cookCv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
-.cook-menu { position: absolute; left: 0; top: 0; bottom: 0; right: 30%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; align-items: center; padding: 14px; box-sizing: border-box; }
+.cook-menu { position: absolute; left: 0; top: 0; bottom: 0; right: 30%; display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 1fr; gap: 12px; align-items: center; padding: 14px; box-sizing: border-box; }
 .cook-card { width: 100%; height: 100%; max-height: 240px; border-radius: 30px; color: #fff; font-size: 24px; font-weight: 800; display: grid; place-items: center; align-content: center;
   box-shadow: 0 6px 0 rgba(0,0,0,.16); text-shadow: 0 2px 0 rgba(0,0,0,.18); }
-.cook-card span { font-size: clamp(44px, 13vmin, 100px); line-height: 1.1; text-shadow: none; }
+.cook-card { font-size: 19px; text-align: center; line-height: 1.05; }
+.cook-card span { font-size: clamp(40px, 10vmin, 80px); line-height: 1.1; text-shadow: none; }
 .cook-next { position: absolute; right: 14px; bottom: 14px; z-index: 2; width: 92px; height: 92px; border-radius: 50%; font-size: 48px; background: #7cd67a;
   box-shadow: 0 0 0 5px #fff, 0 6px 14px rgba(0,0,0,.2); animation: cook-pulse 1.2s ease-in-out infinite; }
 @keyframes cook-pulse { 50% { transform: scale(1.08) } }
@@ -1057,7 +1069,7 @@ button:active { transform: scale(.92); }
 </section>
 <section id="g-build" class="screen game" hidden>
   <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Construtor da obra</h2></div>
-  <div class="play cv-play"><canvas id="bdCv"></canvas></div>
+  <div class="play cv-play"><canvas id="bdCv"></canvas><div class="bd-menu" id="bdMenu" hidden></div></div>
 </section>
 <section id="g-dino" class="screen game" hidden>
   <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Ovos de dinossauro</h2></div>
@@ -1070,7 +1082,7 @@ button:active { transform: scale(.92); }
 </section>
 <section id="g-hide" class="screen game" hidden>
   <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Esconde-esconde</h2></div>
-  <div class="play cv-play"><canvas id="hdCv"></canvas></div>
+  <div class="play cv-play"><canvas id="hdCv"></canvas><div class="bd-menu" id="hdMenu" hidden></div></div>
 </section>
 <section id="g-park" class="screen game" hidden>
   <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Parquinho</h2></div>
@@ -1315,6 +1327,10 @@ button:active { transform: scale(.92); }
     <label class="prow" for="sDog">🐶 Cachorrinho na aventura <input id="sDog" type="checkbox"></label>
     <button class="pbtn ok startBtn" id="sGo">Começar ▶</button>
   </div>
+</div>
+<div id="again" class="over" hidden>
+  <div class="tray again"><h2 id="againT"></h2><p class="pused" id="againInfo"></p>
+    <div class="againBtns"><button class="againGo" id="againGo">▶️<small>Continuar</small></button><button class="againNew" id="againNew">🔄<small>Começar de novo</small></button></div></div>
 </div>
 <div id="ask" class="over" hidden>
   <div class="tray"><p id="askText">Apagar tudo?</p>
@@ -3160,7 +3176,10 @@ const st = { mode: 'free', page: 'blank', tool: 'pencil', color: COLORS[0], stam
 let W = 0, H = 0, unit = 1, hue = 0, undo = [], samples = null, bookMode = 'color', bookCat = 0;
 
 /* ---------- o que fica guardado no tablet ---------- */
-function load(key, def) { try { return Object.assign(def, JSON.parse(localStorage.getItem(key)) || {}); } catch (e) { return def; } }
+const LOADED = {};
+function load(key, def) { LOADED[key] = [def, JSON.stringify(def)]; try { return Object.assign(def, JSON.parse(localStorage.getItem(key)) || {}); } catch (e) { return def; } }
+// apaga o que a chave guardou e volta o objeto em uso para o padrão
+function unload(key) { try { localStorage.removeItem(key); } catch (e) {} const L = LOADED[key]; if (L) { for (const k of Object.keys(L[0])) delete L[0][k]; Object.assign(L[0], JSON.parse(L[1])); } }
 function keep(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
 const hadPrefs = (() => { try { return localStorage.getItem('oliver-prefs') !== null; } catch (e) { return true; } })();
 const prefs = load('oliver-prefs', { name: 'Oliver', sound: true, colorsEn: true, limit: 0, dog: true });
@@ -4028,11 +4047,41 @@ const COLOR_PT = ['vermelho', 'laranja', 'amarelo', 'verde-claro', 'verde', 'azu
 const SCENE_PT = ['O Oliver e a betoneira!', 'Um dinossauro!', 'Um foguete!', 'Uma baleia!', 'Um cachorro!', 'Um caminhão de bombeiro!', 'Um unicórnio!'];
 const GAMES = { scene: sceneStart, sounds: soundsStart, rhythm: rhythmStart, memory: memStart, bubbles: bubStart, piano: pianoStart, count: countStart, shapes: shapesStart, puzzle: puzStart, adventure: () => openAdvMap(), fruit: fruitStart };
 let curGame = null;
-document.querySelectorAll('[data-game]').forEach(b => b.onclick = () => {
+function launchGame(b) {
   blip(560); curGame = b.dataset.game; memLang = b.dataset.lang || 'pt'; show('g-' + curGame); requestAnimationFrame(() => GAMES[curGame]());
   if (memLang === 'en') setTimeout(() => sayEn('Find the pairs!'), 300);
   else if (GAME_INTRO[curGame]) setTimeout(() => say(GAME_INTRO[curGame]), 300);
+}
+// jogos que guardam progresso: ao abrir, a criança escolhe continuar de onde parou ou começar de novo
+const lvlSave = (o, key) => ({ has: () => o().lvl > 0, info: () => `Você está na fase ${o().lvl + 1}`, reset: () => unload(key) });
+const learnSave = k => ({ has: () => (learnProg[k] || 0) > 0, info: () => `⭐ ${learnProg[k]} estrelas`, reset: () => { delete learnProg[k]; keep('oliver-learn', learnProg); } });
+const GAME_SAVE = {
+  memory: { has: () => memLvl > 0, info: () => `Você está na fase ${memLvl + 1}`, reset: () => { memLvl = 0; saveProg(); } },
+  count: { has: () => countLvl > 0, info: () => `Você está na fase ${countLvl + 1}`, reset: () => { countLvl = 0; saveProg(); } },
+  shapes: { has: () => shapesLvl > 0, info: () => `Você está na fase ${shapesLvl + 1}`, reset: () => { shapesLvl = 0; saveProg(); } },
+  puzzle: { has: () => puzLvl > 0, info: () => `Você está na fase ${puzLvl + 1}`, reset: () => { puzLvl = 0; saveProg(); } },
+  adventure: { has: () => advMax > 0, info: () => `Fases abertas: ${advMax + 1}`, reset: () => { advLvl = advMax = 0; for (const k in advBest) delete advBest[k]; saveProg(); } },
+  maze: lvlSave(() => mazeProg, 'oliver-maze'), dots: lvlSave(() => dotsProg, 'oliver-dots'), shadow: lvlSave(() => shadowProg, 'oliver-shadow'), sort: lvlSave(() => sortProg, 'oliver-sort'),
+  wash: { has: () => washSave.done > 0, info: () => `Caminhões lavados: ${washSave.done}`, reset: () => unload('oliver-wash') },
+  pet: { has: () => { try { return !!localStorage.getItem('oliver-pet'); } catch (e) { return false; } }, info: () => '', reset: () => unload('oliver-pet') },
+  scene: { has: () => Object.values(scenes).some(v => v && Object.keys(v).length), info: () => 'Os adesivos que você colou continuam lá', reset: () => unload('oliver-scenes') },
+  dino: { has: () => dnSave.vale.length > 0 || (dnSave.cur && dnSave.cur.xp >= 0), info: () => `Dinos no vale: ${dnSave.vale.length}`, reset: () => unload('oliver-dinos') },
+  fire: { has: () => load('oliver-bombeiro', { n: 0 }).n > 0, info: () => `Gatinhos salvos: ${load('oliver-bombeiro', { n: 0 }).n}`, reset: () => unload('oliver-bombeiro') },
+  statue: learnSave('statue')
+};
+document.querySelectorAll('[data-game]').forEach(b => b.onclick = () => {
+  const g = b.dataset.game, sv = GAME_SAVE[g] || (LEARN[g] && learnSave(g));
+  if (!sv || b.dataset.lang || !sv.has()) return launchGame(b);
+  blip(560); const e = b.querySelector('span')?.textContent || '';
+  askAgain(`${e} ${b.textContent.replace(e, '').trim()}`, sv.info(), fresh => { if (fresh) sv.reset(); launchGame(b); });
 });
+let againFn = null;
+function askAgain(title, info, fn) {
+  $('#againT').textContent = title; $('#againInfo').textContent = info || ''; againFn = fn; $('#again').hidden = false;
+  say('Quer continuar ou começar de novo?');
+}
+$('#againGo').onclick = () => { $('#again').hidden = true; const f = againFn; againFn = null; f && f(false); };
+$('#againNew').onclick = () => { $('#again').hidden = true; const f = againFn; againFn = null; say('Vamos começar de novo!'); f && f(true); };
 addEventListener('resize', () => {
   if (curGame && !$('#g-' + curGame).hidden && ['memory', 'shapes', 'puzzle', 'bubbles'].includes(curGame)) GAMES[curGame]();
 });
@@ -7457,8 +7506,19 @@ GAME_INTRO.sort = 'Vamos arrumar! Arraste cada coisa para a caixa certa!';
 const COOK_RECIPES = {
   pizza: { e: '🍕', name: 'pizza', o: 'a', color: '#ef6c4a', steps: ['dough', 'sauce', 'tops', 'oven', 'slice', 'serve'] },
   cake: { e: '🎂', name: 'bolo', o: 'o', color: '#ec407a', steps: ['mix', 'stir', 'pour', 'oven', 'deco', 'serve'] },
-  ice: { e: '🍦', name: 'sorvete', o: 'o', color: '#29a8e0', steps: ['cone', 'scoops', 'itop', 'serve'] }
+  ice: { e: '🍦', name: 'sorvete', o: 'o', color: '#29a8e0', steps: ['cone', 'scoops', 'itop', 'serve'] },
+  cupcake: { e: '🧁', name: 'cupcake', o: 'o', color: '#ab47bc', base: 'cake', steps: ['mix', 'stir', 'pour', 'oven', 'deco', 'serve'] },
+  cookie: { e: '🍪', name: 'biscoito', o: 'o', color: '#a1662f', base: 'cake', steps: ['mix', 'stir', 'oven', 'deco', 'serve'],
+    say: { oven: 'Agora as bolinhas de massa vão para o forno! Toque no fogo para ligar.', deco: 'Enfeite os biscoitos!' } },
+  pancake: { e: '🥞', name: 'panqueca', o: 'a', color: '#f9a825', base: 'cake', steps: ['mix', 'stir', 'pour', 'deco', 'serve'],
+    say: { pour: 'Segure o dedo na tela para despejar a massa na frigideira!', deco: 'Escolha a calda e enfeite as panquecas!' } },
+  shake: { e: '🥤', name: 'milk-shake', o: 'o', color: '#ec407a', base: 'ice', steps: ['scoops', 'itop', 'serve'],
+    say: { scoops: 'Escolha os sabores do milk-shake!', itop: 'Agora coloque calda e coberturas no chantili!' } },
+  salad: { e: '🥗', name: 'salada de frutas', o: 'a', color: '#43a047', base: 'pizza', steps: ['tops', 'serve'],
+    items: [['🍓', 'morango'], ['🍌', 'banana'], ['🍇', 'uva'], ['🥝', 'kiwi'], ['🍊', 'laranja'], ['🍍', 'abacaxi'], ['🫐', 'mirtilo'], ['🍉', 'melancia'], ['🥭', 'manga']],
+    say: { tops: 'Arraste as frutas para a tigela!' } }
 };
+const cookBase = r => (COOK_RECIPES[r] && COOK_RECIPES[r].base) || r;
 const COOK_STEPS = {
   dough: ['👐', 'Amasse a massa com o dedo para ela crescer!'], sauce: ['🥫', 'Passe o dedo na massa para espalhar o molho!'],
   tops: ['🧀', 'Arraste as coberturas para a pizza!'], oven: ['🔥', 'Hora do forno! Toque no fogo para ligar.'],
@@ -7506,7 +7566,7 @@ function cookSize() {
 }
 // centro e tamanho do prato
 function cookGeo() {
-  const d = cookD, ice = d && d.r === 'ice', serve = cookStep() === 'serve';
+  const d = cookD, ice = d && cookBase(d.r) === 'ice', serve = cookStep() === 'serve';
   const R = ice ? Math.min(cookH * .22, cookW * .2) : Math.min(cookH * .4, cookW * .25);
   return { cx: cookW * (serve ? .36 : .42), cy: ice ? cookH * .95 - 1.3 * R : cookH * .52, R };
 }
@@ -7528,8 +7588,10 @@ function cookGo(i, pre = '') {
   const d = cookD; d.step = i; d.touched = false; d.busy = false; cookP = null;
   const id = cookStep(), r = COOK_RECIPES[d.r], c = d.cust;
   if (id === 'serve') { d.custIn = 0; d.bites = []; d.gone = false; }
+  if (id === 'oven' && !d.fill) d.fill = 1;   // biscoito: as bolinhas de massa já vão direto para o forno
+  if ((id === 'deco' || id === 'serve') && !d.baked && cookBase(d.r) === 'cake') { d.baked = true; d.oven = 1; }   // panqueca: pronta na frigideira
   cookTray(); cookDots(); cookNextUp();
-  say((pre ? pre + ' ' : '') + (id === 'serve' ? `Hora de servir! Toque n${c[2]} ${c[1]} para dar ${r.o} ${r.name}!` : COOK_STEPS[id][1]));
+  say((pre ? pre + ' ' : '') + (id === 'serve' ? `Hora de servir! Toque n${c[2]} ${c[1]} para dar ${r.o} ${r.name}!` : (r.say && r.say[id]) || COOK_STEPS[id][1]));
 }
 function cookAdvance(delay = 800, pre = '') {
   const d = cookD; if (d.busy) return;
@@ -7550,7 +7612,7 @@ function cookScore() { $('#cookScore').textContent = cookSt.made ? `🍽️ ${co
 /* ---------- bandeja ---------- */
 function cookTray() {
   const box = $('#cookTray'), d = cookD, id = cookStep(); box.innerHTML = '';
-  if (id === 'tops') for (const it of COOK_TOPS) cookItem(box, it);
+  if (id === 'tops') for (const it of COOK_RECIPES[d.r].items || COOK_TOPS) cookItem(box, it);
   else if (id === 'mix') for (const it of COOK_ING) cookItem(box, it);
   else if (id === 'oven') btn(box, 'cook-item cook-big', '🔥<small>Ligar</small>', 'Ligar o forno', cookOvenOn);
   else if (id === 'deco') {
@@ -7622,6 +7684,8 @@ function cookDrop(it, p) {
   } else if (id === 'deco') {
     if (!p) { u = (Math.random() - .5) * 1.3; v = -.42 + Math.random() * .12; }
     d.tops.push({ e: it[0], u: cookClamp(u, -.8, .8), v: cookClamp(v, -.6, .4), rot: it[0] === '🕯️' ? 0 : (Math.random() - .5) * .6, s: it[0] === '🕯️' ? 1.3 : 1 }); cookSfx('pop'); say(it[1]);
+  } else if (id === 'itop' && d.r === 'shake') {   // no milk-shake tudo vai em cima do chantili
+    d.tops.push({ e: it[0], u: (Math.random() - .5) * .7, v: -1.6 + Math.random() * .15, rot: (Math.random() - .5) * .6, s: 1 }); cookSfx('pop'); say(it[1]);
   } else if (id === 'itop') {
     const base = cookIceBase(), n = d.scoops.length, top = base - (n - 1) * .52;
     if (!p) { const i = it[0] === '🍒' ? n - 1 : Math.random() * n | 0; u = (Math.random() - .5) * (it[0] === '🍒' ? .1 : .6); v = it[0] === '🍒' ? top - .42 : base - i * .52 + (Math.random() - .5) * .5; }
@@ -7633,7 +7697,8 @@ function cookSprinkle(n) {
   const d = cookD; if (d.busy) return; d.touched = true;
   for (let i = 0; i < n; i++) {
     const a = Math.random() * TAU, m = Math.sqrt(Math.random()), c = pick(COOK_SPRINK), rot = Math.random() * TAU;
-    if (d.r === 'cake') d.sprinkles.push({ u: Math.cos(a) * .78 * m, v: -.35 + Math.sin(a) * .17 * m, c, rot });
+    if (cookBase(d.r) === 'cake') d.sprinkles.push({ u: Math.cos(a) * .78 * m, v: -.35 + Math.sin(a) * .17 * m, c, rot });
+    else if (d.r === 'shake') d.sprinkles.push({ u: Math.cos(a) * .4 * m, v: -1.55 + Math.sin(a) * .12 * m, c, rot });
     else { const k = Math.random() * d.scoops.length | 0; d.sprinkles.push({ u: Math.cos(a) * .36 * m, v: cookIceBase() - k * .52 + Math.sin(a) * .34 * m - .05, c, rot }); }
   }
   cookSfx('sprinkle'); say('Granulado!'); cookNextUp();
@@ -7641,7 +7706,7 @@ function cookSprinkle(n) {
 function cookScoop(c, n) {
   const d = cookD; if (d.busy || d.scoops.length >= 5) return;
   d.scoops.push({ c, fall: 1 }); d.touched = true; cookSfx('plop'); say(n);
-  if (d.scoops.length >= 5) cookAdvance(1300, 'Que torre de sorvete!');
+  if (d.scoops.length >= 5) cookAdvance(1300, d.r === 'shake' ? 'Copo cheio!' : 'Que torre de sorvete!');
 }
 function cookOvenOn() {
   const d = cookD; if (cookStep() !== 'oven' || d.ovenOn || d.baked) return;
@@ -7675,8 +7740,9 @@ function cookRub(ax, ay, bx, by) {
 // servir: cada toque é uma mordida
 function cookBox() {
   const d = cookD;
-  if (d.r === 'pizza') return [-.9, -.9, .9, .9];
-  if (d.r === 'cake') return [-.85, -.75, .85, .45];
+  if (cookBase(d.r) === 'pizza') return [-.9, -.9, .9, .9];
+  if (cookBase(d.r) === 'cake') return [-.85, -.75, .85, .45];
+  if (d.r === 'shake') return [-.5, -1.7, .5, 1.2];
   const base = cookIceBase(), top = base - Math.max(0, d.scoops.length - 1) * .52;
   return [-.5, top - .45, .5, d.cone === 'cup' ? .95 : 1.25];
 }
@@ -7685,7 +7751,7 @@ function cookBite() {
   if (d.gone || d.custIn < 1 || now - d.biteT < 450) return;
   d.biteT = now; d.touched = true;
   const b = cookBox(), n = d.bites.length, k = n / 5;
-  const u = d.r === 'ice' ? (Math.random() - .5) * .4 : b[2] - k * (b[2] - b[0]), v = d.r === 'ice' ? b[1] + k * (b[3] - b[1]) : b[1] + (.2 + Math.random() * .6) * (b[3] - b[1]);
+  const ic = cookBase(d.r) === 'ice', u = ic ? (Math.random() - .5) * .4 : b[2] - k * (b[2] - b[0]), v = ic ? b[1] + k * (b[3] - b[1]) : b[1] + (.2 + Math.random() * .6) * (b[3] - b[1]);
   d.bites.push({ u, v }); d.chew = .4; cookSfx('chomp');
   for (let i = 0; i < 6; i++) cookFx.push({ k: 'dot', c: '#e0a96d', x: g.cx + u * g.R, y: g.cy + v * g.R, vx: (Math.random() - .3) * g.R * 2, vy: -g.R * Math.random(), g: g.R * 6, life: .7, size: g.R * .04 });
   if (!n) say('Hummm!');
@@ -7825,7 +7891,7 @@ function cookRender(t) {
 // cozinha: toalha xadrez para a pizza (vista de cima); parede e balcão para o bolo e o sorvete
 function cookBg(x) {
   const W = cookW, H = cookH, d = cookD;
-  if (d.r === 'pizza') {
+  if (cookBase(d.r) === 'pizza') {
     const sz = Math.max(30, H / 6); x.fillStyle = '#fff'; x.fillRect(0, 0, W, H); x.fillStyle = 'rgba(239,83,80,.35)';
     for (let gy = 0; gy * sz < H; gy++) for (let gx = 0; gx * sz < W; gx++) if ((gx + gy) % 2) x.fillRect(gx * sz, gy * sz, sz, sz);
     return;
@@ -7841,16 +7907,20 @@ function cookBg(x) {
 function cookPlate(x, g) {
   const d = cookD, lw = Math.max(2, g.R * .03), serve = cookStep() === 'serve';
   x.strokeStyle = INK; x.lineWidth = lw;
+  if (d.r === 'salad') return;
   if (d.r === 'pizza') {
     x.fillStyle = serve ? '#ffffff' : '#c98a4b'; x.beginPath(); x.arc(g.cx, g.cy, g.R * 1.12, 0, TAU); x.fill(); x.stroke();
     x.strokeStyle = serve ? 'rgba(0,0,0,.08)' : 'rgba(90,50,20,.25)'; x.beginPath(); x.arc(g.cx, g.cy, g.R * 1.05, 0, TAU); x.stroke();
-  } else if (d.r === 'cake' && d.baked) {
+  } else if (cookBase(d.r) === 'cake' && d.baked) {
     x.fillStyle = '#ffffff'; x.beginPath(); x.ellipse(g.cx, g.cy + g.R * .5, g.R * 1.15, g.R * .22, 0, 0, TAU); x.fill(); x.stroke();
   }
 }
 function cookDish(x, cx, cy, R) {
   const r = cookD.r;
   if (r === 'pizza') cookPizza(x, cx, cy, R); else if (r === 'cake') cookCake(x, cx, cy, R); else if (r === 'ice') cookIce(x, cx, cy, R);
+  else if (r === 'shake') cookShake(x, cx, cy, R); else if (r === 'salad') cookSalad(x, cx, cy, R);
+  else if (!cookD.baked) cookCake(x, cx, cy, R);   // cupcake, biscoito e panqueca usam a forma do bolo até assar
+  else if (r === 'cupcake') cookCupcake(x, cx, cy, R); else if (r === 'cookie') cookCookies(x, cx, cy, R); else if (r === 'pancake') cookPancakes(x, cx, cy, R);
 }
 function cookTopsDraw(x, cx, cy, R, scale = 1, skipCheese = false) {
   const k = cookD.oven;
@@ -7900,6 +7970,69 @@ function cookCake(x, cx, cy, R) {
   x.fillStyle = d.frost || cookShade(cake, 1.12); x.beginPath(); x.ellipse(cx, top, w, R * .2, 0, 0, TAU); x.fill(); x.stroke();
   for (const s of d.sprinkles) { x.save(); x.translate(cx + s.u * R, cy + s.v * R); x.rotate(s.rot); x.fillStyle = s.c; x.fillRect(-R * .035, -R * .011, R * .07, R * .022); x.restore(); }
   cookTopsDraw(x, cx, cy, R);
+}
+function cookFrostTop(x, cx, ty, w, R) {   // cobertura ondulada por cima
+  const d = cookD; if (!d.frost) return;
+  x.fillStyle = d.frost; x.beginPath(); x.ellipse(cx, ty, w, R * .16, 0, Math.PI, 0);
+  for (let i = 0; i < 6; i++) { const x0 = cx + w - i * w / 3, dh = R * (.08 + (i % 2) * .1); x.quadraticCurveTo(x0 - w / 6, ty + dh * 2, x0 - w / 3, ty); }
+  x.closePath(); x.fill(); x.stroke();
+}
+function cookExtras(x, cx, cy, R) {
+  for (const s of cookD.sprinkles) { x.save(); x.translate(cx + s.u * R, cy + s.v * R); x.rotate(s.rot); x.fillStyle = s.c; x.fillRect(-R * .035, -R * .011, R * .07, R * .022); x.restore(); }
+  cookTopsDraw(x, cx, cy, R);
+}
+function cookCupcake(x, cx, cy, R) {
+  const d = cookD, cake = cookShade(d.batter, .85);
+  x.strokeStyle = INK; x.lineWidth = Math.max(2, R * .03);
+  const cup = () => { x.beginPath(); x.moveTo(cx - R * .62, cy - R * .1); x.lineTo(cx + R * .62, cy - R * .1); x.lineTo(cx + R * .46, cy + R * .5); x.lineTo(cx - R * .46, cy + R * .5); x.closePath(); };
+  x.fillStyle = cake; x.beginPath(); x.ellipse(cx, cy - R * .12, R * .7, R * .42, 0, Math.PI, 0); x.fill(); x.stroke();
+  if (d.frost) { x.fillStyle = d.frost; for (const [dy, w] of [[-.25, .66], [-.45, .5], [-.62, .32]]) { x.beginPath(); x.ellipse(cx, cy + dy * R, w * R, R * .2, 0, 0, TAU); x.fill(); x.stroke(); } }
+  cup(); x.fillStyle = '#f8bbd0'; x.fill(); x.save(); cup(); x.clip(); x.fillStyle = 'rgba(255,255,255,.6)';
+  for (let i = -4; i <= 4; i++) x.fillRect(cx + i * R * .15 - R * .03, cy - R * .1, R * .06, R * .7);
+  x.restore(); cup(); x.stroke();
+  cookExtras(x, cx, cy, R);
+}
+function cookCookies(x, cx, cy, R) {
+  const d = cookD, c = cookShade(d.batter, .8);
+  x.strokeStyle = INK; x.lineWidth = Math.max(2, R * .03);
+  for (const [u, v] of [[-.48, .1], [.48, .1], [0, -.28]]) {
+    const px = cx + u * R, py = cy + v * R, r = R * .38;
+    x.fillStyle = c; x.beginPath(); x.ellipse(px, py, r, r * .8, 0, 0, TAU); x.fill(); x.stroke();
+    if (d.frost) { x.fillStyle = d.frost; x.beginPath(); x.ellipse(px, py - r * .05, r * .72, r * .55, 0, 0, TAU); x.fill(); }
+    x.fillStyle = '#5d3a1a'; for (const [a, b] of [[-.4, -.2], [.3, -.3], [.1, .3], [-.2, .35], [.45, .15]]) { x.beginPath(); x.arc(px + a * r, py + b * r * .8, r * .08, 0, TAU); x.fill(); }
+  }
+  cookExtras(x, cx, cy, R);
+}
+function cookPancakes(x, cx, cy, R) {
+  const d = cookD, c = cookShade(d.batter, .82);
+  x.strokeStyle = INK; x.lineWidth = Math.max(2, R * .03);
+  for (const dy of [.32, .12, -.08]) { x.fillStyle = c; x.beginPath(); x.ellipse(cx, cy + dy * R, R * .85, R * .2, 0, 0, TAU); x.fill(); x.stroke(); x.fillStyle = cookShade(c, 1.15); x.beginPath(); x.ellipse(cx, cy + dy * R - R * .04, R * .8, R * .14, 0, 0, TAU); x.fill(); }
+  cookFrostTop(x, cx, cy - R * .12, R * .78, R);
+  x.fillStyle = '#ffe082'; x.beginPath(); x.roundRect(cx - R * .14, cy - R * .26, R * .28, R * .14, R * .03); x.fill(); x.stroke();   // manteiga
+  cookExtras(x, cx, cy, R);
+}
+function cookShake(x, cx, cy, R) {
+  const d = cookD, top = cy - R * 1.45, bot = cy + R * 1.2, n = d.scoops.length;
+  x.strokeStyle = INK; x.lineWidth = Math.max(2, R * .035);
+  const glass = () => { x.beginPath(); x.moveTo(cx - R * .55, top); x.lineTo(cx + R * .55, top); x.lineTo(cx + R * .42, bot); x.lineTo(cx - R * .42, bot); x.closePath(); };
+  x.save(); glass(); x.clip(); x.fillStyle = 'rgba(225,245,254,.7)'; x.fillRect(cx - R, top, R * 2, bot - top);
+  const lh = (bot - top) / 5; d.scoops.forEach((s, i) => { x.fillStyle = s.c; x.fillRect(cx - R, bot - (i + 1) * lh - s.fall * R, R * 2, lh + 2); });
+  x.restore();
+  if (n) {   // canudinho e chantili
+    x.strokeStyle = '#e53935'; x.lineWidth = R * .09; x.beginPath(); x.moveTo(cx + R * .15, top + R * .2); x.lineTo(cx + R * .5, top - R * .55); x.stroke();
+    x.strokeStyle = INK; x.lineWidth = Math.max(2, R * .035);
+    x.fillStyle = '#fffaf0'; for (const [dx, dy, r] of [[-.3, 0, .26], [.3, 0, .26], [0, -.1, .3], [0, -.32, .22]]) { x.beginPath(); x.arc(cx + dx * R, top + dy * R, r * R, 0, TAU); x.fill(); x.stroke(); }
+    if (d.syrup) { x.fillStyle = d.syrup; x.beginPath(); x.ellipse(cx, top - R * .28, R * .32, R * .12, 0, 0, TAU); x.fill(); }
+  }
+  glass(); x.stroke();
+  x.fillStyle = 'rgba(255,255,255,.35)'; x.fillRect(cx - R * .4, top + R * .2, R * .08, (bot - top) * .7);
+  cookExtras(x, cx, cy, R);
+}
+function cookSalad(x, cx, cy, R) {
+  x.strokeStyle = INK; x.lineWidth = Math.max(2, R * .03);
+  x.fillStyle = '#4fc3f7'; x.beginPath(); x.arc(cx, cy, R * 1.05, 0, TAU); x.fill(); x.stroke();
+  x.fillStyle = '#fff8e1'; x.beginPath(); x.arc(cx, cy, R * .88, 0, TAU); x.fill(); x.stroke();
+  for (const t of cookD.tops) { x.save(); x.translate(cx + t.u * R, cy + t.v * R); x.rotate(t.rot); cookEmo(x, t.e, 0, 0, R * .42 * t.s); x.restore(); }   // frutas grandes
 }
 function cookScoopDraw(x, sx, sy, r, c) {
   x.fillStyle = c; x.beginPath(); x.arc(sx, sy, r, Math.PI, 0);
@@ -7977,7 +8110,7 @@ function cookOven(x, g, t) {
     x.stroke(); x.strokeStyle = INK; x.lineWidth = Math.max(2, R * .03);
   }
   const rr = Math.min(ww * .3, wh * .42);
-  cookDish(x, wx + ww / 2, wy + wh * (d.r === 'cake' ? .52 : .5), rr);
+  cookDish(x, wx + ww / 2, wy + wh * (cookBase(d.r) === 'cake' ? .52 : .5), rr);
   x.fillStyle = 'rgba(255,255,255,.12)'; x.beginPath(); x.moveTo(wx, wy); x.lineTo(wx + ww * .35, wy); x.lineTo(wx + ww * .15, wy + wh); x.lineTo(wx, wy + wh); x.fill();
   x.restore();
   x.beginPath(); x.roundRect(wx, wy, ww, wh, R * .08); x.stroke();
@@ -10857,22 +10990,37 @@ const CH_W = 1600, CH_H = 1000, CH_FARM = { x: 40, y: 290, w: 380, h: 420 };
 const CH_NESTS = [[700, 210, 95, 5], [760, 800, 130, 10], [1200, 840, 160, 15], [1150, 470, 178, 20], [1440, 250, 228, 40]];
 const CH_SHOES = [['👣', 'Pé no chão', 0, 150], ['👟', 'Tênis', 20, 190], ['⚡', 'Tênis relâmpago', 60, 235], ['🛼', 'Patins', 150, 290]];
 const CH_CARRY = .92;
-const chSave = load('oliver-corre', { coins: 0, shoe: 0, world: '', babies: {} });
+const chSave = load('oliver-corre', { world: '', w: {}, open: ['fazenda'] });
+const chW = id => chSave.w[id] || (chSave.w[id] = { coins: 0, shoe: 0, babies: [], done: false });
+const cw = () => chW(ch.world);
+if ('coins' in chSave) {   // versão 6.11 guardava tudo junto: passa para o mundo em que a criança estava
+  for (const [id, b] of Object.entries(chSave.babies || {})) { chW(id).babies = b; if (b.length && !chSave.open.includes(id)) chSave.open.push(id); }
+  Object.assign(chW(chSave.world || 'fazenda'), { coins: chSave.coins || 0, shoe: chSave.shoe || 0 });
+  delete chSave.coins; delete chSave.shoe; delete chSave.babies; keep('oliver-corre', chSave);
+}
+const chHas = id => { const w = chSave.w[id]; return !!w && (w.coins > 0 || w.shoe > 0 || w.babies.length > 0); };
 let ch = null;
-const chKeep = () => { chSave.babies[ch.world] = ch.babies.slice(-30).map(b => [b.emo, Math.round(b.x), Math.round(b.y)]); keep('oliver-corre', chSave); };
+const chKeep = () => { cw().babies = ch.babies.slice(-30).map(b => [b.emo, Math.round(b.x), Math.round(b.y)]); keep('oliver-corre', chSave); };
 function chaseStart() {
   if (ch?.raf) cancelAnimationFrame(ch.raf);
   ch = { raf: 0, run: false, world: chSave.world || 'fazenda', t: 0, last: 0, fx: [], flies: [], eggs: [], babies: [], down: false };
-  chHud(); ch.raf = requestAnimationFrame(chaseLoop);
-  if (chSave.world) chWorld(chSave.world); else chMap();
+  ch.raf = requestAnimationFrame(chaseLoop);
+  chMap();
 }
 function chMap() {
   ch.run = false; const box = $('#chWorlds'); box.innerHTML = '';
-  for (const [id, w] of Object.entries(CH_WORLDS)) {
-    const n = (chSave.babies[id] || []).length;
-    const b = btn(box, 'ch-wcard', `<span>${w.icon}</span><b>${w.name}</b><small>${n ? '🐣 ' + n : '&nbsp;'}</small>`, w.name, () => { blip(620); $('#chMap').hidden = true; chWorld(id); });
+  const ids = Object.keys(CH_WORLDS);
+  ids.forEach((id, i) => {
+    const w = CH_WORLDS[id], open = chSave.open.includes(id), my = chSave.w[id], n = my ? my.babies.length : 0;
+    const info = open ? `${my ? CH_SHOES[my.shoe][0] : ''} ${n ? '🐣 ' + n : ''}` : '🔒';
+    const b = btn(box, 'ch-wcard' + (open ? '' : ' locked'), `<span>${w.icon}</span><b>${w.name}</b><small>${info.trim() || '&nbsp;'}</small>`, w.name, () => {
+      if (!open) { const prev = CH_WORLDS[ids[i - 1]]; blip(200, .2); say(`Para abrir, leve para casa ${prev.animals[4][2]}, lá na ${prev.name}!`); return; }
+      blip(620); $('#chMap').hidden = true;
+      if (chHas(id)) askAgain(`${w.icon} ${w.name}`, `🪙 ${my.coins} moedas · ${CH_SHOES[my.shoe][0]} ${CH_SHOES[my.shoe][1]} · 🐣 ${n} filhotes`, fresh => { if (fresh) chSave.w[id] = { coins: 0, shoe: 0, babies: [], done: my.done }; keep('oliver-corre', chSave); chWorld(id); });
+      else chWorld(id);
+    });
     b.style.background = w.ground;
-  }
+  });
   $('#chMap').hidden = false; say('Escolha um lugar para brincar!');
 }
 function chWorld(id) {
@@ -10880,11 +11028,11 @@ function chWorld(id) {
   Object.assign(ch, { world: id, bg: null, fx: [], flies: [], eggs: [], run: true,
     kid: { x: CH_FARM.x + CH_FARM.w / 2, y: CH_FARM.y + CH_FARM.h / 2 + 60, tx: null, ty: null, carry: null, inv: 0, face: 1, walk: 0 },
     animals: W.animals.map(([emo, name, item, baby, egg], i) => { const [nx, ny, speed, reward] = CH_NESTS[i]; return { emo, name, item, baby, egg, nx, ny, speed, reward, x: nx - 56, y: ny + 6, has: true, state: 'home', t: 0, face: -1, refill: 0, big: i >= 3 }; }),
-    babies: (chSave.babies[id] || []).map(([emo, x, y]) => ({ emo, x, y, vx: 0, vy: 0, coinT: 3 + Math.random() * 5, turn: 0 })) });
-  $('#chTitle').textContent = W.name;
+    babies: chW(id).babies.map(([emo, x, y]) => ({ emo, x, y, vx: 0, vy: 0, coinT: 3 + Math.random() * 5, turn: 0 })) });
+  $('#chTitle').textContent = W.name; chHud();
   say(`${W.name}! Pegue ${W.animals[0][2]} e volte correndo para casa!`);
 }
-function chHud() { $('#chCoins').textContent = '🪙 ' + chSave.coins; $('#chShoe').textContent = CH_SHOES[chSave.shoe][0]; }
+function chHud() { if (!ch?.animals) return; $('#chCoins').textContent = '🪙 ' + cw().coins; $('#chShoe').textContent = CH_SHOES[cw().shoe][0]; }
 const chInHome = (px, py, m = 0) => px > CH_FARM.x - m && px < CH_FARM.x + CH_FARM.w + m && py > CH_FARM.y - m && py < CH_FARM.y + CH_FARM.h + m;
 const chNeed = a => CH_SHOES.findIndex(s => s[3] * CH_CARRY > a.speed * 1.04);
 // tela -> mundo
@@ -10895,7 +11043,7 @@ addEventListener('pointerup', () => { if (ch) ch.down = false; });
 function chStep(dt) {
   const k = ch.kid; ch.t += dt; k.inv -= dt;
   if (k.tx !== null) {
-    const dx = k.tx - k.x, dy = k.ty - k.y, d = Math.hypot(dx, dy), v = CH_SHOES[chSave.shoe][3] * (k.carry ? CH_CARRY : 1) * dt;
+    const dx = k.tx - k.x, dy = k.ty - k.y, d = Math.hypot(dx, dy), v = CH_SHOES[cw().shoe][3] * (k.carry ? CH_CARRY : 1) * dt;
     if (d > 4) { k.x += dx / d * Math.min(v, d); k.y += dy / d * Math.min(v, d); k.walk += dt; if (Math.abs(dx) > 3) k.face = dx > 0 ? 1 : -1; }
     else if (!ch.down) k.tx = null;
   }
@@ -10915,7 +11063,7 @@ function chStep(dt) {
       if (d < 44) {
         k.carry = null; k.inv = 1.4; a.state = 'back'; ch.flies.push({ a, fx: k.x, fy: k.y - 110, t: 0 }); chirp(220, .3, 'sawtooth', .07);
         const N = a.name[0].toUpperCase() + a.name.slice(1);
-        say(chNeed(a) > chSave.shoe ? `Ops! ${N} pegou de volta! Esse bicho corre mais que você. Compre um tênis na loja!` : `Ops! ${N} pegou de volta! Tenta de novo!`);
+        say(chNeed(a) > cw().shoe ? `Ops! ${N} pegou de volta! Esse bicho corre mais que você. Compre um tênis na loja!` : `Ops! ${N} pegou de volta! Tenta de novo!`);
       }
     } else if (a.state === 'back') {
       const hx = a.nx - 56, hy = a.ny + 6, dx = hx - a.x, dy = hy - a.y, d = Math.hypot(dx, dy);
@@ -10923,7 +11071,12 @@ function chStep(dt) {
     }
   }
   if (k.carry && chInHome(k.x, k.y)) {   // chegou em casa
-    const a = k.carry; k.carry = null; a.refill = 4; chSave.coins += a.reward; chHud();
+    const a = k.carry; k.carry = null; a.refill = 4; cw().coins += a.reward; chHud();
+    const ids = Object.keys(CH_WORLDS), nx = ids[ids.indexOf(ch.world) + 1];
+    if (a === ch.animals[4] && nx && !chSave.open.includes(nx)) {   // pegou o bicho mais rápido: abre o próximo lugar
+      chSave.open.push(nx); cw().done = true; keep('oliver-corre', chSave);
+      setTimeout(() => { celebrate(false); say(`Uau! Você abriu um lugar novo: ${CH_WORLDS[nx].name}! Toque no mapa para ir até lá.`); }, 2500);
+    }
     const ex = CH_FARM.x + 60 + Math.random() * (CH_FARM.w - 120), ey = CH_FARM.y + 190 + Math.random() * (CH_FARM.h - 230);
     if (a.egg) ch.eggs.push({ a, x: ex, y: ey, t: 7 }); else ch.babies.push({ emo: a.baby, x: ex, y: ey, vx: 0, vy: 0, coinT: 4, turn: 0 });
     confettiAt(ch.fx, k.x, k.y - 60); [523, 659, 784, 1047].forEach((f, i) => blip(f, .18, i * .11));
@@ -10938,7 +11091,7 @@ function chStep(dt) {
     b.x = Math.max(CH_FARM.x + 30, Math.min(CH_FARM.x + CH_FARM.w - 30, b.x + b.vx * dt)); b.y = Math.max(CH_FARM.y + 170, Math.min(CH_FARM.y + CH_FARM.h - 30, b.y + b.vy * dt));
     if ((b.coinT -= dt) <= 0) { b.coinT = 6 + Math.random() * 3; ch.fx.push({ coin: true, x: b.x, y: b.y - 30, t: 1.1, vx: 0, vy: -50 }); }
   }
-  for (const f of ch.fx) if (f.coin && f.t - dt <= 0 && !f.paid) { f.paid = true; chSave.coins++; chHud(); chirp(1400, .05, 'square', .04); }
+  for (const f of ch.fx) if (f.coin && f.t - dt <= 0 && !f.paid) { f.paid = true; cw().coins++; chHud(); chirp(1400, .05, 'square', .04); }
 }
 // cenário parado: desenhado uma vez por mundo e por tamanho de tela
 function chPaintBg(W, H) {
@@ -10994,7 +11147,7 @@ function chaseLoop(t) {
       if (a.state === 'home' && a.has) { x.font = '800 26px sans-serif'; x.fillStyle = 'rgba(58,36,20,.55)'; x.textAlign = 'center'; x.fillText('z', a.x + 30, a.y - big * .7 - Math.sin(ch.t * 2) * 6); }
       if (a.state === 'alert') emoDraw(x, '❗', a.x, a.y - big - 8, 46);
       const need = chNeed(a);
-      if (need > chSave.shoe && a.state === 'home') {   // plaquinha com o tênis que falta
+      if (need > cw().shoe && a.state === 'home') {   // plaquinha com o tênis que falta
         x.fillStyle = '#fff8ea'; x.beginPath(); x.roundRect(a.nx - 34, a.ny - 122, 68, 52, 14); x.fill(); x.strokeStyle = INK; x.lineWidth = 3; x.stroke();
         emoDraw(x, CH_SHOES[need][0], a.nx, a.ny - 96, 38);
       }
@@ -11017,12 +11170,12 @@ function chaseLoop(t) {
 function chShop() {
   ch.run = false; const list = $('#chShopList'); list.innerHTML = '';
   CH_SHOES.slice(1).forEach(([e, name, price], i) => {
-    const lvl = i + 1, have = chSave.shoe >= lvl;
-    const b = btn(list, 'ch-item' + (have ? ' have' : chSave.coins < price ? ' cant' : ''), `<b>${e}</b><span>${name}</span>${have ? '✔️' : '🪙 ' + price}`, name, () => {
+    const lvl = i + 1, my = cw(), have = my.shoe >= lvl;
+    const b = btn(list, 'ch-item' + (have ? ' have' : my.coins < price ? ' cant' : ''), `<b>${e}</b><span>${name}</span>${have ? '✔️' : '🪙 ' + price}`, name, () => {
       if (have) return;
-      if (chSave.shoe < lvl - 1) { say('Primeiro compre o tênis de antes!'); return; }
-      if (chSave.coins < price) { say(`Faltam ${price - chSave.coins} moedas. Pegue mais ovos!`); return; }
-      chSave.coins -= price; chSave.shoe = lvl; keep('oliver-corre', chSave); chHud(); chShop(); celebrate(false); say(`Comprou ${name}! Agora você corre mais rápido!`);
+      if (my.shoe < lvl - 1) { say('Primeiro compre o tênis de antes!'); return; }
+      if (my.coins < price) { say(`Faltam ${price - my.coins} moedas. Pegue mais ovos!`); return; }
+      my.coins -= price; my.shoe = lvl; keep('oliver-corre', chSave); chHud(); chShop(); celebrate(false); say(`Comprou ${name}! Agora você corre mais rápido!`);
     });
   });
   $('#chShopBox').hidden = false;
@@ -11034,20 +11187,30 @@ GAMES.chase = chaseStart;
 
 /* ================= construtor da obra: cava com a escavadeira, enche o alicerce com a betoneira, empilha os blocos com o guindaste,
    pinta e põe o telhado. Cada obra pronta é uma construção diferente ================= */
-// [nome, linhas, colunas, telhado, cor do telhado]
-const BD_TYPES = [['casa', 3, 3, 'tri', '#d9483b'], ['prédio', 6, 3, 'flat', '#607d8b'], ['castelo', 4, 5, 'castle', '#8e7cc3'], ['escola', 3, 5, 'tri', '#1e88e5']];
+// [nome, linhas, colunas, telhado, cor do telhado, artigo]
+const BD_TYPES = [['casa', 3, 3, 'tri', '#d9483b', 'a', '🏠'], ['prédio', 6, 3, 'flat', '#607d8b', 'o', '🏢'], ['castelo', 4, 5, 'castle', '#8e7cc3', 'o', '🏰'], ['escola', 3, 5, 'tri', '#1e88e5', 'a', '🏫'],
+  ['farol', 6, 2, 'dome', '#e53935', 'o', '🗼'], ['hospital', 4, 4, 'cross', '#eceff1', 'o', '🏥'], ['mercado', 2, 5, 'awning', '#43a047', 'o', '🏪'], ['celeiro', 3, 4, 'barn', '#c62828', 'o', '🐄'],
+  ['torre do mago', 7, 2, 'cone', '#5e35b1', 'a', '🧙'], ['quartel dos bombeiros', 3, 4, 'siren', '#b71c1c', 'o', '🚒'], ['casa na árvore', 2, 3, 'tree', '#6d4c41', 'a', '🌳'], ['foguete', 6, 2, 'rocket', '#eceff1', 'o', '🚀']];
+const bdSave = load('oliver-obra', { feitas: [] });
+// menu de obras: as que já ficaram prontas ganham ✔️
+function bdMenu() {
+  bd.stage = 'menu'; const m = $('#bdMenu'); m.innerHTML = '';
+  BD_TYPES.forEach((T, i) => btn(m, 'bd-card', `<span>${T[6]}</span>${T[0][0].toUpperCase() + T[0].slice(1)}${bdSave.feitas.includes(T[0]) ? ' ✔️' : ''}`, T[0], () => { m.hidden = true; blip(620); bd.type = i; bdNew(); }));
+  m.hidden = false;
+}
 const BD_COLORS = [['#ffd23f', 'amarelo'], ['#ff8a65', 'laranja'], ['#81c784', 'verde'], ['#64b5f6', 'azul'], ['#f48fb1', 'rosa'], ['#b39ddb', 'roxo']];
 const BD_SAY = { dig: 'Vamos cavar! Passe o dedo na terra com a escavadeira.', pour: 'Agora a betoneira! Segure o dedo na tela para encher de concreto.',
   blocks: 'Agora o guindaste! Toque na tela para colocar cada bloco.', paint: 'Escolha uma cor para pintar as paredes!', roof: 'Arraste o telhado para cima da construção!' };
 let bd = null;
 function buildStart() {
   if (bd?.raf) cancelAnimationFrame(bd.raf);
-  bd = { raf: 0, type: bd ? bd.type : 0, last: 0, t: 0, fx: [] };
-  bdNew(); bd.raf = requestAnimationFrame(buildLoop);
+  bd = { raf: 0, type: 0, last: 0, t: 0, fx: [] };
+  bdNew(true); bdMenu(); bd.raf = requestAnimationFrame(buildLoop);
+  setTimeout(() => alive('build') && say('O que vamos construir hoje?'), 400);
 }
-function bdNew() {
+function bdNew(quiet) {
   Object.assign(bd, { stage: 'dig', dig: new Uint8Array(26 * 9), digLeft: 0, level: 0, placed: 0, falling: null, color: null, roof: null, drag: false, down: false, ptr: null, doneT: 0, painted: false });
-  setTimeout(() => alive('build') && say(BD_SAY.dig), 400);
+  if (!quiet) setTimeout(() => alive('build') && say(BD_SAY.dig), 400);
 }
 function bdGeo(W, H) {
   const gy = H * .86, pw = Math.min(W * .42, H * .72), px = W * .5, T = BD_TYPES[bd.type], R = T[1], C = T[2];
@@ -11070,7 +11233,7 @@ addEventListener('pointerup', () => {
   if (!bd || !bd.down) return; bd.down = false;
   if (bd.stage === 'roof' && bd.drag) {
     bd.drag = false; const cv = bdCv(), G = bdGeo(cv.width, cv.height);
-    if (Math.hypot(bd.roof.x - G.px, bd.roof.y - G.top) < G.pw * .3) { bd.stage = 'done'; bd.doneT = 4.5; confettiAt(bd.fx, G.px, G.top, 50); celebrate(false); say(`Uau! A ${G.T[0]} ficou pronta! Você é um grande construtor!`); }
+    if (Math.hypot(bd.roof.x - G.px, bd.roof.y - G.top) < G.pw * .3) { if (!bdSave.feitas.includes(G.T[0])) { bdSave.feitas.push(G.T[0]); keep('oliver-obra', bdSave); } bd.stage = 'done'; bd.doneT = 4.5; confettiAt(bd.fx, G.px, G.top, 50); celebrate(false); say(`Uau! ${G.T[5] === 'a' ? 'A' : 'O'} ${G.T[0]} ficou pront${G.T[5]}! Você é um grande construtor!`); }
     else { chirp(300, .1); }
   }
 });
@@ -11099,14 +11262,39 @@ function bdStep(dt, W, H) {
   } else if (bd.stage === 'roof') {
     if (!bd.roof) bd.roof = { x: W * .15, y: H * .35 };
     if (bd.drag && bd.ptr) { bd.roof.x = bd.ptr[0]; bd.roof.y = bd.ptr[1]; }
-  } else if (bd.stage === 'done' && (bd.doneT -= dt) <= 0) { bd.type = (bd.type + 1) % BD_TYPES.length; bdNew(); }
+  } else if (bd.stage === 'done' && (bd.doneT -= dt) <= 0) { bdMenu(); say('O que vamos construir agora?'); }
   return { G, mx0, mh, cw, chh, inMound };
 }
 function bdRoof(x, T, cx, by, w, h) {   // telhado com a base no centro (cx, by)
   x.fillStyle = T[4]; x.strokeStyle = INK; x.lineWidth = Math.max(2, w * .012); x.beginPath();
   if (T[3] === 'tri') { x.moveTo(cx - w * .58, by); x.lineTo(cx, by - h); x.lineTo(cx + w * .58, by); x.closePath(); x.fill(); x.stroke(); }
   else if (T[3] === 'flat') { x.rect(cx - w * .54, by - h * .25, w * 1.08, h * .25); x.fill(); x.stroke(); x.beginPath(); x.moveTo(cx + w * .2, by - h * .25); x.lineTo(cx + w * .2, by - h); x.stroke(); emoDraw(x, '📡', cx - w * .2, by - h * .55, h * .5); }
-  else { const n = 5; for (let i = 0; i < n; i++) { const bx = cx - w / 2 + i * w / n; if (i % 2 === 0) { x.rect(bx, by - h * .35, w / n, h * .35); } } x.fill(); x.stroke(); x.beginPath(); x.moveTo(cx, by - h * .35); x.lineTo(cx, by - h); x.stroke(); emoDraw(x, '🚩', cx + h * .12, by - h * .85, h * .45); }
+  else if (T[3] === 'castle') { const n = 5; for (let i = 0; i < n; i++) { const bx = cx - w / 2 + i * w / n; if (i % 2 === 0) { x.rect(bx, by - h * .35, w / n, h * .35); } } x.fill(); x.stroke(); x.beginPath(); x.moveTo(cx, by - h * .35); x.lineTo(cx, by - h); x.stroke(); emoDraw(x, '🚩', cx + h * .12, by - h * .85, h * .45); }
+  else if (T[3] === 'dome') {   // farol: lanterna de vidro com a cúpula vermelha e a luz girando
+    x.fillStyle = '#fff59d'; x.rect(cx - w * .3, by - h * .55, w * .6, h * .55); x.fill(); x.stroke();
+    x.fillStyle = T[4]; x.beginPath(); x.arc(cx, by - h * .55, w * .34, Math.PI, 0); x.closePath(); x.fill(); x.stroke();
+    x.fillStyle = 'rgba(255,241,118,.35)'; const a = performance.now() / 600; x.beginPath(); x.moveTo(cx, by - h * .3); x.lineTo(cx + Math.cos(a) * w * 2, by - h * .3 + Math.sin(a) * h * .6); x.lineTo(cx + Math.cos(a + .25) * w * 2, by - h * .3 + Math.sin(a + .25) * h * .6); x.fill();
+  } else if (T[3] === 'cross') {   // hospital: placa com a cruz vermelha
+    x.rect(cx - w * .54, by - h * .22, w * 1.08, h * .22); x.fill(); x.stroke();
+    x.fillStyle = '#fff'; x.beginPath(); x.rect(cx - h * .38, by - h * .95, h * .76, h * .7); x.fill(); x.stroke();
+    x.fillStyle = '#e53935'; x.fillRect(cx - h * .1, by - h * .88, h * .2, h * .56); x.fillRect(cx - h * .28, by - h * .7, h * .56, h * .2);
+  } else if (T[3] === 'awning') {   // mercado: toldo listrado
+    const n = 8; for (let i = 0; i < n; i++) { x.fillStyle = i % 2 ? '#fff' : T[4]; x.beginPath(); x.moveTo(cx - w * .5 + i * w / n, by - h * .6); x.lineTo(cx - w * .5 + (i + 1) * w / n, by - h * .6); x.lineTo(cx - w * .6 + (i + 1) * w * 1.2 / n, by); x.lineTo(cx - w * .6 + i * w * 1.2 / n, by); x.closePath(); x.fill(); x.stroke(); }
+    emoDraw(x, '🛒', cx, by - h * .85, h * .5);
+  } else if (T[3] === 'barn') {   // celeiro: telhado quebrado de fazenda
+    x.moveTo(cx - w * .58, by); x.lineTo(cx - w * .5, by - h * .55); x.lineTo(cx, by - h); x.lineTo(cx + w * .5, by - h * .55); x.lineTo(cx + w * .58, by); x.closePath(); x.fill(); x.stroke();
+    x.fillStyle = '#fff'; x.beginPath(); x.arc(cx, by - h * .5, h * .14, 0, TAU); x.fill(); x.stroke();
+  } else if (T[3] === 'cone') {   // torre do mago: telhado pontudo com estrelas
+    x.moveTo(cx - w * .62, by); x.lineTo(cx, by - h * 1.6); x.lineTo(cx + w * .62, by); x.closePath(); x.fill(); x.stroke();
+    emoDraw(x, '⭐', cx - w * .15, by - h * .45, h * .3); emoDraw(x, '🌙', cx + w * .12, by - h * .85, h * .28);
+  } else if (T[3] === 'siren') { x.rect(cx - w * .54, by - h * .25, w * 1.08, h * .25); x.fill(); x.stroke(); emoDraw(x, '🚨', cx, by - h * .55, h * .5); emoDraw(x, '🚒', cx + w * .75, by + h * .1, h * .5); }
+  else if (T[3] === 'tree') {   // casa na árvore: copa por cima e escada
+    x.fillStyle = '#43a047'; for (const [dx, dy, r] of [[-.4, -.5, .5], [.4, -.5, .5], [0, -.85, .6]]) { x.beginPath(); x.arc(cx + dx * w, by + dy * h, r * h, 0, TAU); x.fill(); x.stroke(); }
+    emoDraw(x, '🍎', cx - w * .3, by - h * .6, h * .3); emoDraw(x, '🐦', cx + w * .35, by - h * 1.1, h * .3);
+  } else if (T[3] === 'rocket') {   // foguete: ponta e janelinha
+    x.moveTo(cx - w * .52, by); x.quadraticCurveTo(cx - w * .4, by - h * .9, cx, by - h * 1.5); x.quadraticCurveTo(cx + w * .4, by - h * .9, cx + w * .52, by); x.closePath(); x.fillStyle = '#e53935'; x.fill(); x.stroke();
+    x.fillStyle = '#81d4fa'; x.beginPath(); x.arc(cx, by - h * .55, h * .2, 0, TAU); x.fill(); x.stroke();
+  }
 }
 function buildLoop(t) {
   if (!alive('build')) { bd.raf = 0; return; }
@@ -11340,8 +11528,14 @@ const HD_SCENES = [['parque', '#a5e3ff', '#8ccf5c', ['🌳', '🪨', '📦', '�
 const HD_ANIMALS = [['🐱', 'o gatinho', 'Miau!'], ['🐶', 'o cachorrinho', 'Au au!'], ['🐰', 'o coelhinho', 'Hihi!'], ['🐸', 'o sapinho', 'Croac!'], ['🐥', 'o pintinho', 'Piu piu!'],
   ['🐼', 'o panda', 'Oi!'], ['🦊', 'a raposinha', 'Hihi!'], ['🐵', 'o macaquinho', 'Uh uh!'], ['🐷', 'o porquinho', 'Oinc!'], ['🐨', 'o coala', 'Oi!']];
 let hd = null;
-function hideStart() { if (hd?.raf) cancelAnimationFrame(hd.raf); hd = { raf: 0, last: 0, t: 0, scene: hd ? hd.scene : 0, fx: [] }; hdRound(); hd.raf = requestAnimationFrame(hideLoop); }
-function hdRound() {
+function hideStart() { if (hd?.raf) cancelAnimationFrame(hd.raf); hd = { raf: 0, last: 0, t: 0, scene: 0, fx: [] }; hdRound(true); hdMenu(); hd.raf = requestAnimationFrame(hideLoop); }
+const HD_ICONS = ['🌳', '🏠', '🏖️', '⛄'];
+function hdMenu() {
+  hd.lock = true; const m = $('#hdMenu'); m.innerHTML = '';
+  HD_SCENES.forEach((S, i) => btn(m, 'bd-card', `<span>${HD_ICONS[i]}</span>${S[0][0].toUpperCase() + S[0].slice(1)}`, S[0], () => { m.hidden = true; blip(620); hd.scene = i; hdRound(); }));
+  m.hidden = false; setTimeout(() => alive('hide') && say('Onde vamos brincar de esconde-esconde?'), 400);
+}
+function hdRound(quiet) {
   const S = HD_SCENES[hd.scene % HD_SCENES.length], who = shuffle(HD_ANIMALS.slice()).slice(0, 3);
   // 6 esconderijos espalhados; 3 têm bicho atrás
   const pos = [[.18, .5], [.42, .42], [.68, .5], [.86, .66], [.3, .76], [.58, .78]];
@@ -11349,7 +11543,7 @@ function hdRound() {
   hd.spots = S[3].map((e, i) => ({ e, fx: pos[i][0], fy: pos[i][1], who: null, open: 0, opening: false }));
   who.forEach((a, i) => hd.spots[slots[i]].who = a);
   Object.assign(hd, { S, who, ask: 0, idle: 0, found: 0, lock: false });
-  setTimeout(() => alive('hide') && hdAsk(), 500);
+  if (!quiet) setTimeout(() => alive('hide') && hdAsk(), 500);
 }
 function hdAsk() { const a = hd.who[hd.ask]; hd.idle = 0; say(`Cadê ${a[1]}?`); }
 $('#hdCv').addEventListener('pointerdown', e => {
@@ -11361,7 +11555,7 @@ $('#hdCv').addEventListener('pointerdown', e => {
     s.done = true; hd.lock = true; chirp(700, .1); chirp(1000, .15); say(`Achou ${want[1]}! ${want[2]}`); confettiAt(hd.fx, cv.width * s.fx, cv.height * s.fy, 30);
     setTimeout(() => {
       hd.lock = false; hd.ask++;
-      if (hd.ask < 3) hdAsk(); else { celebrate(false); say('Você achou todo mundo!'); setTimeout(() => { if (alive('hide')) { hd.scene++; hdRound(); } }, 3200); }
+      if (hd.ask < 3) hdAsk(); else { celebrate(false); say('Você achou todo mundo!'); setTimeout(() => { if (alive('hide')) hdMenu(); }, 3200); }
     }, 1600);
   } else {
     tone('triangle', 300, 220, audioOn().currentTime, .18, .1);
@@ -11465,7 +11659,7 @@ GAME_INTRO.studio = 'Toque nos quadradinhos para criar a sua música, e aperte o
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 47, name: '6.12' };
+const APP_VERSION = { code: 48, name: '6.13' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)
