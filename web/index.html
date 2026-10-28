@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 42, name: '6.7' }; -->
+<!-- const APP_VERSION = { code: 43, name: '6.8' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -56,11 +56,15 @@ button:active { transform: scale(.92); }
 .homeIn { max-width: 920px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 16px; }
 /* em tela larga o título fica entre os botões de voz e dos pais; em tela estreita desce para não ficar embaixo deles */
 .hero { display: flex; align-items: center; justify-content: center; gap: 16px; padding-top: 14px; }
-@media (max-width: 1000px) { .hero { padding-top: 70px; } }
+/* em tela estreita, abre espaço dos lados para os botões de fala/pais (esquerda) e Conversar (direita) */
+@media (max-width: 1000px) { .hero { padding: 10px 110px 0 84px; gap: 10px; } #home .hero h1 { font-size: clamp(32px, 6vw, 60px); } }
+@media (max-width: 560px) { .hero { padding: 120px 0 0; } }
 .hero > canvas { width: clamp(64px, 14vw, 104px); height: auto; flex: none; filter: drop-shadow(0 5px 0 var(--shadow)); }
-.heroKid { position: relative; flex: none; width: clamp(80px, 11.5vw, 140px); }
-.heroKid canvas { width: 100%; height: auto; display: block; }
-.bubble { position: absolute; bottom: 70%; left: 50%; transform: translateX(-50%); white-space: nowrap; background: var(--paper); border-radius: 16px; padding: 4px 12px; font-size: 18px; font-weight: 800; box-shadow: 0 2px 0 var(--shadow); }
+.heroKid { position: relative; flex: none; display: flex; align-items: flex-start; }
+.heroKid canvas { width: clamp(90px, 12.5vw, 160px); height: auto; display: block; }
+/* o "Oi" sai do lado direito do personagem, com o biquinho apontando para ele */
+.bubble { order: 1; position: relative; margin: 14% 0 0 -8px; white-space: nowrap; background: var(--paper); border-radius: 16px; padding: 6px 14px; font-size: 20px; font-weight: 800; box-shadow: 0 2px 0 var(--shadow); }
+.bubble::before { content: ''; position: absolute; left: -9px; top: 50%; translate: 0 -50%; border: 8px solid transparent; border-right: 10px solid var(--paper); border-left: 0; }
 @media (max-width: 560px) { .heroKid { display: none; } }
 #home h1 { margin: 0; font-size: clamp(36px, 8vw, 66px); font-weight: 800; line-height: .95; text-wrap: balance; }
 #home h1 b { color: var(--pick); display: inline-block; transform: rotate(-3deg); }
@@ -79,7 +83,7 @@ button:active { transform: scale(.92); }
 .mode[hidden], .door[hidden] { display: none; }
 /* portas da tela inicial: cada uma abre uma prateleira de jogos */
 .doors { display: flex; flex-wrap: wrap; justify-content: center; gap: 18px; padding: 6px 0 10px; }
-.door { position: relative; flex: 0 1 calc(25% - 14px); min-width: 150px; height: clamp(150px, calc((100dvh - 290px) / 2), 230px); border: 5px solid #fff; border-radius: 38px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding: 0 6px 14px; overflow: hidden;
+.door { position: relative; flex: 0 1 calc(25% - 14px); min-width: 150px; height: clamp(150px, calc((100dvh - 318px) / 2), 230px); border: 5px solid #fff; border-radius: 38px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding: 0 6px 14px; overflow: hidden;
   background: radial-gradient(circle at 20% 15%, rgba(255,255,255,.35) 0 12%, transparent 13%), radial-gradient(circle at 85% 80%, rgba(255,255,255,.22) 0 9%, transparent 10%), radial-gradient(circle at 75% 20%, rgba(255,255,255,.18) 0 6%, transparent 7%), linear-gradient(160deg, var(--d2), var(--d1) 70%);
   box-shadow: 0 8px 0 rgba(0,0,0,.18), inset 0 -10px 0 rgba(0,0,0,.08); color: #fff; font: inherit; cursor: pointer; }
 .door .dE { position: absolute; inset: 0 0 38px; font-style: normal; }
@@ -100,7 +104,7 @@ button:active { transform: scale(.92); }
 /* os últimos jogos ficam a um toque, logo abaixo do nome */
 .recentT { margin: 0 4px -6px; font-size: 20px; }
 /* com a fileira de recentes, as portas encolhem um pouco para tudo caber sem rolar */
-#home:has(#recent .mode) .door { height: clamp(140px, calc((100dvh - 440px) / 2), 230px); }
+#home:has(#recent .mode) .door { height: clamp(140px, calc((100dvh - 468px) / 2), 230px); }
 .recent { display: flex; gap: 12px; overflow-x: auto; padding: 4px 2px 10px; scrollbar-width: none; }
 .recent .mode { flex: none; width: 100px; border-radius: 22px; font-size: 14px; }
 .recent .mode span { font-size: 40px; }
@@ -657,11 +661,12 @@ button:active { transform: scale(.92); }
 
 /* área dos pais, descanso e adesivos */
 #home { position: relative; }
-.homeVoice { position: absolute; top: 10px; left: max(16px, env(safe-area-inset-left, 0px)); }
-#parentBtn { position: absolute; top: 10px; right: max(16px, env(safe-area-inset-right, 0px)); opacity: .6; }
+.homeVoice { position: absolute; top: 10px; left: max(16px, env(safe-area-inset-left, 0px)); opacity: .45; }
+/* engrenagem dos pais embaixo do botão de fala, os dois clarinhos para não chamar a atenção da criança */
+#parentBtn { position: absolute; top: 84px; left: max(16px, env(safe-area-inset-left, 0px)); opacity: .35; }
 #parentBtn.hasUpd { opacity: 1; }
-/* o amigo da conversa fica ao lado do personagem que dá oi */
-.chatTop { flex: none; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 12px 10px; border: 0; border-radius: 26px; background: #00897b; color: #fff; font: inherit; box-shadow: 0 4px 0 rgba(0, 0, 0, .2); cursor: pointer; }
+/* o amigo da conversa fica no canto de cima, à direita */
+.chatTop { position: absolute; z-index: 2; top: 10px; right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 12px 10px; border: 0; border-radius: 26px; background: #00897b; color: #fff; font: inherit; box-shadow: 0 4px 0 rgba(0, 0, 0, .2); cursor: pointer; }
 .chatTop .ctF { font-size: 48px; line-height: 1; animation: ctBob 2.4s ease-in-out infinite; }
 .chatTop .ctTxt { display: flex; flex-direction: column; align-items: center; line-height: 1.05; }
 .chatTop small { font-size: 13px; font-weight: 700; opacity: .9; }
@@ -10725,7 +10730,7 @@ GAME_INTRO.studio = 'Toque nos quadradinhos para criar a sua música, e aperte o
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 42, name: '6.7' };
+const APP_VERSION = { code: 43, name: '6.8' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)

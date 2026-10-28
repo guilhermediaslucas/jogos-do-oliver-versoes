@@ -1,8 +1,8 @@
 {
-  "code": 42,
-  "name": "6.7",
+  "code": 43,
+  "name": "6.8",
   "minApk": 41,
-  "notes": "Versão 6.7: a tela inicial cabe inteira sem rolar, com o botão Conversar ao lado do personagem, que ficou maior. No Meu personagem: o botão Pronto não corta mais, saiu a faixa verde, e tem 12 roupas, 8 cabelos, 8 cores de cabelo, chapéus (boné, capacete de obra, coroa, chapéu de mago, fone, laço) e óculos (escuros, de estrela e de coração). Botão para fazer o personagem com as cores da foto. O APK agora se chama MundoDoOliver.apk.",
+  "notes": "Versão 6.8: tela inicial reorganizada. A engrenagem dos pais fica embaixo do botão de fala, os dois mais clarinhos; o Conversar fica no canto de cima, à direita; o personagem ficou maior, com o Oi saindo do lado direito dele.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/MundoDoOliver.apk"
 }
