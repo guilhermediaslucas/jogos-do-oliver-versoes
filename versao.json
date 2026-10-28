@@ -1,8 +1,8 @@
 {
-  "code": 32,
-  "name": "5.5",
+  "code": 33,
+  "name": "5.6",
   "minApk": 19,
-  "notes": "Jogo novo: Cobrinha (come frutas e cresce; atravessa as bordas e não perde se esbarrar nela mesma), com modo devagar e rápido.",
+  "notes": "Traçado dos desenhos do Oliver corrigido: pontinhos contínuos, da mesma cor dos outros desenhos e sem detalhes amontoados.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/JogosDoOliver.apk"
 }
