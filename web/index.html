@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 29, name: '5.2' }; -->
+<!-- const APP_VERSION = { code: 30, name: '5.3' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -562,7 +562,8 @@ button:active { transform: scale(.92); }
 .mapWrap { border-radius: 28px; background: linear-gradient(#bfe9ff, #d8f5c8 60%, #a8e08f); overflow: hidden; }
 .mapSvg { position: absolute; inset: 0; width: 100%; height: 100%; }
 .mapSvg polyline { fill: none; stroke: #fff; stroke-width: 14px; stroke-dasharray: 18 14; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
-.mapNode { position: absolute; transform: translate(-50%, -50%); display: grid; justify-items: center; gap: 2px; width: 150px; }
+.mapNode { position: absolute; transform: translate(-50%, -50%); display: grid; justify-items: center; gap: 2px; width: 150px; touch-action: none; }
+.mapNode::before { content: ''; position: absolute; inset: -14px -10px; }   /* área de toque maior que o desenho */
 .mapNode .mn { width: var(--mn, 104px); height: var(--mn, 104px); border-radius: 50%; display: grid; place-items: center; font-size: calc(var(--mn, 104px) * .52); background: #ffd23f;
   box-shadow: 0 0 0 6px #fff, 0 6px 14px rgba(0,0,0,.2), inset 0 -7px 0 rgba(0,0,0,.12); }
 .mapNode b { font-size: 18px; background: var(--paper); border-radius: 999px; padding: 2px 12px; box-shadow: 0 2px 0 var(--shadow); white-space: nowrap; }
@@ -887,6 +888,7 @@ button:active { transform: scale(.92); }
     <label class="prow" for="pName">Nome da criança <input id="pName" type="text" maxlength="16" autocomplete="off"></label>
     <label class="prow" for="pSound">Sons e voz <input id="pSound" type="checkbox"></label>
     <label class="prow" for="pDog">🐶 Cachorrinho na aventura <input id="pDog" type="checkbox"></label>
+    <label class="prow" for="pAllLv">🔓 Todas as fases da aventura liberadas <input id="pAllLv" type="checkbox"></label>
     <label class="prow" for="pFace" id="pFaceRow">Rosto do personagem
       <select id="pFace"><option value="photo">📷 A foto</option><option value="draw">🎨 O desenho</option></select></label>
     <label class="prow" for="pColorsEn">Falar o nome das cores em inglês <input id="pColorsEn" type="checkbox"></label>
@@ -3920,7 +3922,7 @@ function applyName() {
   $('#restText').textContent = `Até amanhã, ${prefs.name}! Brincar descansado é mais gostoso.`;
 }
 function openParents() {
-  $('#pDog').checked = prefs.dog !== false;
+  $('#pDog').checked = prefs.dog !== false; $('#pAllLv').checked = !!prefs.allLevels;
   fillVoices();
   $('#pFaceRow').hidden = !prefs.photo; $('#pFace').value = avatar.face === 'draw' ? 'draw' : 'photo';
   $('#pName').value = prefs.name; $('#pSound').checked = prefs.sound; $('#pColorsEn').checked = prefs.colorsEn; $('#pLimit').value = prefs.limit;
@@ -4418,10 +4420,13 @@ function openAdvMap() {
   $('#mapScore').textContent = `💎 ${total}/${LEVELS.length * 3}`;
   $('#mapPath').setAttribute('points', MAP_POS.map(([x, y]) => `${x},${y}`).join(' '));
   LEVELS.forEach((lv, i) => {
-    const open = i <= advMax, best = advBest[i], gems = best ? best.gems.map(g => g ? '💎' : '◇').join('') : '◇◇◇';
+    const open = i <= advMax || prefs.allLevels, best = advBest[i], gems = best ? best.gems.map(g => g ? '💎' : '◇').join('') : '◇◇◇';
     const b = btn(box, 'mapNode' + (open ? '' : ' locked') + (i === advMax ? ' cur' : ''),
       `<span class="mn">${open ? lv.emoji : '🔒'}</span><b>${i + 1}. ${lv.name}</b><small>${gems}</small>`, `Fase ${i + 1}: ${lv.name}`,
-      () => { if (!open) { blip(200, .2); say('Essa fase ainda está trancada'); return; } blip(660); advLvl = i; show('g-adventure'); requestAnimationFrame(advStart); });
+      () => { if (Date.now() - tapT > 600) go(); });
+    const go = () => { if (!open) { blip(200, .2); say('Essa fase ainda está trancada'); return; } blip(660); advLvl = i; show('g-adventure'); requestAnimationFrame(advStart); };
+    let tapT = 0;
+    b.addEventListener('pointerdown', e => { e.preventDefault(); tapT = Date.now(); go(); });
     b.style.left = MAP_POS[i][0] + '%'; b.style.top = MAP_POS[i][1] + '%';
   });
   fitAdvMap(); say('Escolha uma fase!');
@@ -5051,7 +5056,7 @@ const FRUITS_CUT = [['🍉', 'melancia', '#e53950'], ['🍎', 'maçã', '#e53935
   ['🍑', 'pêssego', '#ffab91'], ['🥥', 'coco', '#f5f5f5'], ['🍋', 'limão', '#fff176']];
 let fr = null, frRaf = 0;
 function fruitStart() {
-  const cv = $('#fruitCv'), r = cv.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2);
+  const cv = $('#fruitCv'), r = cv.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2, 1100 / Math.max(1, r.width));   // no tablet, menos pixels = mais leve
   cv.width = Math.max(1, Math.round(r.width * d)); cv.height = Math.max(1, Math.round(r.height * d));
   fr = { items: [], halves: [], drops: [], trail: [], score: 0, next: 0, t: 0, swipeCuts: 0, d, best: prog.fruitBest || 0 };
   updateFruitScore(); startMusic('g-fruit');
@@ -5124,13 +5129,13 @@ function fruitDraw() {
   for (const p of fr.drops) { x.globalAlpha = Math.max(0, p.life); x.fillStyle = p.c; x.beginPath(); x.arc(p.x, p.y, p.r, 0, TAU); x.fill(); }
   x.globalAlpha = 1; x.textAlign = 'center'; x.textBaseline = 'middle';
   for (const o of fr.items) {
-    x.save(); x.translate(o.x, o.y); x.rotate(o.rot); x.font = `${o.r * 2}px ${EMOJI}`;
-    if (o.gold) { x.shadowColor = '#ffd23f'; x.shadowBlur = 30 * fr.d; }
-    x.fillText(o.f[0], 0, 0); x.restore();
+    x.save(); x.translate(o.x, o.y); x.rotate(o.rot);
+    if (o.gold) { x.fillStyle = 'rgba(255,210,63,.45)'; x.beginPath(); x.arc(0, 0, o.r * 1.4, 0, TAU); x.fill(); }
+    const sz = o.r * 2.4; x.drawImage(kEmo(o.f[0]), -sz / 2, -sz * .55, sz, sz); x.restore();   // emoji guardado como imagem (desenhar emoji a cada quadro pesa no Android)
   }
   for (const h of fr.halves) {
     x.save(); x.translate(h.x, h.y); x.rotate(h.ang); x.beginPath(); x.rect(-h.r * 2, h.side < 0 ? -h.r * 2 : 0, h.r * 4, h.r * 2); x.clip();
-    x.rotate(-h.ang + h.rot); x.font = `${h.r * 2}px ${EMOJI}`; x.fillText(h.f[0], 0, 0); x.restore();
+    x.rotate(-h.ang + h.rot); const sz = h.r * 2.4; x.drawImage(kEmo(h.f[0]), -sz / 2, -sz * .55, sz, sz); x.restore();
   }
   if (fr.trail.length > 1) {
     x.lineCap = x.lineJoin = 'round';
@@ -5341,6 +5346,7 @@ $('#sGo').onclick = () => {
 };
 $('#pKid').onclick = () => { $('#parents').hidden = true; openSetup(); };
 $('#pDog').onchange = e => { prefs.dog = e.target.checked; savePrefs(); };
+$('#pAllLv').onchange = e => { prefs.allLevels = e.target.checked; savePrefs(); };
 $('#pFace').onchange = e => { avatar.face = e.target.value; keep('oliver-avatar-v2', avatar); drawHeroLogo(); blip(620); };
 async function fillVoices() {
   await loadVoices();
@@ -8659,7 +8665,7 @@ GAMES.kart = kartStart; GAME_INTRO.kart = 'Vamos correr! Escolha a pista.';
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 29, name: '5.2' };
+const APP_VERSION = { code: 30, name: '5.3' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)

@@ -1,8 +1,8 @@
 {
-  "code": 29,
-  "name": "5.2",
+  "code": 30,
+  "name": "5.3",
   "minApk": 19,
-  "notes": "Corrida mais leve no tablet: emojis guardados prontos, resolução ajustada e qualidade que baixa sozinha se o aparelho ficar lento.",
+  "notes": "Corta frutas mais leve no tablet; no mapa da aventura a fase abre assim que o dedo encosta; opção nos pais para liberar todas as fases.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/JogosDoOliver.apk"
 }
