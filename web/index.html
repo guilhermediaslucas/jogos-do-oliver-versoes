@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 28, name: '5.1' }; -->
+<!-- const APP_VERSION = { code: 29, name: '5.2' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -8155,7 +8155,8 @@ $('#pReport').onclick = () => { blip(560); reportFlush(); reportRender(); $('#pa
 $('#reportClose').onclick = () => { blip(440); $('#report').hidden = true; $('#parents').hidden = false; };
 
 /* ================= Corrida do Oliver: kart em pseudo-3D (a estrada é uma fila de segmentos projetados) ================= */
-const K_SEG = 200, K_ROAD = 2000, K_CAMH = 1000, K_DRAW = 200, K_FOV = 100;
+const K_SEG = 200, K_ROAD = 2000, K_CAMH = 1000, K_FOV = 100;
+let K_DRAW = 180, kQ = 1;   // distância de desenho e qualidade: baixam sozinhas se o aparelho ficar lento
 const kDepth = 1 / Math.tan(K_FOV / 2 * Math.PI / 180), kPZ = K_CAMH * kDepth;
 const K_MAX = K_SEG * 44, K_ACC = K_MAX / 2.6;
 const K_EMOJI = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
@@ -8395,9 +8396,31 @@ function kSky(W, shift) {
   });
   const haze = kx.createLinearGradient(0, kH * .48, 0, kH * .56); haze.addColorStop(0, 'rgba(255,255,255,0)'); haze.addColorStop(1, 'rgba(255,255,255,.35)'); kx.fillStyle = haze; kx.fillRect(0, kH * .48, kW, kH * .08);
 }
-function kSprite(e, x, y, size, clip) {
-  if (size < 3) return; kx.save(); kx.beginPath(); kx.rect(0, 0, kW, clip); kx.clip();
-  kx.font = `${size}px ${K_EMOJI}`; kx.textAlign = 'center'; kx.textBaseline = 'bottom'; kx.fillText(e, x, y); kx.restore();
+// cada emoji é desenhado uma vez numa imagem guardada; depois só se copia a imagem (no Android, desenhar emoji em vários tamanhos a cada quadro trava)
+const kEmoCache = new Map();
+function kEmo(e) {
+  let c = kEmoCache.get(e);
+  if (!c) {
+    c = document.createElement('canvas'); c.width = c.height = 96; const x = c.getContext('2d');
+    x.font = `80px ${K_EMOJI}`; x.textAlign = 'center'; x.textBaseline = 'bottom'; x.fillText(e, 48, 92); kEmoCache.set(e, c);
+  }
+  return c;
+}
+// desenha a imagem com a base em (x, y); o que fica atrás do morro (abaixo de clip) é cortado
+function kSprite(e, x, y, size, clip, img = kEmo(e)) {
+  if (size < 3) return;
+  const top = y - size; if (top >= clip) return;
+  const vis = Math.min(size, clip - top);
+  kx.drawImage(img, 0, 0, img.width, img.height * vis / size, x - size / 2, top, size, vis);
+}
+let kBoxImg = null;
+function kBox() {
+  if (kBoxImg) return kBoxImg;
+  const c = kBoxImg = document.createElement('canvas'); c.width = c.height = 96; const x = c.getContext('2d');
+  const g = x.createLinearGradient(8, 8, 88, 88); ['#e53935', '#fdd835', '#43a047', '#1e88e5', '#8e24aa'].forEach((cl, k) => g.addColorStop(k / 4, cl));
+  x.globalAlpha = .9; x.fillStyle = g; x.beginPath(); x.roundRect(10, 14, 76, 76, 14); x.fill(); x.globalAlpha = 1;
+  x.lineWidth = 5; x.strokeStyle = '#fff'; x.stroke(); x.fillStyle = '#fff'; x.font = '900 54px system-ui,sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('?', 48, 54);
+  return c;
 }
 // veículo visto de trás: kart, barco ou nave; head é o emoji do corredor ou 'kid' (a criança)
 function kRide(cx, by, w, r, t) {
@@ -8428,7 +8451,7 @@ function kRide(cx, by, w, r, t) {
   }
   kx.shadowBlur = 0;
   const hy = ride === 'ship' ? -w * .32 : ride === 'boat' ? -w * .22 : -w * .36;
-  if (r.name === 'kid') kKid(hy, w); else { kx.font = `${w * .34}px ${K_EMOJI}`; kx.textAlign = 'center'; kx.textBaseline = 'bottom'; kx.fillText(r.name, 0, hy); }
+  if (r.name === 'kid') kKid(hy, w); else { const sz = w * .42; kx.drawImage(kEmo(r.name), -sz / 2, hy - sz, sz, sz); }
   kx.restore();
 }
 // o piloto é o personagem da criança (com a foto, se tiver), olhando para trás
@@ -8436,9 +8459,13 @@ function kKid(hy, w) {
   const fit = OUTFITS[avatar.outfit] || OUTFITS.mixer;
   kx.fillStyle = fit.shirt; kx.beginPath(); kx.roundRect(-w * .16, hy - w * .22, w * .32, w * .24, w * .08); kx.fill(); kx.stroke();
   kx.fillStyle = avatar.skin; kx.beginPath(); kx.arc(-w * .2, hy - w * .12, w * .05, 0, 7); kx.arc(w * .2, hy - w * .12, w * .05, 0, 7); kx.fill(); kx.stroke();
-  const s = w * .38 / 64; kx.save(); kx.translate(-50 * s, hy - w * .36 - 43 * s); kx.scale(s, s);
-  kx.lineWidth = 4; kx.strokeStyle = INK; kx.lineJoin = kx.lineCap = 'round'; oliverHead(kx, avatar); kx.restore();
+  if (!kKidImg) {   // a cabeça é desenhada uma vez por corrida e depois só copiada
+    const c = kKidImg = document.createElement('canvas'); c.width = c.height = 160; const x = c.getContext('2d');
+    x.translate(80 - 50 * 2, 80 - 43 * 2); x.scale(2, 2); x.lineWidth = 4; x.strokeStyle = INK; x.lineJoin = x.lineCap = 'round'; oliverHead(x, avatar);
+  }
+  const hs = w * .19 / 64 * 80; kx.drawImage(kKidImg, -hs, hy - w * .36 - hs, hs * 2, hs * 2);
 }
+let kKidImg = null;
 function kDraw() {
   const W = K_WORLDS[kOpt.world], me = K.me, camZ = kWrap(me.z - kPZ), base = kSegAt(camZ), bp = (camZ % K_SEG) / K_SEG;
   const ps = kSegAt(me.z), pp = (me.z % K_SEG) / K_SEG, py = ps.p1.y + (ps.p2.y - ps.p1.y) * pp;
@@ -8477,14 +8504,11 @@ function kDraw() {
     for (const d of sg.deco) kSprite(d.e, X(d.off), p.y, unit * .3 * d.size * (K_BIG.has(d.e) ? 1 : .5), sg.clip);
     for (const o of bucket.get(sg.i) || []) {
       if (o.box) {
-        const sz = unit * .15, ix = X(o.box.off), iy = p.y - sz * .3 - Math.abs(Math.sin(K.t * 3 + o.box.off * 5)) * sz * .25; if (sz < 3) continue;
-        kx.save(); kx.beginPath(); kx.rect(0, 0, kW, sg.clip); kx.clip();
-        const g = kx.createLinearGradient(ix - sz / 2, iy - sz, ix + sz / 2, iy); ['#e53935', '#fdd835', '#43a047', '#1e88e5', '#8e24aa'].forEach((c, k) => g.addColorStop(k / 4, c));
-        kx.globalAlpha = .9; kx.fillStyle = g; kx.beginPath(); kx.roundRect(ix - sz / 2, iy - sz, sz, sz, sz * .18); kx.fill(); kx.globalAlpha = 1;
-        kx.lineWidth = Math.max(1, sz * .06); kx.strokeStyle = '#fff'; kx.stroke(); kx.fillStyle = '#fff'; kx.font = `900 ${sz * .7}px system-ui,sans-serif`; kx.textAlign = 'center'; kx.textBaseline = 'middle'; kx.fillText('?', ix, iy - sz / 2); kx.restore();
+        const sz = unit * .17, iy = p.y - Math.abs(Math.sin(K.t * 3 + o.box.off * 5)) * sz * .2;
+        kSprite('?', X(o.box.off), iy, sz, sg.clip, kBox());
       } else if (o.coin) kSprite('🪙', X(o.coin.off), p.y - unit * .03, unit * .1, sg.clip);
       else if (o.item) kSprite(o.item.kind === 'banana' ? '🍌' : '🫧', X(o.item.off), p.y - (o.item.kind === 'bubble' ? unit * .05 : 0), unit * (o.item.kind === 'bubble' ? .16 : .12), sg.clip);
-      else if (o.racer) { const w = unit * .3; if (w < 4) continue; kx.save(); kx.beginPath(); kx.rect(0, 0, kW, sg.clip); kx.clip(); kRide(X(o.racer.off), p.y, w, o.racer, K.t); kx.restore(); }
+      else if (o.racer) { const w = unit * .3; if (w < 4 || p.y - w * .6 > sg.clip) continue; kRide(X(o.racer.off), p.y, w, o.racer, K.t); }
     }
   }
   // a criança, sempre embaixo no meio
@@ -8575,7 +8599,7 @@ function kMenu() {
   $k('#kMenu').hidden = false; $k('#kEnd').hidden = true;
 }
 function kGo() {
-  kAudio(); $k('#kMenu').hidden = true; $k('#kEnd').hidden = true;
+  kAudio(); $k('#kMenu').hidden = true; $k('#kEnd').hidden = true; kKidImg = null;
   kNewRace(); kTilt0 = kTiltRaw;
   $k('#g-kart').classList.toggle('tilt', kOpt.ctrl === 'tilt');
   if (kSong) kSong.stop(); stopMusic(); kSong = kOpt.music && kAc && musicOn() ? chipPlay(kAc, kOut, CHIP_SONGS[K_WORLDS[kOpt.world].song], { volume: .7 }) : null;
@@ -8599,7 +8623,10 @@ addEventListener('keydown', e => {
   if ((e.key === ' ' || e.key === 'ArrowUp') && K) { e.preventDefault(); kUse(K.me); }
 });
 addEventListener('keyup', e => { if (e.key === 'ArrowLeft') kKeys.l = false; if (e.key === 'ArrowRight') kKeys.r = false; });
-function kResize() { const d = Math.min(devicePixelRatio || 1, 2), r = kCv.getBoundingClientRect(); kW = kCv.width = Math.max(1, r.width * d | 0); kH = kCv.height = Math.max(1, r.height * d | 0); }
+function kResize() {
+  const d = Math.min(devicePixelRatio || 1, 2), r = kCv.getBoundingClientRect(), k = Math.min(d, 1100 * kQ / Math.max(1, r.width));
+  kW = kCv.width = Math.max(1, r.width * k | 0); kH = kCv.height = Math.max(1, r.height * k | 0);
+}
 function kInit() {
   kCv = $k('#kCv'); kx = kCv.getContext('2d'); kResize(); addEventListener('resize', kResize);
   kHold('#kL', 'l'); kHold('#kR', 'r');
@@ -8616,17 +8643,23 @@ function kLoop() {
   let last = performance.now();
   const loop = t => {
     if (!shown('g-kart')) { kRaf = 0; if (kSong) { kSong.stop(); kSong = null; } if (kEngG) kEngG.gain.value = 0; return; }
-    const dt = Math.min(.05, (t - last) / 1000); last = t; if (K) { if (K.state !== 'menu') kStep(dt); kDraw(); } kRaf = requestAnimationFrame(loop);
+    const raw = (t - last) / 1000, dt = Math.min(.05, raw); last = t; if (K) { if (K.state !== 'menu') kStep(dt); kDraw(); }
+    if (K && K.state === 'race') {
+      kSlow.push(raw); if (kSlow.length > 90) kSlow.shift();
+      if (kSlow.length === 90 && kSlow.reduce((a, b) => a + b) / 90 > 1 / 40 && kQ > .55) { kQ = Math.max(.55, kQ * .8); K_DRAW = Math.max(110, K_DRAW - 25); kSlow = []; kResize(); }
+    }
+    kRaf = requestAnimationFrame(loop);
   };
   kRaf = requestAnimationFrame(loop);
 }
+let kSlow = [];
 function kartStart() { if (!kCv) kInit(); else { kResize(); if (!kRaf) kLoop(); kMenu(); } }
 GAMES.kart = kartStart; GAME_INTRO.kart = 'Vamos correr! Escolha a pista.';
 
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 28, name: '5.1' };
+const APP_VERSION = { code: 29, name: '5.2' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)
