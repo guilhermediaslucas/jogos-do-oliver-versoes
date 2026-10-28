@@ -1,8 +1,8 @@
 {
-  "code": 31,
-  "name": "5.4",
+  "code": 32,
+  "name": "5.5",
   "minApk": 19,
-  "notes": "Jogo novo: Encaixa blocos (estilo Tetris para criança), com modo fácil e normal, sombra da peça e sem fim de jogo.",
+  "notes": "Jogo novo: Cobrinha (come frutas e cresce; atravessa as bordas e não perde se esbarrar nela mesma), com modo devagar e rápido.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/JogosDoOliver.apk"
 }

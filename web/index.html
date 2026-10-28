@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 31, name: '5.4' }; -->
+<!-- const APP_VERSION = { code: 32, name: '5.5' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -455,6 +455,13 @@ button:active { transform: scale(.92); }
 #blkMode { white-space: nowrap; width: auto; padding: 0 14px; }
 .blkPad .padBtn { background: rgba(255,255,255,.75); border-color: rgba(42,29,18,.25); color: var(--ink); }
 @media (max-height: 560px) { .blkPad { gap: 8px; left: 8px; bottom: 8px; } .blkPad.right { right: 8px; } }
+/* cobrinha */
+.snkPlay { border-radius: 24px; overflow: hidden; background: #7cb342; touch-action: none; }
+#snkCv { position: absolute; inset: 0; width: 100%; height: 100%; }
+.snkPad { position: absolute; right: 12px; bottom: 12px; display: grid; grid-template: ". u ." ". . ." / auto auto auto; grid-template-areas: ". u ." "l . r" ". d ."; gap: 4px; opacity: .85; }
+.snkPad .padBtn { width: 66px; height: 66px; font-size: 30px; background: rgba(255,255,255,.55); border-color: rgba(42,29,18,.25); color: var(--ink); }
+#snkU { grid-area: u; } #snkL { grid-area: l; } #snkR { grid-area: r; } #snkD { grid-area: d; }
+#snkMode { white-space: nowrap; width: auto; padding: 0 14px; }
 .keys { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; height: 100%; }
 .key { border-radius: 20px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 16px; font-size: clamp(30px, 6vw, 56px); box-shadow: 0 6px 0 rgba(0,0,0,.2); touch-action: none; }
 .key span { display: block; }
@@ -641,6 +648,7 @@ button:active { transform: scale(.92); }
     <button class="mode" style="background:var(--g-adv)" data-game="adventure"><span>🏃</span>Aventura do <span class="advName">Oliver</span></button>
     <button class="mode" style="background:#e53935" data-game="kart"><span>🏎️</span>Corrida do <span class="advName">Oliver</span></button>
     <button class="mode" style="background:#5c6bc0" data-game="blocks"><span>🧱</span>Encaixa blocos</button>
+    <button class="mode" style="background:#689f38" data-game="snake"><span>🐍</span>Cobrinha</button>
     <button class="mode" style="background:var(--g-mem)" data-game="memory"><span>🃏</span>Memória</button>
     <button class="mode" style="background:var(--g-bal)" data-game="bubbles"><span>🎈</span>Estoura balão</button>
     <button class="mode" style="background:var(--g-piano)" data-game="piano"><span>🎹</span>Piano dos bichos</button>
@@ -846,6 +854,14 @@ button:active { transform: scale(.92); }
   <div class="play blkPlay"><canvas id="blkCv"></canvas>
     <div class="blkPad"><button class="padBtn" id="blkL" aria-label="Para a esquerda">◀</button><button class="padBtn" id="blkR" aria-label="Para a direita">▶</button></div>
     <div class="blkPad right"><button class="padBtn" id="blkRot" aria-label="Girar">🔄</button><button class="padBtn" id="blkDown" aria-label="Descer rápido">⬇</button></div>
+  </div>
+</section>
+<section id="g-snake" class="screen game" hidden>
+  <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Cobrinha</h2><span class="score" id="snkScore"></span>
+    <button class="round wide" id="snkMode">🐢 Devagar</button><button class="round musicBtn" aria-label="Música de fundo">🎵</button><button class="round trackBtn" aria-label="Trocar a música">🔀</button></div>
+  <div class="play snkPlay"><canvas id="snkCv"></canvas>
+    <div class="snkPad"><button class="padBtn" id="snkU" aria-label="Para cima">▲</button><button class="padBtn" id="snkL" aria-label="Para a esquerda">◀</button>
+      <button class="padBtn" id="snkR" aria-label="Para a direita">▶</button><button class="padBtn" id="snkD" aria-label="Para baixo">▼</button></div>
   </div>
 </section>
 <section id="g-count" class="screen game" hidden>
@@ -8822,10 +8838,107 @@ addEventListener('keyup', e => { if (e.key === 'ArrowDown') blkHoldT = 0; });
 $('#blkMode').onclick = () => { blkSave.easy = !blkSave.easy; keep('oliver-blocks', blkSave); blip(620); blocksStart(); say(blkSave.easy ? 'Fácil' : 'Normal'); };
 GAMES.blocks = blocksStart; GAME_INTRO.blocks = 'Encaixe os blocos e complete as linhas!';
 
+/* ================= cobrinha: come frutas e cresce; atravessa as bordas e, se esbarrar nela mesma, só fica menor ================= */
+const SNK_FRUITS = [['🍎', 'maçã'], ['🍌', 'banana'], ['🍓', 'morango'], ['🍇', 'uva'], ['🍊', 'laranja'], ['🍉', 'melancia'], ['🍐', 'pera'], ['🥝', 'kiwi'], ['🍒', 'cereja']];
+const snkSave = load('oliver-snake', { best: 0, slow: true });
+let snk = null, snkRaf = 0;
+function snakeStart() {
+  const W = 16, H = 10;
+  snk = { W, H, body: [[5, 5], [4, 5], [3, 5]], dir: [1, 0], want: [1, 0], t: 0, step: 0, grow: 0, score: 0, food: null, parts: [], ops: 0, slow: snkSave.slow };
+  $('#snkMode').textContent = snk.slow ? '🐢 Devagar' : '🐇 Rápido';
+  snkFood(); snkScore(); snkResize(); startMusic('g-snake');
+  cancelAnimationFrame(snkRaf);
+  let last = performance.now();
+  const loop = t => { if (!alive('snake')) { snkRaf = 0; return; } snkStep(Math.min(.05, (t - last) / 1000)); last = t; snkDraw(); snkRaf = requestAnimationFrame(loop); };
+  snkRaf = requestAnimationFrame(loop);
+}
+function snkResize() { const cv = $('#snkCv'), r = cv.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2, 1100 / Math.max(1, r.width)); cv.width = Math.max(1, r.width * d | 0); cv.height = Math.max(1, r.height * d | 0); }
+addEventListener('resize', () => { if (shown('g-snake')) snkResize(); });
+function snkScore() { $('#snkScore').textContent = `🍎 ${snk.score}   🏆 ${Math.max(snkSave.best, snk.score)}`; }
+function snkFood() {
+  let x, y; do { x = Math.random() * snk.W | 0; y = Math.random() * snk.H | 0; } while (snk.body.some(([bx, by]) => bx === x && by === y));
+  snk.food = { x, y, f: Math.random() < .12 ? ['⭐', 'estrela'] : pick(SNK_FRUITS) };
+}
+function snkTurn(dx, dy) { if (!snk) return; if (dx === -snk.dir[0] && dy === -snk.dir[1]) return; snk.want = [dx, dy]; }
+function snkStep(dt) {
+  snk.t += dt; snk.ops -= dt;
+  for (const q of snk.parts) { q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 6 * dt; q.life -= dt; }
+  snk.parts = snk.parts.filter(q => q.life > 0);
+  const speed = Math.max(snk.slow ? .2 : .11, (snk.slow ? .34 : .2) - snk.score * .004);
+  if ((snk.step += dt) < speed) return;
+  snk.step = 0; snk.dir = snk.want;
+  const [hx, hy] = snk.body[0], nx = (hx + snk.dir[0] + snk.W) % snk.W, ny = (hy + snk.dir[1] + snk.H) % snk.H;   // passa pela borda e sai do outro lado
+  const hit = snk.body.findIndex(([bx, by], i) => i > 0 && bx === nx && by === ny);
+  if (hit > 0) {   // esbarrou nela mesma: perde o rabinho dali para trás, sem acabar o jogo
+    for (const [bx, by] of snk.body.slice(hit)) snk.parts.push({ x: bx + .5, y: by + .5, vx: (Math.random() - .5) * 4, vy: -Math.random() * 3, c: '#8bc34a', life: .8 });
+    snk.body = snk.body.slice(0, Math.max(3, hit)); snk.ops = .6; say('Ops! Cuidado com o rabinho!'); blip(220, .15);
+  }
+  snk.body.unshift([nx, ny]);
+  if (snk.grow > 0) snk.grow--; else snk.body.pop();
+  if (nx === snk.food.x && ny === snk.food.y) {
+    const star = snk.food.f[0] === '⭐';
+    snk.grow += star ? 3 : 1; snk.score += star ? 5 : 1;
+    for (let k = 0; k < 10; k++) snk.parts.push({ x: nx + .5, y: ny + .5, vx: (Math.random() - .5) * 5, vy: -Math.random() * 4, c: star ? '#ffd23f' : '#ff7043', life: .7 });
+    if (snk.score > snkSave.best) { snkSave.best = snk.score; keep('oliver-snake', snkSave); }
+    blip(star ? 1320 : 880, .1); blip(star ? 1760 : 1175, .12, .08);
+    if (star) say('Estrela! Mais cinco!'); else if (Math.random() < .5) say(snk.food.f[1]);
+    if (Math.floor(snk.score / 10) > Math.floor((snk.score - (star ? 5 : 1)) / 10)) celebrate();
+    snkScore(); snkFood();
+  }
+}
+function snkDraw() {
+  const cv = $('#snkCv'), x = cv.getContext('2d'), CW = cv.width, CH = cv.height;
+  const S = Math.floor(Math.min(CW * .78 / snk.W, CH * .94 / snk.H)), ox = (CW * .8 - S * snk.W) / 2, oy = (CH - S * snk.H) / 2;   // a direita fica livre para as setas
+  x.clearRect(0, 0, CW, CH);
+  for (let j = 0; j < snk.H; j++) for (let i = 0; i < snk.W; i++) { x.fillStyle = (i + j) % 2 ? '#9ed36a' : '#aadd76'; x.fillRect(ox + i * S, oy + j * S, S + 1, S + 1); }
+  x.strokeStyle = INK; x.lineWidth = Math.max(2, S * .08); x.strokeRect(ox, oy, S * snk.W, S * snk.H);
+  // fruta (imagem guardada) pulando de leve
+  const f = snk.food, fs = S * 1.15 * (1 + Math.sin(snk.t * 6) * .06);
+  x.drawImage(kEmo(f.f[0]), ox + (f.x + .5) * S - fs / 2, oy + (f.y + .5) * S - fs * .55, fs, fs);
+  // corpo: bolinhas do rabo até a cabeça, com listrinhas
+  const pos = ([bx, by]) => [ox + (bx + .5) * S, oy + (by + .5) * S];
+  x.lineWidth = Math.max(2, S * .06);
+  for (let i = snk.body.length - 1; i > 0; i--) {
+    const [cx, cy] = pos(snk.body[i]), r = S * (.36 + .08 * (1 - i / snk.body.length));
+    x.fillStyle = snk.ops > 0 && Math.floor(snk.t * 14) % 2 ? '#fff' : i % 2 ? '#26a69a' : '#4dd0c4';
+    x.beginPath(); x.arc(cx, cy, r, 0, TAU); x.fill(); x.stroke();
+  }
+  // cabeça olhando para onde vai, com língua
+  const [hx, hy] = pos(snk.body[0]), [dx, dy] = snk.dir, a = Math.atan2(dy, dx);
+  x.save(); x.translate(hx, hy); x.rotate(a);
+  if (Math.sin(snk.t * 8) > .3) { x.strokeStyle = '#e53935'; x.lineWidth = S * .06; x.beginPath(); x.moveTo(S * .45, 0); x.lineTo(S * .7, 0); x.lineTo(S * .8, -S * .08); x.moveTo(S * .7, 0); x.lineTo(S * .8, S * .08); x.stroke(); }
+  x.strokeStyle = INK; x.lineWidth = Math.max(2, S * .06); x.fillStyle = '#00897b';
+  x.beginPath(); x.ellipse(0, 0, S * .55, S * .46, 0, 0, TAU); x.fill(); x.stroke();
+  for (const sd of [-1, 1]) { x.fillStyle = '#fff'; x.beginPath(); x.arc(S * .14, sd * S * .2, S * .14, 0, TAU); x.fill(); x.stroke(); x.fillStyle = INK; x.beginPath(); x.arc(S * .19, sd * S * .2, S * .07, 0, TAU); x.fill(); }
+  x.fillStyle = 'rgba(255,120,140,.5)'; for (const sd of [-1, 1]) { x.beginPath(); x.arc(-S * .12, sd * S * .3, S * .07, 0, TAU); x.fill(); }
+  x.restore();
+  for (const q of snk.parts) { x.globalAlpha = Math.max(0, q.life); x.fillStyle = q.c; x.beginPath(); x.arc(ox + q.x * S, oy + q.y * S, S * .14, 0, TAU); x.fill(); }
+  x.globalAlpha = 1;
+}
+// setas na tela, arrastar o dedo e teclado
+for (const [id, dx, dy] of [['#snkU', 0, -1], ['#snkD', 0, 1], ['#snkL', -1, 0], ['#snkR', 1, 0]])
+  $(id).addEventListener('pointerdown', e => { e.preventDefault(); snkTurn(dx, dy); $(id).classList.add('on'); setTimeout(() => $(id).classList.remove('on'), 150); });
+{
+  const cv = $('#snkCv'); let s = null;
+  cv.addEventListener('pointerdown', e => { s = { x: e.clientX, y: e.clientY }; try { cv.setPointerCapture(e.pointerId); } catch (er) {} });
+  cv.addEventListener('pointermove', e => {
+    if (!s) return; const dx = e.clientX - s.x, dy = e.clientY - s.y;
+    if (Math.hypot(dx, dy) > 30) { if (Math.abs(dx) > Math.abs(dy)) snkTurn(Math.sign(dx), 0); else snkTurn(0, Math.sign(dy)); s = { x: e.clientX, y: e.clientY }; }
+  });
+  cv.addEventListener('pointerup', () => { s = null; });
+}
+addEventListener('keydown', e => {
+  if (!shown('g-snake')) return;
+  const k = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[e.key];
+  if (k) { e.preventDefault(); snkTurn(...k); }
+});
+$('#snkMode').onclick = () => { snkSave.slow = !snkSave.slow; keep('oliver-snake', snkSave); blip(620); snakeStart(); };
+GAMES.snake = snakeStart; GAME_INTRO.snake = 'Leve a cobrinha até as frutas!';
+
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 31, name: '5.4' };
+const APP_VERSION = { code: 32, name: '5.5' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)
