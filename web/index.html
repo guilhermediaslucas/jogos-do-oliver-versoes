@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 35, name: '6.0' }; -->
+<!-- const APP_VERSION = { code: 36, name: '6.1' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -13,7 +13,7 @@
 }, 15000);</script>
 </head>
 <body>
-<title>Jogos do Oliver</title>
+<title>Mundo do Oliver</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap">
@@ -107,6 +107,11 @@ button:active { transform: scale(.92); }
 .edRight .gl, .edLeft .gl { position: relative; }
 #done { right: max(18px, env(safe-area-inset-right, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); }
 #toolBtn svg { width: 120%; height: auto; transform: rotate(-45deg); }
+/* modelo colorido do desenho: cartãozinho à esquerda; tocar amplia */
+#refCard { position: absolute; z-index: 3; left: max(18px, env(safe-area-inset-left, 0px)); top: calc(env(safe-area-inset-top, 0px) + 140px); width: 96px; height: 96px;
+  border-radius: 22px; background: #fff; overflow: hidden; box-shadow: 0 0 0 5px #fff, 0 6px 14px rgba(0,0,0,.18); transition: width .25s, height .25s; }
+#refCard img { width: 100%; height: 100%; object-fit: contain; display: block; }
+#refCard.big { z-index: 5; width: min(62vmin, 440px); height: min(62vmin, 440px); }
 #colorBtn .chip { width: 62%; height: 62%; border-radius: 16px; box-shadow: inset 0 -4px 0 rgba(0,0,0,.15), 0 0 0 3px #fff; }
 .rainbowChip { background: linear-gradient(100deg, #e53935, #fb8c00, #fdd835, #43a047, #1e88e5, #8e24aa, #ec407a); }
 .pop { position: absolute; z-index: 4; right: 140px; top: calc(env(safe-area-inset-top, 0px) + 10px); max-height: calc(100% - 20px); overflow-y: auto;
@@ -643,6 +648,7 @@ button:active { transform: scale(.92); }
   .gl { width: 78px; height: 78px; font-size: 36px; }
   .edRight, .edLeft { display: flex; gap: 20px; }
   .pop { right: 10px; left: 10px; top: calc(env(safe-area-inset-top, 0px) + 108px); }
+  #refCard { left: auto; right: max(10px, env(safe-area-inset-right, 0px)); top: calc(env(safe-area-inset-top, 0px) + 116px); width: 74px; height: 74px; }
   #colors { grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 8px; } .sw { width: 100%; height: auto; aspect-ratio: 1; }
   .modes { grid-template-columns: repeat(2, 1fr); }
   .mode span { font-size: 52px; } .mode { font-size: 19px; }
@@ -654,7 +660,7 @@ button:active { transform: scale(.92); }
  <div class="homeIn">
   <header class="hero">
     <canvas id="heroLogo" width="256" height="256" aria-hidden="true"></canvas>
-    <h1>Jogos do <b id="kidName">Oliver</b></h1>
+    <h1>Mundo do <b id="kidName">Oliver</b></h1>
     <button class="heroKid" id="heroKid" aria-label="Dar oi"><span class="bubble" id="heroHi">Oi, Oliver!</span><canvas id="heroKidCv" width="200" height="280"></canvas></button>
     <button class="round hold" id="parentBtn" aria-label="Área dos pais: segure 3 segundos">⚙️</button>
   </header>
@@ -748,6 +754,7 @@ button:active { transform: scale(.92); }
     <button class="gl gl-purple" id="clear" aria-label="Apagar tudo">🗑️</button>
   </div>
   <button class="gl gl-pink round-gl" id="done" aria-label="Pronto, guardar desenho">💖</button>
+  <button id="refCard" aria-label="Ver o desenho colorido" hidden><img alt=""></button>
   <div class="pop" id="toolPop" hidden><div id="tools" aria-label="Ferramentas"></div>
     <div class="toolRow" id="toolExtras"><button class="tool" id="snd" aria-label="Som ligado">🔊</button></div></div>
   <div class="pop" id="colorPop" hidden><div id="colors" aria-label="Cores"></div></div>
@@ -1103,13 +1110,22 @@ function nose(c, x, y, w) {
 function wMouth(c, x, y, w) { c.beginPath(); c.moveTo(x - w, y); c.quadraticCurveTo(x - w / 2, y + w * .85, x, y); c.quadraticCurveTo(x + w / 2, y + w * .85, x + w, y); c.stroke(); }
 function smile(c, x, y, w) { c.beginPath(); c.moveTo(x - w, y); c.quadraticCurveTo(x, y + w * .9, x + w, y); c.stroke(); }
 // espessuras relativas à linha base do desenho
-function pens(c) { const L = c.lineWidth; return { thick: () => { c.lineWidth = L * 1.15; }, thin: () => { c.lineWidth = L * .6; } }; }
-// o Oliver em contorno para colorir, numa caixa de 100 x 150 começando em (x, y) e com escala s
+// no traçado (ART_TRACE) os detalhes finos somem: só fica o contorno principal, mais fácil de seguir
+let ART_TRACE = false, ART_COLOR = false;   // ART_COLOR: desenha o modelo já pintado (o Oliver com as cores da roupa)
+// no modelo colorido, pinta a forma que acabou de ser desenhada (chapéus e capacetes que ficam por cima do Oliver)
+const tint = (c, col) => { if (ART_COLOR) { c.fillStyle = col; c.fill(); c.stroke(); } };
+function pens(c) {
+  const L = c.lineWidth;
+  return { thick: () => { c.lineWidth = L * 1.15; if (ART_TRACE) c.globalAlpha = 1; }, thin: () => { c.lineWidth = L * .6; if (ART_TRACE) c.globalAlpha = 0; } };
+}
+// o Oliver (ou o papai) para os desenhos: contorno simples para pintar, ou já colorido no modelo
+const kidLook = (o = {}) => ART_COLOR ? { ...LOGO_KID, skin: avatar.skin, hair: avatar.hair, style: avatar.style, ...o } : { ...LOGO_KID, style: avatar.style, plain: true, simple: true, ...o };
+// o Oliver numa caixa de 100 x 150 começando em (x, y) e com escala s
 function kid(c, x, y, s, pose, phase, opts = {}) {
-  c.save(); c.translate(x, y); c.scale(s, s);
+  c.save(); c.translate(x, y); c.scale(s, s); c.globalAlpha = 1;   // no traçado o Oliver sempre aparece
   // o pontilhado do traçado e a tinta da página valem também para o Oliver (que é desenhado numa escala própria)
   const dash = c.getLineDash(); if (dash.length) c.setLineDash(dash.map(v => v / s));
-  drawAvatar(c, 0, 0, 1, 1, phase, false, pose, { ...LOGO_KID, style: avatar.style, plain: true, ink: c.strokeStyle, lw: c.lineWidth / s * (ART_OUTLINE_ONLY ? .6 : 1), simple: ART_OUTLINE_ONLY, ...opts }); c.restore();
+  drawAvatar(c, 0, 0, 1, 1, phase, false, pose, kidLook({ ink: ART_COLOR ? INK : c.strokeStyle, lw: c.lineWidth / s, ...opts })); c.restore();
 }
 
 const ART = {
@@ -1732,7 +1748,7 @@ const ART = {
     for (const x of [470, 530]) circ(c, x, 780, 8);
   },
   blank() {},
-  oliverkid(c) { c.save(); c.translate(250, 25); c.scale(5, 5); drawAvatar(c, 0, 0, 1, 1, 0, false, 'wave', { ...LOGO_KID, plain: true }); c.restore(); },
+  oliverkid(c) { kid(c, 250, 25, 5, 'wave', 0); },
   oliverestadio(c) {
     const { thick, thin } = pens(c);
     thin();
@@ -1752,17 +1768,17 @@ const ART = {
   },
   oliverbetoneira(c) {
     const { thin } = pens(c);
-    c.save(); c.translate(699, 445); c.scale(1.4, 1.4); c.lineWidth = 2.4; oliverHead(c, { ...LOGO_KID, plain: true }); c.restore();
-    drawMixer(c, 60, 300, 8.6, null, 11);
+    drawMixer(c, 60, 300, 8.6, ART_COLOR ? '#ffd23f' : null, 11, c.strokeStyle);
+    c.save(); c.translate(699, 445); c.scale(1.4, 1.4); c.lineWidth = 2.4; oliverHead(c, kidLook()); c.restore();
     thin();
     c.beginPath(); for (const r of [40, 70, 100]) c.arc(960, 600, r, -.5, .5); c.stroke();
     smooth(c, [150, 180, 210, 130, 290, 150, 330, 110, 410, 140, 440, 200]);
   },
   oliverpiloto(c) {
     const { thick, thin } = pens(c);
-    c.save(); c.translate(400, 297); c.scale(2.4, 2.4); c.lineWidth = 2.4; oliverHead(c, { ...LOGO_KID, plain: true }); c.restore();
+    c.save(); c.translate(400, 297); c.scale(2.4, 2.4); c.lineWidth = 2.4; oliverHead(c, kidLook()); c.restore();
     thick();
-    c.beginPath(); c.arc(520, 400, 100, Math.PI * 1.05, Math.PI * 1.95); c.stroke();
+    c.beginPath(); c.arc(520, 400, 100, Math.PI * 1.05, Math.PI * 1.95); c.arc(520, 400, 80, Math.PI * 1.95, Math.PI * 1.05, true); c.closePath(); c.stroke();   // capacete
     smooth(c, [100, 600, 180, 520, 380, 505, 440, 470, 620, 470, 700, 520, 880, 540, 920, 600, 880, 640, 140, 640]);
     smooth(c, [140, 560, 80, 450, 160, 450, 200, 520]);
     for (const x of [250, 760]) circ(c, x, 650, 82);
@@ -1782,7 +1798,7 @@ const ART = {
     smooth(c, [410, 690, 260, 760, 110, 690, 170, 800, 410, 790]);
     kid(c, 250, 100, 5, 'wave', 0, { outfit: 'galo' });
     thick();
-    c.beginPath(); c.arc(500, 315, 185, Math.PI * 1.02, Math.PI * 1.98); c.stroke();
+    c.beginPath(); c.arc(500, 315, 185, Math.PI * 1.02, Math.PI * 1.98); c.arc(500, 315, 150, Math.PI * 1.98, Math.PI * 1.02, true); c.closePath(); c.stroke();   // capuz de dino
     for (let i = 0; i < 6; i++) { const a = Math.PI * (1.12 + i * .15), x = 500 + 185 * Math.cos(a), y = 315 + 185 * Math.sin(a); smooth(c, [x - 26, y + 12, x + 40 * Math.cos(a), y + 40 * Math.sin(a), x + 26, y + 12]); }
     thin();
     c.beginPath(); c.ellipse(500, 560, 60, 70, 0, 0, TAU); c.stroke();
@@ -1806,8 +1822,8 @@ const ART = {
     const { thick, thin } = pens(c);
     kid(c, 250, 150, 4.8, 'wave', 0, { outfit: 'galo' });
     thick();
-    smooth(c, [385, 235, 360, 145, 420, 95, 500, 72, 580, 95, 640, 145, 615, 235]);
-    c.beginPath(); c.roundRect(380, 225, 240, 52, 16); c.stroke();
+    smooth(c, [385, 235, 360, 145, 420, 95, 500, 72, 580, 95, 640, 145, 615, 235]); tint(c, '#ffffff');
+    c.beginPath(); c.roundRect(380, 225, 240, 52, 16); c.stroke(); tint(c, '#ffffff');
     c.beginPath(); c.ellipse(790, 650, 150, 60, 0, 0, TAU); c.stroke();
     thin();
     c.beginPath(); c.ellipse(790, 645, 120, 44, 0, 0, TAU); c.stroke();
@@ -1836,7 +1852,7 @@ const ART = {
     const { thick, thin } = pens(c);
     kid(c, 320, 150, 4.2, '', Math.PI / 2, { outfit: 'mixer' });
     thick();
-    c.beginPath(); c.arc(530, 300, 140, Math.PI * 1.05, Math.PI * 1.95); c.closePath(); c.stroke();
+    c.beginPath(); c.arc(530, 300, 140, Math.PI * 1.05, Math.PI * 1.95); c.closePath(); c.stroke();   // capacete de bicicleta
     for (const x of [270, 730]) circ(c, x, 790, 130);
     circ(c, 880, 880, 42);
     c.beginPath(); c.moveTo(270, 790); c.lineTo(450, 640); c.lineTo(730, 790); c.lineTo(500, 790); c.lineTo(270, 790); c.moveTo(450, 640); c.lineTo(500, 790);
@@ -1885,15 +1901,12 @@ const ART = {
     const { thick, thin } = pens(c);
     thick();
     smooth(c, [215, 500, 150, 640, 120, 800, 210, 760, 280, 820, 350, 760, 430, 800, 400, 640, 335, 500]);
-    kid(c, 80, 180, 4.4, 'cheer', 0, { outfit: 'galo' });
+    kid(c, 80, 180, 4.4, 'cheer', 0, { outfit: 'super' });
     thick();
-    circ(c, 300, 590, 42);
-    smooth(c, [208, 372, 263, 350, 300, 365, 337, 350, 392, 372, 382, 410, 337, 414, 300, 400, 263, 414, 218, 410]);
     c.save(); c.translate(480, 300); c.scale(.55, .55); c.lineWidth /= .55; ART.robot(c); c.restore();
     const pts = []; for (let i = 0; i < 16; i++) { const a = i * TAU / 16, r = i % 2 ? 60 : 110; pts.push(560 + r * Math.cos(a), 170 + r * Math.sin(a)); }
     smooth(c, pts);
     thin();
-    circ(c, 300, 590, 20);
     c.beginPath(); for (const [x1, y1, x2, y2] of [[420, 400, 470, 380], [420, 450, 480, 450], [420, 500, 470, 520]]) { c.moveTo(x1, y1); c.lineTo(x2, y2); } c.stroke();
   },
   oliverpapai(c) {
@@ -1913,13 +1926,8 @@ const ART = {
     const { thick, thin } = pens(c);
     thick();
     smooth(c, [400, 440, 300, 620, 250, 820, 380, 760, 500, 845, 620, 760, 750, 820, 700, 620, 600, 440]);
-    kid(c, 250, 60, 5, 'cheer', 0, { outfit: 'galo' });
-    thick();
-    circ(c, 500, 545, 55);
-    smooth(c, [388, 302, 450, 278, 500, 292, 550, 278, 612, 302, 602, 342, 550, 348, 500, 330, 450, 348, 398, 342]);
+    kid(c, 250, 60, 5, 'cheer', 0, { outfit: 'super' });   // roupa azul, capa vermelha, cinto amarelo e emblema no peito
     thin();
-    circ(c, 500, 545, 26);
-    c.beginPath(); c.moveTo(400, 640); c.lineTo(600, 640); c.stroke();
     c.beginPath(); for (const [x, y, l] of [[170, 380, 90], [140, 460, 120], [180, 540, 80], [820, 420, 90], [850, 500, 110]]) { c.moveTo(x, y); c.lineTo(x + (x < 500 ? -l : l), y); } c.stroke();
     smooth(c, [120, 880, 170, 820, 250, 830, 300, 790, 380, 820, 420, 880]);
     smooth(c, [600, 900, 640, 840, 720, 850, 770, 810, 850, 840, 880, 900]);
@@ -1927,17 +1935,8 @@ const ART = {
   },
   oliveraranha(c) {
     const { thick, thin } = pens(c);
-    kid(c, 250, 60, 5, 'wave', 0, { outfit: 'galo' });
-    thick();
-    smooth(c, [420, 268, 470, 262, 485, 300, 455, 325, 418, 302]); smooth(c, [580, 268, 530, 262, 515, 300, 545, 325, 582, 302]);
+    kid(c, 250, 60, 5, 'wave', 0, { outfit: 'aranha' });   // roupa vermelha e azul com a aranha no peito, sem máscara
     thin();
-    c.beginPath();
-    for (let i = 0; i < 8; i++) { const a = i * TAU / 8; c.moveTo(500, 290); c.lineTo(500 + 150 * Math.cos(a), 280 + 140 * Math.sin(a)); }
-    c.stroke();
-    for (const r of [70, 120]) { c.beginPath(); c.ellipse(500, 288, r, r * .9, 0, Math.PI * 1.08, Math.PI * 1.92); c.stroke(); }
-    c.beginPath(); c.ellipse(500, 540, 22, 30, 0, 0, TAU); c.stroke();
-    c.beginPath(); for (const s of [-1, 1]) for (const dy of [-20, -5, 10, 25]) { c.moveTo(500 + s * 15, 540 + dy * .6); c.quadraticCurveTo(500 + s * 45, 530 + dy, 500 + s * 60, 555 + dy * 1.2); } c.stroke();
-    c.beginPath(); for (const x of [420, 460, 540, 580]) { c.moveTo(x, 455); c.lineTo(x + (x < 500 ? -10 : 10), 640); } c.moveTo(400, 520); c.lineTo(600, 520); c.moveTo(400, 600); c.lineTo(600, 600); c.stroke();
     c.beginPath(); c.moveTo(640, 250); c.lineTo(900, 70); c.stroke();
     c.beginPath(); for (let i = 0; i < 6; i++) { const a = i * TAU / 6; c.moveTo(900, 70); c.lineTo(900 + 90 * Math.cos(a), 70 + 90 * Math.sin(a)); } c.stroke();
     for (const r of [35, 65]) { c.beginPath(); for (let i = 0; i <= 6; i++) { const a = i * TAU / 6; c.lineTo(900 + r * Math.cos(a), 70 + r * Math.sin(a)); } c.stroke(); }
@@ -1947,7 +1946,7 @@ const ART = {
     thick();
     c.beginPath(); c.moveTo(760, 830); c.lineTo(760, 400); c.lineTo(960, 400); c.lineTo(960, 830); c.stroke();
     thin();
-    c.beginPath(); for (let x = 790; x < 960; x += 34) { c.moveTo(x, 400); c.lineTo(x, 830); } for (let y = 440; y < 830; y += 40) { c.moveTo(760, y); c.lineTo(960, y); } c.stroke();
+    c.beginPath(); for (let x = 810; x < 960; x += 50) { c.moveTo(x, 400); c.lineTo(x, 830); } for (let y = 470; y < 830; y += 70) { c.moveTo(760, y); c.lineTo(960, y); } c.stroke();   // rede do gol
     kid(c, 150, 100, 4.5, '', Math.PI / 2, { outfit: 'galo' });
     thick();
     circ(c, 640, 770, 70);
@@ -1955,7 +1954,6 @@ const ART = {
     smooth(c, [640, 745, 662, 760, 654, 786, 626, 786, 618, 760]);
     c.beginPath(); for (const a of [-1.57, -.31, .94, 2.2, 3.46]) { c.moveTo(640 + 25 * Math.cos(a), 770 + 25 * Math.sin(a)); c.lineTo(640 + 70 * Math.cos(a), 770 + 70 * Math.sin(a)); } c.stroke();
     c.beginPath(); for (const y of [740, 770, 800]) { c.moveTo(530, y); c.lineTo(470, y); } c.moveTo(60, 850); c.lineTo(980, 850); c.stroke();
-    c.beginPath(); for (const x of [100, 260, 420, 560, 880]) { c.moveTo(x, 850); c.lineTo(x - 10, 820); c.moveTo(x + 15, 850); c.lineTo(x + 18, 825); } c.stroke();
   },
   oliveramigos(c) {
     const { thick, thin } = pens(c);
@@ -1974,25 +1972,26 @@ const ART = {
     const { thick, thin } = pens(c);
     thick();
     c.beginPath(); c.roundRect(370, 430, 260, 200, 40); c.stroke();
-    kid(c, 250, 60, 5, 'wave', 0, { outfit: 'galo' });
+    kid(c, 250, 60, 5, 'wave', 0, { outfit: 'astro' });
     thick();
     circ(c, 500, 278, 190);
-    c.beginPath(); c.roundRect(445, 480, 110, 80, 14); c.stroke();
+    // painel no peito (no modelo colorido ele fica cinza, com os botões vermelho e amarelo)
+    c.beginPath(); c.roundRect(445, 480, 110, 80, 14); if (ART_COLOR) { c.fillStyle = '#90a4ae'; c.fill(); } c.stroke();
     thin();
     c.beginPath(); c.moveTo(390, 150); c.quadraticCurveTo(430, 110, 480, 105); c.stroke();
-    circ(c, 470, 520, 12); circ(c, 530, 520, 12);
+    for (const [bx, col] of [[470, '#e53935'], [530, '#ffd23f']]) { c.beginPath(); c.arc(bx, 520, 12, 0, TAU); if (ART_COLOR) { c.fillStyle = col; c.fill(); } c.stroke(); }
     circ(c, 150, 220, 70); c.beginPath(); c.ellipse(150, 225, 120, 26, -.3, 0, TAU); c.stroke();
     for (const [x, y, r] of [[860, 160, 40], [840, 620, 30], [140, 620, 34], [900, 400, 24]]) { const pts = []; for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, d = i % 2 ? r * .42 : r; pts.push(x + d * Math.cos(a), y + d * Math.sin(a)); } smooth(c, pts); }
   },
   oliverbombeiro(c) {
     const { thick, thin } = pens(c);
-    kid(c, 250, 60, 5, '', 0, { outfit: 'galo' });
+    kid(c, 250, 60, 5, '', 0, { outfit: 'bombeiro' });
     thick();
     c.beginPath(); c.ellipse(500, 250, 205, 42, 0, 0, TAU); c.stroke();
-    smooth(c, [335, 250, 352, 130, 500, 88, 648, 130, 665, 250]);
+    smooth(c, [335, 250, 352, 130, 500, 88, 648, 130, 665, 250]); tint(c, '#e53935');
     smooth(c, [612, 615, 720, 600, 800, 520, 850, 450, 885, 470, 830, 560, 735, 640, 615, 655]);
     thin();
-    smooth(c, [500, 140, 540, 160, 530, 210, 500, 225, 470, 210, 460, 160]);
+    smooth(c, [500, 140, 540, 160, 530, 210, 500, 225, 470, 210, 460, 160]); tint(c, '#ffd23f');
     c.beginPath(); c.moveTo(500, 95); c.lineTo(500, 140); c.stroke();
     for (const [x, y, r] of [[900, 400, 18], [930, 350, 14], [870, 330, 12], [950, 420, 12], [910, 290, 10]]) smooth(c, [x, y - r * 1.6, x + r, y, x, y + r, x - r, y]);
     c.beginPath(); c.moveTo(400, 560); c.lineTo(600, 560); c.moveTo(400, 590); c.lineTo(600, 590); c.stroke();
@@ -2006,8 +2005,8 @@ const ART = {
     smooth(c, [230, 120, 295, 200, 270, 280, 230, 305, 190, 280, 165, 200]);
     kid(c, 260, 80, 4.6, 'wave', 0, { outfit: 'polo' });
     thick();
-    c.beginPath(); c.moveTo(490, 115); c.lineTo(400, 300); c.quadraticCurveTo(495, 330, 590, 300); c.closePath(); c.stroke();
-    circ(c, 490, 105, 26);
+    c.beginPath(); c.moveTo(490, 115); c.lineTo(400, 300); c.quadraticCurveTo(495, 330, 590, 300); c.closePath(); c.stroke(); tint(c, '#ab47bc');
+    circ(c, 490, 105, 26); tint(c, '#ffd23f');
     c.beginPath(); c.ellipse(780, 880, 190, 30, 0, 0, TAU); c.stroke();
     c.beginPath(); c.roundRect(620, 700, 320, 170, 24); c.stroke();
     c.beginPath(); c.moveTo(800, 700); c.lineTo(760, 590); c.lineTo(760, 620); c.lineTo(830, 620); c.moveTo(810, 560); c.lineTo(810, 700); c.stroke();
@@ -2358,7 +2357,7 @@ Object.assign(ART, {
   chick(c) {
     const { thick, thin } = pens(c);
     thick();
-    c.beginPath(); c.arc(500, 480, 230, Math.PI * .92, Math.PI * .08); c.stroke();
+    c.beginPath(); c.arc(500, 480, 230, Math.PI * .8, Math.PI * .2); c.stroke();
     c.beginPath(); c.moveTo(270, 600); c.quadraticCurveTo(290, 860, 500, 870); c.quadraticCurveTo(710, 860, 730, 600); c.stroke();
     zig(c, 270, 730, 600, 45, 8);
     smooth(c, [470, 230, 480, 170, 520, 150, 510, 210], false);
@@ -2481,7 +2480,7 @@ Object.assign(ART, {
     const { thick, thin } = pens(c);
     thick();
     c.beginPath(); c.roundRect(120, 430, 580, 260, 30); c.stroke();
-    c.beginPath(); c.moveTo(700, 690); c.lineTo(700, 400); c.quadraticCurveTo(700, 360, 740, 360); c.lineTo(820, 360); c.quadraticCurveTo(880, 380, 900, 470); c.lineTo(900, 690); c.stroke();
+    c.beginPath(); c.moveTo(700, 690); c.lineTo(700, 400); c.quadraticCurveTo(700, 360, 740, 360); c.lineTo(820, 360); c.quadraticCurveTo(880, 380, 900, 470); c.lineTo(900, 690); c.closePath(); c.stroke();
     for (const x of [240, 560, 790]) circ(c, x, 700, 78);
     c.beginPath(); c.roundRect(730, 290, 90, 60, 20); c.stroke();
     thin();
@@ -2586,7 +2585,7 @@ Object.assign(ART, {
     c.beginPath(); c.roundRect(540, 200, 340, 300, 14); c.stroke();
     thin();
     circ(c, 640, 290, 40); c.beginPath(); for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4; c.moveTo(640 + Math.cos(a) * 55, 290 + Math.sin(a) * 55); c.lineTo(640 + Math.cos(a) * 75, 290 + Math.sin(a) * 75); } c.stroke();
-    c.beginPath(); c.moveTo(560, 470); c.quadraticCurveTo(640, 380, 720, 440); c.quadraticCurveTo(800, 380, 870, 450); c.stroke();
+    c.beginPath(); c.moveTo(542, 470); c.quadraticCurveTo(640, 380, 720, 440); c.quadraticCurveTo(800, 380, 878, 455); c.stroke();   // morro da pintura, de borda a borda
     smooth(c, [780, 260, 830, 230, 860, 270, 820, 300], true);
     c.beginPath(); c.moveTo(40, 905); c.lineTo(960, 905); c.stroke();
     smooth(c, [330, 760, 420, 700, 520, 740, 500, 800, 400, 820]);
@@ -2662,7 +2661,10 @@ const BBOX = {};
 function artBox(id) {
   if (BBOX[id]) return BBOX[id];
   const S = 250, c = document.createElement('canvas'); c.width = c.height = S;
+  // a caixa é sempre a do desenho completo (no traçado e no modelo colorido o desenho fica no mesmo lugar)
+  const flags = [ART_TRACE, ART_COLOR]; ART_TRACE = ART_COLOR = false;
   const x = c.getContext('2d'); x.setTransform(S / 1000, 0, 0, S / 1000, 0, 0); x.lineWidth = 11; x.lineJoin = x.lineCap = 'round'; ART[id](x);
+  [ART_TRACE, ART_COLOR] = flags;
   const d = x.getImageData(0, 0, S, S).data; let x0 = S, y0 = S, x1 = -1, y1 = -1;
   for (let y = 0; y < S; y++) for (let X = 0; X < S; X++) if (d[(y * S + X) * 4 + 3]) { if (X < x0) x0 = X; if (X > x1) x1 = X; if (y < y0) y0 = y; if (y > y1) y1 = y; }
   return BBOX[id] = x1 < 0 ? [0, 0, 1000, 1000] : [x0 * 4 - 8, y0 * 4 - 8, (x1 + 1) * 4 + 8, (y1 + 1) * 4 + 8];
@@ -2673,9 +2675,199 @@ function artXform(id, w, h) {
 }
 function drawArt(ctx, id, w, h, lw = 11) {
   const { s, tx, ty } = artXform(id, w, h);
-  ctx.setTransform(s, 0, 0, s, tx, ty);
+  ctx.save(); ctx.setTransform(s, 0, 0, s, tx, ty);
   ctx.lineWidth = lw; ctx.lineJoin = ctx.lineCap = 'round';
-  ART[id](ctx); ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ART[id](ctx); ctx.restore();
+}
+
+/* ---------- modelo colorido: cada desenho já pintado, para a criança se basear (e pintar como quiser) ---------- */
+// bg: cor do fundo (ou faixas [cor, até y] no espaço 1000 x 1000: céu, grama, mar); f: [x, y, cor] = balde de tinta nesse ponto;
+// sub: [desenho, x, y, escala, pontos a pular] reaproveita as cores de outro desenho que aparece dentro deste.
+const FB = { sky: '#dff3ff', sea: '#c8ecff', night: '#ece6ff', light: '#fff8ec', dirt: [['#dff3ff', 870], ['#d7ccc8', 1e9]] };
+const fField = (y, g = '#b9e48f', top = FB.sky) => [[top, y], [g, 1e9]];
+// roda: pneu (em cima e embaixo, porque às vezes uma linha passa pelo meio) e calota
+const fWheel = (x, y, r, ri) => [[x, y + (r + ri) / 2, '#455a64'], [x, y - (r + ri) / 2, '#455a64'], [x, y + ri / 2, '#cfd8dc'], [x, y - ri / 2, '#cfd8dc']];
+const fRing = (cx, cy, r, n, col, a0 = 0) => Array.from({ length: n }, (_, i) => [cx + r * Math.cos(a0 + i * TAU / n), cy + r * Math.sin(a0 + i * TAU / n), col]);
+const fAll = (pts, col) => pts.map(([x, y]) => [x, y, col]);
+const GLASS = '#bbdefb', GOLD = '#ffd23f';
+const FILL = {
+  // oceano
+  fish: { bg: FB.sea, f: [[600, 420, '#ffb74d'], [865, 430, '#ff7043'], [505, 290, '#ff7043'], [485, 700, '#ff7043'], [435, 560, '#ff8a65']] },
+  octopus: { bg: FB.sea, f: [[500, 330, '#ba68c8'], ...fAll([[318, 580], [386, 580], [454, 580], [546, 580], [614, 580], [682, 580]], '#ab47bc'), [560, 230, '#ce93d8']] },
+  whale: { bg: FB.sea, f: [[450, 420, '#64b5f6'], [885, 460, '#42a5f5'], [330, 675, '#bbdefb'], [485, 675, '#1e88e5']] },
+  starfish: { bg: FB.sea, f: [[500, 620, '#ff8a65']] },
+  crab: { bg: FB.sea, f: [[380, 600, '#ef5350'], [190, 330, '#e53935'], [810, 330, '#e53935']] },
+  shark: { bg: FB.sea, f: [[600, 450, '#90a4ae'], [895, 420, '#78909c'], [505, 290, '#78909c'], [420, 640, '#78909c']] },
+  jellyfish: { bg: FB.sea, f: [[380, 420, '#f48fb1'], [360, 330, '#f8bbd0'], [640, 330, '#f8bbd0'], [500, 280, '#f8bbd0']] },
+  seahorse: { bg: FB.sea, f: [[600, 460, '#ffb74d'], [520, 760, '#ffb74d']] },
+  submarine: { bg: FB.sea, f: [[230, 620, GOLD], [430, 330, '#ffb300'], [860, 570, '#ff9800'], ...fAll([[320, 512], [480, 512], [640, 512]], '#ff9800'), ...fAll([[320, 560], [480, 560], [640, 560]], '#4fc3f7')] },
+  // dinossauros
+  sauro: { bg: fField(860, '#c5e8a0'), f: [[540, 640, '#81c784'], [670, 380, '#81c784'], [160, 545, '#81c784'], ...fAll([[330, 780], [430, 780], [560, 780], [650, 780]], '#66bb6a'), ...fAll([[420, 540], [520, 520], [600, 580], [470, 620]], '#c5e1a5')] },
+  rex: { bg: fField(865, '#c5e8a0'), f: [[600, 450, '#66bb6a'], [250, 690, '#66bb6a'], [471, 780, '#43a047'], [601, 780, '#43a047'], [640, 230, '#66bb6a'], [685, 492, '#66bb6a']] },
+  stego: { bg: fField(840, '#c5e8a0'), f: [[500, 600, '#4db6ac'], [120, 630, '#4db6ac'], [850, 650, '#4db6ac'], ...fAll([[270, 790], [390, 790], [560, 790], [690, 790]], '#26a69a'), ...fAll([[300, 447], [370, 412], [440, 395], [510, 390], [580, 398], [650, 420]], '#ff8a65')] },
+  egg: { bg: FB.light, f: [[450, 380, '#81c784'], [520, 190, '#ffb74d'], [480, 580, '#fff3e0'], ...fAll([[380, 640], [560, 700], [620, 560], [470, 800], [330, 750]], '#a5d6a7')] },
+  tricera: { bg: fField(830, '#c5e8a0'), f: [[760, 600, '#81c784'], ...fAll([[395, 730], [485, 730], [645, 730], [735, 730]], '#66bb6a'), [330, 370, '#ff8a65'], [300, 560, '#66bb6a'], ...fAll([[205, 420], [308, 420], [105, 515]], '#fff8e1'), ...fAll([[560, 480], [650, 450], [700, 540], [600, 610]], '#a5d6a7')] },
+  ptero: { bg: FB.sky, f: [[250, 420, '#b39ddb'], [750, 420, '#b39ddb'], [420, 600, '#9575cd'], [500, 560, '#d1c4e9'], [520, 320, '#9575cd']] },
+  // fazenda
+  cow: { bg: fField(800), f: [[430, 300, '#fafafa'], [610, 280, '#5d4037'], [500, 500, '#f8bbd0'], [250, 320, '#fafafa'], [750, 320, '#fafafa'], [350, 200, '#fff3e0'], [650, 200, '#fff3e0']] },
+  pig: { bg: FB.light, f: [[500, 400, '#f8bbd0'], [500, 610, '#f48fb1'], [360, 560, '#f06292'], [640, 560, '#f06292'], [300, 190, '#f48fb1'], [700, 190, '#f48fb1'], [350, 255, '#f06292'], [650, 255, '#f06292']] },
+  hen: { bg: fField(870), f: [[450, 480, '#fff8e1'], [460, 610, '#d7ccc8'], [600, 380, '#fff8e1'], [280, 555, '#ff7043'], [610, 200, '#e53935'], [690, 195, '#e53935'], [785, 335, '#ffb300'], [785, 357, '#ffb300'], [752, 412, '#e53935']] },
+  barn: { bg: fField(880), f: [[300, 750, '#e53935'], [330, 377, '#8d6e63'], [670, 377, '#8d6e63'], [380, 470, '#e53935'], [620, 470, '#e53935'], [295, 620, '#fff59d'], [705, 620, '#fff59d'],
+    ...fAll([[470, 650], [530, 650], [470, 830], [530, 830], [420, 740], [580, 740]], '#8d6e63'), ...fAll([[475, 375], [525, 375], [475, 425], [525, 425]], '#fff59d')] },
+  sheep: { bg: fField(830), f: [[650, 480, '#fafafa'], ...fAll([[400, 780], [480, 780], [600, 780], [680, 780]], '#5d4037'), [240, 520, '#d7ccc8'], [290, 365, '#fafafa'], [175, 430, '#bcaaa4'], [405, 420, '#bcaaa4']] },
+  duck: { bg: [['#dff3ff', 790], ['#81d4fa', 1e9]], f: [[400, 640, '#ffd23f'], [570, 570, '#ffe082'], [300, 290, '#ffd23f'], [160, 390, '#ff9800'], [160, 428, '#ff9800'], [300, 400, '#ffab91']] },
+  chick: { bg: fField(870), f: [[500, 330, '#ffd23f'], [480, 690, '#fff8e1'], [500, 495, '#ff9800'], ...fAll([[400, 485], [600, 485]], '#ffab91'), ...fAll([[420, 740], [590, 700], [520, 800]], '#ffe0b2')] },
+  carrot: { bg: fField(880), f: [[450, 600, '#ff9800']] },
+  // espaço
+  planet: { bg: FB.night, f: [[500, 330, '#ff8a65'], [470, 515, '#ff8a65'], [500, 690, '#ff8a65'], [500, 446, GOLD], [500, 604, GOLD], [151, 614, GOLD], [849, 436, GOLD], [610, 400, '#ffab91'], [400, 620, '#ffab91']] },
+  ufo: { bg: FB.night, f: [[500, 750, '#fff59d'], [450, 420, '#a5d6a7'], [380, 420, GLASS], [620, 420, GLASS], [200, 500, '#b0bec5'], [800, 500, '#b0bec5'], ...fAll([[260, 520], [380, 520], [500, 535], [620, 520], [740, 520]], GOLD), [448, 220, '#e53935'], [552, 220, '#e53935']] },
+  moon: { bg: FB.night, f: [[260, 620, '#fff59d'], ...fAll([[760, 230], [820, 560], [700, 800]], GOLD)] },
+  rocket: { bg: FB.night, f: [[450, 560, '#eceff1'], [340, 680, '#e53935'], [660, 680, '#e53935'], [445, 775, '#ff7043'], [500, 800, GOLD], [500, 320, '#78909c'], [465, 412, '#90caf9']] },
+  robot: { bg: FB.light, f: [[400, 215, '#b0bec5'], [380, 470, '#90a4ae'], [500, 550, '#e53935'], [260, 550, '#78909c'], [740, 550, '#78909c'], [260, 700, '#546e7a'], [740, 700, '#546e7a'],
+    [435, 790, '#78909c'], [565, 790, '#78909c'], [435, 886, '#546e7a'], [565, 886, '#546e7a'], [324, 285, GOLD], [676, 285, GOLD], [500, 95, '#e53935'], [400, 650, GOLD], [600, 650, GOLD]] },
+  alien: { bg: FB.night, f: [[500, 270, '#a5d6a7'], [430, 640, '#81c784'], [500, 670, GOLD], [500, 700, '#ff8a65'], [435, 860, '#81c784'], [565, 860, '#81c784'], [310, 100, '#ff8a65'], [690, 100, '#ff8a65']] },
+  comet: { bg: FB.night, f: [[650, 230, GOLD], [370, 555, '#ffb300'], [338, 487, '#4fc3f7'], ...fAll([[200, 200], [870, 650], [820, 160], [600, 800]], GOLD)] },
+  // animais
+  cat: { bg: FB.light, f: [[360, 340, '#ffb74d'], [420, 720, '#ffb74d'], [500, 770, '#fff3e0'], [740, 720, '#ffb74d'], [300, 280, '#ffb74d'], [700, 280, '#ffb74d'], [330, 260, '#f8bbd0'], [670, 260, '#f8bbd0'], [432, 893, '#fff3e0'], [568, 893, '#fff3e0']] },
+  dog: { bg: FB.light, f: [[380, 300, '#e0a96d'], [420, 760, '#e0a96d'], [720, 740, '#c98a4b'], [500, 815, '#fff3e0'], [500, 640, '#e53935'], [500, 690, GOLD], [250, 420, '#8d5a2b'], [750, 420, '#8d5a2b'],
+    [610, 370, '#8d5a2b'], [440, 520, '#fff3e0'], [500, 575, '#f48fb1'], [432, 900, '#fff3e0'], [568, 900, '#fff3e0']] },
+  lion: { bg: fField(860, '#e6d58a'), f: [[500, 230, '#ff9800'], [500, 390, '#ffcc80'], [450, 600, '#fff3e0'], [550, 600, '#fff3e0'], [360, 284, '#ffcc80'], [640, 284, '#ffcc80'], [360, 320, '#ffab91'], [640, 320, '#ffab91']] },
+  bunny: { bg: fField(880), f: [[500, 340, '#d7ccc8'], [420, 700, '#d7ccc8'], [442, 200, '#d7ccc8'], [558, 200, '#d7ccc8'], [405, 200, '#f8bbd0'], [595, 200, '#f8bbd0'], [535, 720, '#ff9800'], [418, 905, '#efebe9'], [582, 905, '#efebe9']] },
+  bird: { bg: FB.sky, f: [[400, 450, '#42a5f5'], [170, 560, '#1e88e5'], [390, 650, '#1e88e5'], [760, 520, '#ffb300'], [760, 565, '#ffb300']] },
+  butterfly: { bg: FB.sky, f: [[220, 400, '#ff8a65'], [780, 400, '#ff8a65'], [300, 330, GOLD], [700, 330, GOLD], [310, 620, '#ffb74d'], [690, 620, '#ffb74d'], [370, 660, GOLD], [630, 660, GOLD],
+    [500, 460, '#5d4037'], [500, 540, '#5d4037'], [500, 620, '#5d4037'], [500, 232, '#5d4037']] },
+  turtle: { bg: fField(760, '#c5e8a0'), f: [[200, 655, '#81c784'], [320, 705, '#81c784'], [670, 705, '#81c784'], [840, 580, '#81c784'], [500, 500, '#a1887f'], [500, 385, '#8d6e63'],
+    [330, 450, '#8d6e63'], [670, 450, '#8d6e63'], [320, 580, '#8d6e63'], [680, 580, '#8d6e63'], [500, 605, '#8d6e63'], [500, 646, '#ffcc80']] },
+  giraffe: { bg: fField(930, '#c5e8a0'), f: [[420, 690, '#ffcc80'], [470, 450, '#ffcc80'], [470, 180, '#ffcc80'], ...fAll([[450, 850], [530, 850], [620, 850], [700, 850]], '#ffcc80'), [510, 200, '#ffcc80'], [345, 285, '#ffe0b2'],
+    ...fAll([[585, 670], [685, 718], [525, 748], [480, 532], [445, 412]], '#a1662f'), [360, 96, '#8d6e63'], [432, 90, '#8d6e63']] },
+  elephant: { bg: fField(880, '#c5e8a0'), f: [[500, 280, '#90a4ae'], [420, 750, '#90a4ae'], [480, 640, '#90a4ae'], [150, 420, '#90a4ae'], [850, 420, '#90a4ae'], [240, 430, '#f8bbd0'], [760, 430, '#f8bbd0']] },
+  monkey: { bg: fField(880), f: [[500, 230, '#8d6e63'], [500, 530, '#d7ccc8'], [400, 760, '#8d6e63'], [500, 780, '#d7ccc8'], [290, 340, '#8d6e63'], [710, 340, '#8d6e63'], [290, 400, '#d7ccc8'], [710, 400, '#d7ccc8']] },
+  bear: { bg: fField(880), f: [[500, 260, '#a1662f'], [440, 500, '#d7a86e'], [360, 760, '#a1662f'], [500, 780, '#d7a86e'], [320, 175, '#a1662f'], [680, 175, '#a1662f'], [320, 230, '#d7a86e'], [680, 230, '#d7a86e'], [360, 900, '#d7a86e'], [640, 900, '#d7a86e']] },
+  owl: { bg: FB.night, f: [[380, 760, '#a1887f'], [415, 490, '#fff8e1'], [585, 490, '#fff8e1'], [500, 520, '#ffb300']] },
+  // veículos
+  car: { bg: fField(720, '#c8e6c9'), f: [[200, 580, '#e53935'], [450, 450, GLASS], [555, 470, GLASS], ...fWheel(290, 660, 86, 34), ...fWheel(715, 660, 86, 34), [858, 575, '#fff59d']] },
+  truck: { bg: fField(720, '#c8e6c9'), f: [[200, 400, '#42a5f5'], [380, 490, GOLD], [660, 600, '#ef5350'], [740, 535, GLASS], ...fWheel(290, 675, 78, 30), ...fWheel(735, 675, 78, 30), [845, 610, '#fff59d']] },
+  train: { bg: fField(785, '#c8e6c9'), f: [[400, 560, '#e53935'], [820, 600, '#1e88e5'], [680, 455, GLASS], [410, 400, '#37474f'], [290, 665, GOLD], ...[420, 575, 760].flatMap(x => fWheel(x, 705, 72, 26)), ...fAll([[420, 270], [480, 190], [545, 130]], '#eceff1')] },
+  plane: { bg: FB.sky, f: [[300, 540, '#eceff1'], [185, 380, '#e53935'], [460, 650, '#1e88e5'], [910, 515, '#90a4ae'], ...fAll([[340, 470], [420, 470], [500, 470], [580, 470]], GLASS)] },
+  boat: { bg: fField(830, '#64b5f6'), f: [[500, 300, '#8d6e63'], [590, 400, '#fffde7'], [430, 410, '#fffde7'], [535, 172, '#e53935'], [500, 575, '#ffcc80'], [300, 650, '#ef5350'], [440, 535, GLASS], [560, 535, GLASS]] },
+  bus: { bg: fField(760, '#cfd8dc'), f: [[160, 340, GOLD], [300, 640, GOLD], ...fAll([[205, 417], [340, 417], [475, 417], [610, 417], [720, 480]], GLASS), ...fWheel(280, 735, 76, 28), ...fWheel(720, 735, 76, 28), [855, 640, '#fff59d']] },
+  helicopter: { bg: FB.sky, f: [[480, 302, '#607d8b'], [800, 495, '#ef5350'], [920, 495, '#90a4ae'], [600, 560, '#ef5350'], [450, 420, GLASS]] },
+  tractor: { bg: fField(850, '#c5e8a0'), f: [[308, 420, '#616161'], [700, 480, '#43a047'], [560, 420, GLASS], [300, 520, '#43a047'], [640, 590, GOLD], [640, 690, '#ffb300'], ...fRing(640, 690, 146, 12, '#455a64', Math.PI / 12), [290, 800, '#455a64'], [290, 722, GOLD]] },
+  firetruck: { bg: fField(780, '#cfd8dc'), f: [[200, 480, '#e53935'], [760, 560, '#e53935'], [800, 490, GLASS], [775, 320, '#4fc3f7'], [390, 512, GOLD], [390, 560, '#9e9e9e'], ...fWheel(240, 700, 78, 32), ...fWheel(560, 700, 78, 32), ...fWheel(790, 700, 78, 32)] },
+  // obra
+  mixer: { bg: FB.dirt, f: [[230, 430, GOLD], [400, 420, '#ff9800'], [560, 420, GOLD], [650, 380, '#ff9800'], [130, 420, GOLD], [320, 590, '#9e9e9e'], [540, 590, '#9e9e9e'], [620, 630, '#9e9e9e'], [720, 580, '#ff9800'], [745, 505, GLASS],
+    ...fWheel(230, 705, 88, 38), ...fWheel(450, 705, 88, 38), ...fWheel(790, 705, 88, 38), [895, 600, '#fff59d']] },
+  excavator: { bg: FB.dirt, f: [[300, 450, '#ffb300'], [220, 430, '#ffb300'], [150, 600, '#757575'], [180, 800, '#424242'], ...fAll([[235, 795], [350, 795], [465, 795], [580, 795]], '#9e9e9e'), [600, 640, '#ffb300'], [460, 550, '#ffb300'], [500, 470, GLASS]] },
+  dumptruck: { bg: FB.dirt, f: [...fAll([[300, 365], [392, 340], [485, 372]], '#8d6e63'), ...fAll([[190, 520], [320, 540], [440, 540], [580, 540]], '#ff9800'), [700, 600, '#ffb300'], [715, 470, GLASS], [620, 665, '#757575'],
+    ...fWheel(255, 725, 80, 32), ...fWheel(470, 725, 80, 32), ...fWheel(745, 725, 80, 32), [875, 610, '#fff59d']] },
+  crane: { bg: FB.dirt, f: [[180, 340, '#757575'], [260, 305, '#ffb300'], [600, 230, '#ffb300'], [365, 262, '#ffb300'], ...Array.from({ length: 9 }, (_, i) => [365, 305 + i * 50, '#ffb300']), [817, 536, '#8d6e63'],
+    [300, 725, '#ffb300'], [790, 780, '#ff9800'], [900, 650, GLASS], ...fWheel(255, 815, 62, 24), ...fWheel(460, 815, 62, 24), ...fWheel(835, 815, 62, 24)] },
+  bulldozer: { bg: FB.dirt, f: [[250, 700, '#424242'], ...fAll([[320, 730], [680, 730], [430, 730], [500, 730], [570, 730]], '#9e9e9e'), [330, 600, '#ffb300'], [480, 460, '#ffb300'], [520, 395, GLASS], [130, 650, '#9e9e9e'], [380, 420, '#616161']] },
+  roller: { bg: [['#dff3ff', 870], ['#bdbdbd', 1e9]], f: [[250, 580, '#9e9e9e'], [250, 680, GOLD], [740, 640, '#424242'], [740, 720, GOLD], [550, 600, '#ffb300'], [665, 480, GLASS], [650, 280, '#ffb300']] },
+  helmet: { bg: FB.light, f: [[330, 580, GOLD], [670, 580, GOLD], [500, 450, '#ff9800'], [330, 500, '#ffffff'], [670, 500, '#ffffff'], [500, 665, '#ffb300']] },
+  // festas
+  pumpkin: { bg: FB.night, f: [[500, 450, '#ff9800'], [260, 600, '#fb8c00'], [740, 600, '#fb8c00'], [620, 225, '#66bb6a'], [640, 270, '#66bb6a'], [500, 290, '#8d6e63']] },
+  ghost: { bg: FB.night, f: [[500, 700, '#ffffff'], [235, 575, '#ffffff'], [765, 575, '#ffffff']] },
+  bat: { bg: '#fff3c4', f: [[200, 380, '#7e57c2'], [800, 380, '#7e57c2'], [440, 385, '#9575cd'], [560, 385, '#9575cd'], [500, 620, '#9575cd']] },
+  xmastree: { bg: '#e8f4ff', f: [[500, 880, '#8d6e63'], [300, 760, '#43a047'], [500, 655, '#43a047'], [400, 560, '#4caf50'], [500, 460, '#4caf50'], [500, 330, '#66bb6a'], [500, 140, GOLD],
+    [410, 380, '#e53935'], [600, 520, GOLD], [370, 690, '#42a5f5'], [640, 740, '#e53935'], [500, 760, GOLD], [330, 540, '#42a5f5']] },
+  snowman: { bg: '#e8f1ff', f: [[420, 800, '#ffffff'], [420, 460, '#ffffff'], [440, 250, '#ffffff'], [500, 355, '#e53935'], [586, 420, '#e53935'], [530, 240, '#ff9800'], [500, 123, '#37474f'], [500, 55, '#37474f'], [500, 100, '#e53935']] },
+  gift: { bg: FB.light, f: [[330, 520, '#42a5f5'], [670, 520, '#42a5f5'], [500, 600, GOLD], [300, 395, '#1e88e5'], [700, 395, '#1e88e5'], [500, 400, GOLD], [400, 295, '#ec407a'], [600, 295, '#ec407a'], [500, 328, '#ec407a']] },
+  balloons: { bg: FB.sky, f: [[290, 320, '#e53935'], [730, 380, '#1e88e5'], [520, 180, GOLD], [415, 320, GOLD], [620, 320, GOLD], [455, 860, '#ec407a'], [535, 860, '#ec407a']] },
+  partyhat: { bg: FB.light, f: [[480, 280, '#ab47bc'], [540, 470, GOLD], [480, 760, '#ab47bc'], [500, 140, '#ff7043']] },
+  easteregg: { bg: FB.light, f: [[500, 350, '#f48fb1'], [440, 470, '#fff59d'], [620, 700, '#90caf9'], ...fAll([[390, 525], [500, 525], [610, 525], [430, 300], [570, 300], [500, 250], [440, 760], [560, 760], [500, 820]], '#ab47bc'), [440, 160, '#ab47bc'], [560, 160, '#ab47bc']] },
+  crown: { bg: FB.light, f: [[300, 665, '#ffb300'], [420, 560, GOLD], [500, 460, '#4fc3f7'], [500, 665, '#e53935'], [370, 665, '#1e88e5'], [630, 665, '#1e88e5'], ...fAll([[220, 305], [500, 240], [780, 305]], '#e53935')] },
+  // comidas
+  icecream: { bg: FB.light, f: [[500, 220, '#f48fb1'], [500, 370, '#f48fb1'], [360, 470, '#a5d6a7'], [500, 138, '#e53935'], ...fAll([[500, 600], [430, 640], [570, 640], [500, 680], [450, 720], [550, 720], [500, 760], [500, 840], [470, 800], [530, 800]], '#ffcc80')] },
+  cake: { bg: FB.light, f: [[190, 845, '#eceff1'], [810, 845, '#eceff1'], [500, 875, '#eceff1'], [300, 615, '#fff59d'], [290, 790, '#f48fb1'], [350, 445, '#fff59d'], [350, 570, '#f48fb1'],
+    [420, 380, '#42a5f5'], [500, 380, '#ec407a'], [580, 380, '#42a5f5'], ...fAll([[420, 285], [500, 285], [580, 285]], '#ffb300')] },
+  apple: { bg: FB.light, f: [[330, 600, '#e53935'], [500, 250, '#8d6e63'], [610, 220, '#66bb6a'], [610, 275, '#66bb6a']] },
+  pizza: { bg: FB.light, f: [[500, 265, '#e0a35a'], [430, 620, '#ffd54f'], ...fAll([[380, 420], [640, 430], [500, 640], [430, 560], [570, 560]], '#e53935')] },
+  burger: { bg: FB.light, f: [[300, 700, '#ffb74d'], [500, 594, '#795548'], [330, 484, '#8bc34a'], [300, 420, '#ffb74d']] },
+  cupcake: { bg: FB.light, f: [[500, 232, '#e53935'], [500, 330, '#f48fb1'], [500, 470, '#f8bbd0'], [340, 545, '#f48fb1'], [390, 800, '#4fc3f7'], [450, 800, '#81d4fa'], [500, 800, '#4fc3f7'], [550, 800, '#81d4fa'], [610, 800, '#4fc3f7']] },
+  banana: { bg: FB.light, f: [[300, 500, GOLD], [285, 225, '#8d6e63']] },
+  watermelon: { bg: FB.light, f: [[500, 720, '#43a047'], [330, 400, '#ef5350'], ...fAll([[300, 450], [420, 560], [600, 560], [700, 450], [500, 440], [380, 420], [620, 420]], '#3e2723')] },
+  donut: { bg: FB.light, f: [[500, 790, '#e0a96d'], [450, 280, '#f48fb1']] },
+  // casa e jardim
+  sun: { bg: FB.sky, f: [...fRing(500, 500, 290, 12, '#ffb300'), [500, 380, GOLD], [395, 545, '#ff8a65'], [605, 545, '#ff8a65']] },
+  flower: { bg: fField(900, '#c5e8a0'), f: [[488, 600, '#43a047'], [380, 650, '#66bb6a'], [400, 710, '#66bb6a'], [620, 590, '#66bb6a'], [610, 665, '#66bb6a'], ...fRing(500, 360, 200, 6, '#f48fb1', -Math.PI / 2), [500, 300, GOLD], [500, 826, '#d84315'], [500, 910, '#ff7043']] },
+  house: { bg: fField(880), f: [[656, 300, '#8d6e63'], [300, 760, '#fff59d'], [350, 450, '#e53935'], [500, 395, GLASS], [480, 820, '#8d6e63'], ...fAll([[318, 603], [372, 603], [318, 657], [372, 657], [628, 603], [682, 603], [628, 657], [682, 657]], GLASS)] },
+  tree: { bg: fField(885), f: [[520, 760, '#8d6e63'], [420, 250, '#66bb6a'], ...fAll([[340, 300], [650, 280], [330, 460], [670, 470], [500, 200]], '#e53935')] },
+  rainbow: { bg: FB.sky, f: [[500, 320, '#e53935'], [500, 380, '#ffb300'], [500, 440, '#42a5f5'], [100, 690, '#ffffff'], [740, 690, '#ffffff'], [820, 190, GOLD]] },
+  mushroom: { bg: fField(870), f: [[420, 620, '#fff3e0'], [250, 470, '#e53935'], ...fAll([[330, 380], [560, 290], [700, 430], [470, 460]], '#ffffff')] },
+  castle: { bg: fField(880), f: [...[235, 765].flatMap(x => [[x + 25, 122, '#e53935'], [x, 300, '#5c6bc0'], [x, 700, '#b0bec5'], [x, 530, GOLD]]), [400, 600, '#cfd8dc'],
+    ...fAll([[372, 457], [457, 457], [542, 457], [627, 457]], '#cfd8dc'), [465, 720, '#8d6e63'], [535, 720, '#8d6e63']] },
+  kite: { bg: FB.sky, f: [[460, 300, '#e53935'], [640, 330, GOLD], [480, 450, '#1e88e5'], [640, 450, '#43a047'], ...fAll([[485, 760], [555, 760], [505, 850], [575, 850]], '#ab47bc')] },
+  umbrella: { bg: '#e3f2fd', f: [[280, 380, '#e53935'], [500, 350, GOLD], [720, 380, '#1e88e5'], ...fAll([[180, 650], [260, 820], [760, 640], [840, 800], [680, 880]], '#4fc3f7')] },
+  // Oliver (ele e o papai já saem com as cores da roupa; aqui só o resto da cena)
+  oliverkid: { bg: FB.sky },
+  superoliver: { bg: FB.sky, f: [[320, 720, '#e53935'], [680, 720, '#e53935'], [270, 850, '#ffffff'], [740, 870, '#ffffff'], ...fAll([[160, 160], [840, 200], [880, 640]], GOLD)] },
+  oliveraranha: { bg: FB.sky },
+  oliverbola: { bg: [['#dff3ff', 560], ['#7cb342', 1e9]], f: [[640, 767, '#212121'], ...fRing(640, 770, 50, 5, '#ffffff', -.94)] },
+  oliveramigos: { bg: fField(840), f: [[500, 165, '#e53935'], [420, 95, '#e53935'], [580, 95, '#e53935'], [880, 110, GOLD]] },
+  oliverastro: { bg: '#e3dcff', f: [[500, 105, '#e3f2fd'], [385, 520, '#b0bec5'], [615, 520, '#b0bec5'], [150, 200, '#ff8a65'], ...fAll([[860, 160], [840, 620], [140, 620], [900, 400]], GOLD)] },
+  oliverbombeiro: { bg: FB.sky, f: [[320, 252, '#e53935'], [680, 252, '#e53935'], [740, 615, GOLD], ...fAll([[900, 400], [930, 350], [870, 330], [950, 420], [910, 290]], '#4fc3f7')] },
+  oliverniver: { bg: '#fff3e0', f: [[130, 230, '#e53935'], [230, 210, '#1e88e5'], [490, 95, GOLD], [600, 882, '#eceff1'], [700, 720, '#f8bbd0'], [700, 820, '#8d6e63'], [810, 510, '#ffb300']] },
+  oliverdog: { bg: fField(905), f: [[860, 150, '#e53935']], sub: [['dog', 520, 350, .45]] },
+  oliverestadio: { bg: fField(880, '#7cb342'), f: [[130, 470, '#212121'], [167, 470, '#ffffff'], [207, 470, '#212121'], [242, 470, '#ffffff'], [728, 770, '#e53935'], [767, 770, '#ffffff'], [817, 770, '#e53935'], [872, 770, '#ffffff'], [800, 610, '#fff59d']] },
+  oliverbetoneira: { bg: fField(810, '#d7ccc8'), f: [[300, 165, '#eceff1']] },
+  oliverpiloto: { bg: fField(650, '#bdbdbd'), f: [[600, 560, '#e53935'], [150, 500, '#e53935'], [520, 310, '#e53935'], ...fWheel(250, 650, 82, 32), ...fWheel(760, 650, 82, 32),
+    ...Array.from({ length: 12 }, (_, k) => { const i = k % 4, j = k / 4 | 0; return [877 + i * 30, 105 + j * 30, (i + j) % 2 ? '#212121' : '#ffffff']; })] },
+  oliverdino: { bg: fField(800, '#c5e8a0'), f: [[500, 148, '#66bb6a'], [250, 775, '#66bb6a'], ...Array.from({ length: 6 }, (_, i) => { const a = Math.PI * (1.12 + i * .15); return [500 + 200 * Math.cos(a), 315 + 200 * Math.sin(a), GOLD]; })] },
+  oliverpirata: { bg: [['#dff3ff', 780], ['#ffe7a8', 1e9]], f: [[400, 205, '#5d4037'], [200, 740, '#8d6e63'], [110, 830, '#a1662f'], [290, 830, '#a1662f'], ...fAll([[110, 690], [160, 670], [230, 672], [280, 690]], GOLD)] },
+  oliverchef: { bg: '#fff3e0', f: [[655, 650, '#eceff1'], [790, 645, '#ffcc80']] },
+  olivermedico: { bg: '#e3f2fd', f: [[720, 800, '#a1887f'], [700, 450, '#a1887f'], [860, 450, '#a1887f'], [720, 560, '#a1887f'], [780, 605, '#d7ccc8']] },
+  oliverbike: { bg: fField(920, '#c8e6c9'), f: [[530, 182, '#e53935'], [880, 880, GOLD]] },
+  oliverpiscina: { bg: [['#dff3ff', 740], ['#4fc3f7', 1e9]], f: [[300, 690, '#e53935'], [680, 690, '#e53935'], [850, 710, GOLD], [780, 630, GOLD], [130, 130, GOLD]] },
+  oliverdormindo: { bg: '#ece6ff', f: [[105, 640, '#8d6e63'], [250, 740, '#a1887f'], [220, 600, '#e3f2fd'], [650, 625, '#7e57c2'], [650, 590, '#7e57c2'], [330, 480, 'SKIN'], [226, 471, 'SKIN'], [364, 471, 'SKIN'], [295, 416, 'HAIR'],
+    [725, 180, '#fff59d'], ...fAll([[660, 300], [920, 330], [700, 80]], GOLD)] },
+  oliverrobo: { bg: FB.sky, f: [[170, 700, '#e53935'], [410, 700, '#e53935'], [560, 170, GOLD]], sub: [['robot', 480, 300, .55, [11, 12]]] },
+  oliverpapai: { bg: fField(935), f: [[680, 452, '#5d4037'], [300, 215, '#e53935'], [220, 135, '#e53935'], [380, 125, '#e53935']] },
+  oliverpintor: { bg: [['#fff3e0', 905], ['#d7ccc8', 1e9]], f: [[850, 350, GLASS], [640, 290, GOLD], [700, 485, '#81c784'], [820, 265, '#ffffff'], [400, 750, '#e53935'], [450, 735, '#1e88e5'], [480, 775, GOLD]] },
+  olivertambor: { bg: FB.light, f: [[720, 600, '#fff8e1'], [556, 760, '#e53935'], [620, 760, GOLD], [695, 760, '#e53935'], [770, 760, GOLD], [845, 760, '#e53935'], [896, 760, GOLD], [640, 560, GOLD], [800, 540, GOLD]] },
+  oliverpraia: { bg: [['#dff3ff', 860], ['#ffe7a8', 905], ['#4fc3f7', 1e9]], f: [[620, 720, '#ffcc80'], [820, 495, '#e53935'], [725, 820, '#a1662f'], [495, 800, '#e53935'], [850, 150, GOLD]] }
+};
+// pinta com balde (só onde ainda está branco) a partir de cada ponto; o fundo é o branco que encosta na borda
+function refPaint(img, w, h, seeds, bgAt) {
+  const d = img.data, N = w * h, done = new Uint8Array(N), stack = new Int32Array(N);
+  const white = p => !done[p] && d[p * 4] > 215 && d[p * 4 + 1] > 215 && d[p * 4 + 2] > 215;
+  const flood = (p0, colorAt) => {
+    let top = 0; stack[top++] = p0; done[p0] = 1;
+    while (top) {
+      const p = stack[--top], px = p % w, py = (p / w) | 0, col = colorAt(py);
+      d[p * 4] = col[0]; d[p * 4 + 1] = col[1]; d[p * 4 + 2] = col[2]; d[p * 4 + 3] = 255;
+      for (const q of [px > 0 ? p - 1 : -1, px < w - 1 ? p + 1 : -1, p >= w ? p - w : -1, p < N - w ? p + w : -1]) if (q >= 0 && white(q)) { done[q] = 1; stack[top++] = q; }
+    }
+  };
+  const rgb = hex => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+  for (const [sx, sy, hex] of seeds) {
+    // área já pintada por outro ponto: pula; se o ponto caiu em cima de uma linha, procura o branco mais perto
+    const x0 = Math.round(sx), y0 = Math.round(sy);
+    if (x0 < 0 || y0 < 0 || x0 >= w || y0 >= h || done[y0 * w + x0]) continue;
+    let p = -1;
+    for (let r = 0; r <= 4 && p < 0; r++) for (let k = 0; k < (r ? 16 : 1) && p < 0; k++) {
+      const x = Math.round(sx + r * Math.cos(k * TAU / 16)), y = Math.round(sy + r * Math.sin(k * TAU / 16));
+      if (x >= 0 && y >= 0 && x < w && y < h && white(y * w + x)) p = y * w + x;
+    }
+    if (p >= 0) { const c = rgb(hex); flood(p, () => c); }
+  }
+  for (let x = 0; x < w; x++) for (const y of [0, h - 1]) if (white(y * w + x)) flood(y * w + x, bgAt);
+  for (let y = 0; y < h; y++) for (const x of [0, w - 1]) if (white(y * w + x)) flood(y * w + x, bgAt);
+}
+const refCache = {};
+function refImage(id, w, h) {
+  const key = id + w + 'x' + h; if (refCache[key]) return refCache[key];
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d', { willReadFrequently: true });
+  x.fillStyle = '#fff'; x.fillRect(0, 0, w, h); x.strokeStyle = INK;
+  ART_COLOR = true; try { drawArt(x, id, w, h, 11); } finally { ART_COLOR = false; }
+  const F = FILL[id] || {}, { s, tx, ty } = artXform(id, w, h), tone = v => v === 'SKIN' ? avatar.skin : v === 'HAIR' ? avatar.hair : v;
+  const seeds = (F.f || []).map(([ax, ay, col]) => [tx + ax * s, ty + ay * s, tone(col)]);
+  for (const [sub, ox, oy, k, skip = []] of F.sub || []) FILL[sub].f.forEach(([ax, ay, col], i) => { if (!skip.includes(i)) seeds.push([tx + (ox + ax * k) * s, ty + (oy + ay * k) * s, tone(col)]); });
+  const bands = (typeof F.bg === 'string' || !F.bg ? [[F.bg || FB.sky, 1e9]] : F.bg).map(([col, y]) => [[1, 3, 5].map(i => parseInt(col.slice(i, i + 2), 16)), y]);
+  const img = x.getImageData(0, 0, w, h);
+  refPaint(img, w, h, seeds, py => { const ay = (py - ty) / s; return (bands.find(b => ay < b[1]) || bands[bands.length - 1])[0]; });
+  x.putImageData(img, 0, 0);
+  return refCache[key] = c.toDataURL();
 }
 
 /* ---------- estado e telas ---------- */
@@ -2729,42 +2921,6 @@ function btn(parent, cls, html, label, on) {
 }
 function press(group, active) { group.forEach(b => b.setAttribute('aria-pressed', b === active)); }
 
-/* Prévia "meio pintada" de um desenho: cada área fechada ganha uma cor, o fundo fica azul-claro,
-   e só o lado esquerdo aparece colorido, como se a pintura estivesse pela metade. */
-const PREVIEW_COLORS = ['#ffb74d', '#4fc3f7', '#81c784', '#f06292', '#ffd54f', '#9575cd', '#4db6ac', '#ff8a65', '#aed581', '#ba68c8'];
-const previewCache = {};
-function colorPreview(id, w, h) {
-  const key = id + w + 'x' + h;
-  if (previewCache[key]) return previewCache[key];
-  const mk = () => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
-  const lines = mk(), lx = lines.getContext('2d'); lx.strokeStyle = INK; drawArt(lx, id, w, h, 13);
-  const ld = lx.getImageData(0, 0, w, h).data, N = w * h, lab = new Int32Array(N).fill(-1), stack = new Int32Array(N);
-  const col = mk(), cx = col.getContext('2d'), img = cx.createImageData(w, h), d = img.data;
-  let comp = 0;
-  for (let p = 0; p < N; p++) {
-    if (lab[p] >= 0 || ld[p * 4 + 3] > 100) continue;
-    let top = 0, border = false; const members = [];
-    stack[top++] = p; lab[p] = comp;
-    while (top) {
-      const q = stack[--top], qx = q % w, qy = (q / w) | 0; members.push(q);
-      if (!qx || !qy || qx === w - 1 || qy === h - 1) border = true;
-      const push = n => { if (lab[n] < 0 && ld[n * 4 + 3] <= 100) { lab[n] = comp; stack[top++] = n; } };
-      if (qx > 0) push(q - 1); if (qx < w - 1) push(q + 1); if (qy > 0) push(q - w); if (qy < h - 1) push(q + w);
-    }
-    if (members.length > 25) {
-      const hex = border ? '#d9f2ff' : PREVIEW_COLORS[comp % PREVIEW_COLORS.length], n = parseInt(hex.slice(1), 16);
-      for (const q of members) { d[q * 4] = n >> 16; d[q * 4 + 1] = n >> 8 & 255; d[q * 4 + 2] = n & 255; d[q * 4 + 3] = 255; }
-    }
-    comp++;
-  }
-  cx.putImageData(img, 0, 0); cx.drawImage(lines, 0, 0);
-  const out = mk(), ox = out.getContext('2d');
-  ox.fillStyle = '#fff'; ox.fillRect(0, 0, w, h); ox.drawImage(lines, 0, 0);
-  ox.save(); ox.beginPath(); ox.moveTo(0, 0); ox.lineTo(w * .64, 0);
-  ox.bezierCurveTo(w * .5, h * .25, w * .66, h * .5, w * .5, h * .7); ox.bezierCurveTo(w * .4, h * .85, w * .5, h * .95, w * .42, h);
-  ox.lineTo(0, h); ox.closePath(); ox.clip(); ox.drawImage(col, 0, 0); ox.restore();
-  return previewCache[key] = out.toDataURL();
-}
 function glyphPreview(id, w = 320, h = 240) {
   const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
   x.fillStyle = '#fff'; x.fillRect(0, 0, w, h);
@@ -2786,7 +2942,7 @@ function renderBook() {
     b.style.setProperty('--cc', CAT_COLORS[i % CAT_COLORS.length]);
     b.innerHTML = `<img alt=""><b>${nm(name)}</b>`;
     // as prévias são montadas uma a uma, para a tela abrir na hora
-    setTimeout(() => { b.firstChild.src = bookMode === 'letters' ? glyphPreview(items[0][0]) : colorPreview(items[0][0], 320, 240); }, 20 + i * 15);
+    setTimeout(() => { b.firstChild.src = bookMode === 'letters' ? glyphPreview(items[0][0]) : refImage(items[0][0], 320, 240); }, 20 + i * 15);
   });
 }
 function renderThumbs() {
@@ -2794,15 +2950,23 @@ function renderThumbs() {
   for (const [id, name] of bookSrc()[bookCat][2]) {
     const b = btn(box, 'thumb', '', nm(name), () => openEditor(bookMode, id));
     b.style.setProperty('--cc', CAT_COLORS[bookCat % CAT_COLORS.length]);
-    if (bookMode === 'color') { b.innerHTML = '<img alt="">'; b.append(nm(name)); setTimeout(() => { b.firstChild.src = colorPreview(id, 240, 240); }, 20); continue; }
+    if (bookMode === 'color') { b.innerHTML = '<img alt="">'; b.append(nm(name)); setTimeout(() => { b.firstChild.src = refImage(id, 240, 240); }, 20); continue; }
     const c = document.createElement('canvas'); c.width = c.height = 240;
     const x = c.getContext('2d'); x.strokeStyle = '#2a1d12';
     if (bookMode === 'letters') {
       x.font = `800 190px ${GLYPH_FONT}`; x.textAlign = 'center'; x.textBaseline = 'middle';
       x.fillStyle = '#f1e6d4'; x.fillText(GLYPH[id].ch, 120, 128); x.setLineDash([2, 12]); x.lineWidth = 3; x.strokeStyle = '#a08a72'; x.strokeText(GLYPH[id].ch, 120, 128);
-    } else { x.setLineDash([1, 30]); x.strokeStyle = '#a08a72'; ART_OUTLINE_ONLY = true; drawArt(x, id, 240, 240, 16); ART_OUTLINE_ONLY = false; }
+    } else traceGuide(x, id, 240, 240);
     b.append(c, nm(name));
   }
+}
+// guia do traçado: só o contorno principal, uma "estradinha" clara com pontinhos por cima (como nos apps de traçar)
+function traceGuide(x, id, w, h) {
+  ART_OUTLINE_ONLY = ART_TRACE = true;
+  try {
+    x.save(); x.setLineDash([]); x.strokeStyle = '#efe5d6'; drawArt(x, id, w, h, 34);
+    x.setLineDash([1, 26]); x.strokeStyle = '#a08a72'; drawArt(x, id, w, h, 15); x.restore();
+  } finally { ART_OUTLINE_ONLY = ART_TRACE = false; }
 }
 $('#bookBack').onclick = () => { blip(440); if (bookCat >= 0) { bookCat = -1; renderBook(); } else show('home'); };
 
@@ -2870,7 +3034,7 @@ function refreshToolIcons() {
     : `<span class="chip${st.color === 'rainbow' ? ' rainbowChip' : ''}" style="${st.color === 'rainbow' ? '' : 'background:' + st.color}"></span>`;
 }
 function setTool(id) { st.tool = id; press(toolBtns, toolBtns[TOOLS.findIndex(t => t[0] === id)]); renderColors(); refreshToolIcons(); }
-function closePops() { $('#toolPop').hidden = $('#colorPop').hidden = true; }
+function closePops() { $('#toolPop').hidden = $('#colorPop').hidden = true; $('#refCard').classList.remove('big'); }
 function togglePop(id) { const p = $('#' + id), open = p.hidden; closePops(); p.hidden = !open; blip(open ? 660 : 440); }
 $('#toolBtn').onclick = () => togglePop('toolPop');
 $('#colorBtn').onclick = () => togglePop('colorPop');
@@ -2915,6 +3079,8 @@ function openEditor(mode, page) {
   sheet.style.background = m.paper;
   setTool(m.tool); closePops(); show('editor'); undo = [];
   insideBtn.hidden = page === 'blank' || mode === 'letters'; insideBtn.setAttribute('aria-pressed', st.inside);
+  const ref = $('#refCard'); ref.classList.remove('big'); ref.hidden = !FILL[page] || !['color', 'trace'].includes(mode);
+  if (!ref.hidden) ref.firstChild.src = refImage(page, 440, 440);
   hint.hidden = true; idleAt = Date.now() - 2000; lastEnd = null;
   requestAnimationFrame(() => {
     setup();
@@ -2925,6 +3091,10 @@ function openEditor(mode, page) {
   });
 }
 $('#back').onclick = () => { blip(440); show(['color', 'trace', 'letters'].includes(st.mode) ? 'book' : 'home'); };
+$('#refCard').onclick = function () {
+  const big = !this.classList.contains('big'); closePops(); this.classList.toggle('big', big); blip(big ? 660 : 440);
+  if (big) say(pick(['Olha o desenho pintado! Pinte do jeito que você quiser.', 'Pode usar essas cores ou inventar outras!']));
+};
 
 function setup() {
   const r = stage.getBoundingClientRect();
@@ -2945,9 +3115,10 @@ function drawPage() {
   if (st.page.startsWith("L:")) return drawGlyphPage();
   lc.clearRect(0, 0, W, H); gc.clearRect(0, 0, W, H); gc.setLineDash([]);
   if (!st.traced) {
-    ART_OUTLINE_ONLY = true; gc.setLineDash([1, 30]); gc.strokeStyle = '#b9a48c'; drawArt(gc, st.page, W, H, 17); gc.setLineDash([]);
+    traceGuide(gc, st.page, W, H);
+    // pontos para conferir o traçado: só os do contorno principal (o mesmo que aparece no guia)
     const o = document.createElement('canvas'); o.width = W; o.height = H;
-    const ox = o.getContext('2d'); ox.strokeStyle = '#000'; drawArt(ox, st.page, W, H, 11); ART_OUTLINE_ONLY = false;
+    const ox = o.getContext('2d'); ox.strokeStyle = '#000'; ART_OUTLINE_ONLY = ART_TRACE = true; drawArt(ox, st.page, W, H, 11); ART_OUTLINE_ONLY = ART_TRACE = false;
     const d = ox.getImageData(0, 0, W, H).data, all = [];
     for (let i = 0; i < W * H; i += 3) if (d[i * 4 + 3] > 128) all.push(i);
     const step = Math.max(1, Math.floor(all.length / 2500));
@@ -3997,7 +4168,7 @@ const usage = load('oliver-usage', { date: today(), ms: 0 });
 let warned = false;
 const minutes = ms => Math.round(ms / 60000);
 function applyName() {
-  $('#kidName').textContent = prefs.name; document.title = 'Jogos do ' + prefs.name;
+  $('#kidName').textContent = prefs.name; document.title = 'Mundo do ' + prefs.name;
   document.querySelectorAll('.advName').forEach(s => s.textContent = prefs.name);
   $('#heroHi').textContent = `Oi, ${prefs.name}!`;
   $('#restText').textContent = `Até amanhã, ${prefs.name}! Brincar descansado é mais gostoso.`;
@@ -4063,6 +4234,11 @@ const INK = '#2a1d12';
 const avatar = load('oliver-avatar-v2', { skin: '#c99068', hair: '#1f140e', style: 'crespinho', outfit: 'mixer', cap: false, glasses: false });
 const OUTFITS = {
   mixer: { shirt: '#2f3b57', shorts: '#4a6fa5', sleeve: null, cap: '#2f3b57' },
+  // fantasias dos desenhos de colorir: manga e calça compridas (tights), emblema no peito, cinto e teia
+  super: { shirt: '#1e63c8', shorts: '#e53935', sleeve: '#1e63c8', longSleeve: true, tights: '#1e63c8', emblem: 'super', belt: '#ffd23f', cap: '#1e63c8' },
+  aranha: { shirt: '#e53935', shorts: '#1e63c8', sleeve: '#1e63c8', longSleeve: true, tights: '#1e63c8', emblem: 'spider', web: true, cap: '#e53935' },
+  astro: { shirt: '#eceff1', shorts: '#cfd8dc', sleeve: '#eceff1', longSleeve: true, tights: '#eceff1', cap: '#eceff1' },
+  bombeiro: { shirt: '#c62828', shorts: '#37474f', sleeve: '#c62828', longSleeve: true, tights: '#37474f', belt: '#ffd23f', cap: '#c62828' },
   galo: { shirt: '#ffffff', shorts: '#1f1f1f', sleeve: '#ffffff', stripes: 'v', stripe: '#1f1f1f', cap: '#1f1f1f' },
   polo: { shirt: '#ffffff', shorts: '#a7b9b1', sleeve: '#d6efe6', stripes: 'h', stripe: '#bfe3d6', collar: '#2f3b57', cap: '#2f3b57' }
 };
@@ -4119,6 +4295,7 @@ function oliverHair(x, a) {
   }
 }
 function oliverFace(x, a) {
+  if (a.plain && ART_TRACE) return;   // no traçado o rosto fica só com o contorno
   const cx = 50;
   for (const ex of [cx - 9.5, cx + 9.5]) {
     if (a.plain && ART_OUTLINE_ONLY) { x.beginPath(); x.ellipse(ex, 45, 5, 6, 0, 0, TAU); x.stroke(); }   // no traçado, olho só de contorno
@@ -4175,7 +4352,24 @@ function oliverShirt(x, a, fit) {
       x.restore();
     }
   }
+  if (fit.web && !a.plain) {   // teia de aranha desenhada na roupa
+    x.save(); path(); x.clip(); x.strokeStyle = 'rgba(30,20,10,.45)'; x.lineWidth = .9; x.beginPath();
+    for (const dx of [-24, -12, 0, 12, 24]) { x.moveTo(50, 72); x.lineTo(50 + dx * 1.4, 118); }
+    for (const y of [84, 96, 108]) { x.moveTo(30, y); x.quadraticCurveTo(50, y + 5, 70, y); }
+    x.stroke(); x.restore();
+  }
   path(); x.stroke();
+  if (a.plain && ART_TRACE) return;   // no traçado só o contorno da camiseta
+  if (fit.belt) { x.fillStyle = fit.belt; x.beginPath(); x.rect(30, 104, 40, 6); if (!a.plain) x.fill(); x.stroke(); }
+  if (fit.emblem === 'super') {   // emblema em losango no peito, com um "O" de Oliver
+    x.save(); x.lineWidth = Math.min(x.lineWidth, 2.4); x.fillStyle = '#ffd23f';
+    x.beginPath(); x.moveTo(41, 82); x.lineTo(59, 82); x.lineTo(63, 87); x.lineTo(50, 100); x.lineTo(37, 87); x.closePath(); if (!a.plain) x.fill(); x.stroke();
+    x.fillStyle = '#e53935'; x.beginPath(); x.arc(50, 88.5, 4.2, 0, TAU); if (!a.plain) x.fill(); x.stroke(); x.restore();
+  } else if (fit.emblem === 'spider') {   // aranha no peito
+    x.save(); x.lineWidth = Math.min(x.lineWidth, 2); x.fillStyle = INK; x.beginPath();
+    for (const sd of [-1, 1]) for (let k = 0; k < 4; k++) { x.moveTo(50 + sd * 2, 86 + k * 2); x.lineTo(50 + sd * 9, 80 + k * 4.5); }
+    x.stroke(); x.beginPath(); x.ellipse(50, 89, 3, 5, 0, 0, TAU); if (!a.plain) x.fill(); x.stroke(); x.restore();
+  }
   if (fit.collar) {
     x.fillStyle = fit.collar;
     for (const sd of [-1, 1]) { x.beginPath(); x.moveTo(50 + sd * 10, 69); x.lineTo(50, 78); x.lineTo(50 + sd * 6, 82); x.closePath(); if (!a.plain) x.fill(); x.stroke(); }
@@ -4188,10 +4382,10 @@ function oliverShirt(x, a, fit) {
 function drawAvatar(x, ox, oy, s, face = 1, phase = 0, air = false, pose = '', who = avatar) {
   const a = who, fit = OUTFITS[a.outfit] || OUTFITS.mixer, sw = air || pose ? 0 : Math.sin(phase) * 16, up = air || pose === 'cheer';
   x.save(); x.translate(ox + 50 * s, oy); x.scale(face * s, s); x.translate(-50, 0);
-  x.lineJoin = x.lineCap = 'round'; x.lineWidth = a.plain ? (a.lw || 2.4) : 4; x.strokeStyle = a.ink || INK;
+  x.lineJoin = x.lineCap = 'round'; x.lineWidth = a.lw || (a.plain ? 2.4 : 4); x.strokeStyle = a.ink || INK;
   const leg = (dx, ang) => {
     x.save(); x.translate(50 + dx, 112); x.rotate(ang * Math.PI / 180);
-    x.fillStyle = a.skin; x.beginPath(); x.rect(-7, 8, 14, 22); if (!a.plain) x.fill(); x.stroke();
+    x.fillStyle = fit.tights || a.skin; x.beginPath(); x.rect(-7, 8, 14, 22); if (!a.plain) x.fill(); x.stroke();
     x.fillStyle = fit.shorts; x.beginPath(); x.rect(-9, -2, 18, 16); if (!a.plain) x.fill(); x.stroke();
     x.fillStyle = '#e53935'; x.beginPath(); x.roundRect(-9, 25, 26, 12, [7, 9, 4, 4]); if (!a.plain) x.fill(); x.stroke();
     if (!a.simple) { x.beginPath(); x.moveTo(-8, 33); x.lineTo(16, 33); x.stroke(); } x.restore();
@@ -4200,7 +4394,7 @@ function drawAvatar(x, ox, oy, s, face = 1, phase = 0, air = false, pose = '', w
     x.save(); x.translate(50 + dx, 76); x.rotate(ang * Math.PI / 180);
     x.fillStyle = a.skin; x.beginPath(); x.roundRect(-6, 0, 12, 33, 6); if (!a.plain) x.fill(); x.stroke();
     x.beginPath(); x.arc(0, 36, 6.8, 0, TAU); if (!a.plain) x.fill(); x.stroke();
-    if (fit.sleeve) { x.fillStyle = fit.sleeve; x.beginPath(); x.roundRect(-8, -3, 16, 15, 5); if (!a.plain) x.fill(); x.stroke(); }
+    if (fit.sleeve && !(a.plain && ART_TRACE)) { x.fillStyle = fit.sleeve; x.beginPath(); fit.longSleeve ? x.roundRect(-7, -3, 14, 33, 6) : x.roundRect(-8, -3, 16, 15, 5); if (!a.plain) x.fill(); x.stroke(); }
     x.restore();
   };
   leg(-10, air ? 25 : sw); leg(10, air ? -15 : -sw);
@@ -9430,7 +9624,7 @@ $('#pAiDel').onclick = () => confirmAsk('Apagar a IA do tablet? O amigo volta a 
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 35, name: '6.0' };
+const APP_VERSION = { code: 36, name: '6.1' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)
