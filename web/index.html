@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 38, name: '6.3' }; -->
+<!-- const APP_VERSION = { code: 39, name: '6.4' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -54,7 +54,8 @@ button:active { transform: scale(.92); }
 /* início */
 #home { overflow-y: auto; }
 .homeIn { max-width: 920px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 16px; }
-.hero { display: flex; align-items: center; justify-content: center; gap: 16px; padding-top: 30px; }
+/* padding-top deixa livre a faixa do topo, onde ficam os botões de voz, conversa e pais */
+.hero { display: flex; align-items: center; justify-content: center; gap: 16px; padding-top: 70px; }
 .hero > canvas { width: clamp(64px, 14vw, 104px); height: auto; flex: none; filter: drop-shadow(0 5px 0 var(--shadow)); }
 .heroKid { position: relative; flex: none; width: clamp(70px, 11vw, 110px); }
 .heroKid canvas { width: 100%; height: auto; display: block; }
@@ -4486,10 +4487,11 @@ function drawLogo(x, S, bg = 'square', zoom = 1, usePhoto = false) {
     x.fillStyle = g; x.beginPath(); if (bg === 'round') x.arc(S / 2, S / 2, S / 2, 0, TAU); else x.roundRect(0, 0, S, S, S * .22); x.fill();
   }
   x.translate(S / 2, S / 2); x.scale(zoom, zoom); x.translate(-S / 2, -S / 2);
-  const s = S * .25 / 30;
+  // na tela inicial (usePhoto) o rosto ocupa quase o quadrado todo; no ícone fica o tamanho original
+  const s = S * .25 / 30 * (usePhoto ? 1.3 : 1), pr = S * .4;
   if (usePhoto && photoImg && avatar.face !== 'draw') {
-    x.save(); x.beginPath(); x.arc(S * .48, S * .48, S * .3, 0, TAU); x.clip(); x.drawImage(photoImg, S * .18, S * .18, S * .6, S * .6); x.restore();
-    x.lineWidth = S * .025; x.strokeStyle = '#fff'; x.beginPath(); x.arc(S * .48, S * .48, S * .3, 0, TAU); x.stroke();
+    x.save(); x.beginPath(); x.arc(S * .48, S * .48, pr, 0, TAU); x.clip(); x.drawImage(photoImg, S * .48 - pr, S * .48 - pr, pr * 2, pr * 2); x.restore();
+    x.lineWidth = S * .025; x.strokeStyle = '#fff'; x.beginPath(); x.arc(S * .48, S * .48, pr, 0, TAU); x.stroke();
   } else {
     x.save(); x.translate(S * .48 - 50 * s, S * .5 - 42 * s); x.scale(s, s); x.lineJoin = x.lineCap = 'round'; x.lineWidth = 4; x.strokeStyle = INK;
     oliverHead(x, usePhoto ? { ...avatar } : LOGO_KID); x.restore();
@@ -9440,7 +9442,7 @@ const CHAT_ANIMALS = [
   ['passar|pombo|papagaio', '🐦', 'O passarinho faz ninho nas árvores e canta piu piu!', 'passarinho'], ['pato', '🦆', 'O pato nada no lago e faz quá quá!', 'pato'],
   ['galinha|pintinho', '🐔', 'A galinha bota ovo e faz có có có!', 'galinha'], ['galo ', '🐓', 'O galo canta bem cedinho para acordar todo mundo!', 'galo'],
   ['porc', '🐷', 'O porco adora rolar na lama para se refrescar!', 'porco'], ['cavalo|ponei', '🐴', 'O cavalo corre muito rápido!', 'cavalo'],
-  ['sapo|ra ', '🐸', 'O sapo dá pulos enormes e come mosquitos!', 'sapo'], ['ovelha|carneir', '🐑', 'A ovelha tem uma lã bem fofinha!', 'ovelha'],
+  ['sapo| ra ', '🐸', 'O sapo dá pulos enormes e come mosquitos!', 'sapo'], ['ovelha|carneir', '🐑', 'A ovelha tem uma lã bem fofinha!', 'ovelha'],
   ['coruja', '🦉', 'A coruja fica acordada de noite e vira a cabeça para trás!', 'coruja'], ['abelha', '🐝', 'A abelha voa de flor em flor e faz mel!', 'abelha'],
   ['dino|rex ', '🦖', 'Os dinossauros viveram há muito, muito tempo, antes das pessoas!', ''], ['peix', '🐟', 'O peixe respira debaixo da água!', ''],
   ['tubara', '🦈', 'O tubarão troca de dente a vida inteira!', ''], ['baleia', '🐳', 'A baleia azul é o maior animal do mundo!', ''],
@@ -9471,6 +9473,28 @@ const CHAT_MINI = ['Era uma vez uma nuvem chamada Fofinha que queria brincar. El
   'A lua estava com sono, mas o céu estava muito escuro. {N} acendeu as estrelas uma por uma, e a lua dormiu feliz. Boa noite, lua! Fim!'];
 const CHAT_GAMES = [['memory', '🃏 Memória'], ['bubbles', '🎈 Balões'], ['piano', '🎹 Piano'], ['maze', '🧭 Labirinto'], ['cook', '🍕 Cozinha'], ['pet', '🐶 Bichinho'],
   ['dots', '🔢 Pontos'], ['sort', '📦 Separar'], ['shadow', '👤 Sombras'], ['puzzle', '🧩 Quebra-cabeça'], ['story', '📚 Histórias'], ['wash', '🧽 Lava-rápido']];
+// "quero jogar X": [palavras, botão da tela inicial, nome falado, precisa de verbo (jogar, brincar, abrir...)]
+const CHAT_OPEN = [
+  ['aventura|mario|pular', '[data-game="adventure"]', 'a Aventura'], ['corrida|kart|carro de corrida', '[data-game="kart"]', 'a Corrida'],
+  ['bloco|tetris|encaixa', '[data-game="blocks"]', 'o Encaixa blocos'], ['cobrinha', '[data-game="snake"]', 'a Cobrinha', 1],
+  ['memoria', '[data-game="memory"]:not([data-lang])', 'a Memória'], ['balao|baloes|bexiga|estoura', '[data-game="bubbles"]', 'o Estoura balão'],
+  ['piano', '[data-game="piano"]', 'o Piano dos bichos'], ['jogo de contar', '[data-game="count"]', 'o Vamos contar'],
+  ['forma', '[data-game="shapes"]', 'o Encaixe as formas'], ['quebra cabeca', '[data-game="puzzle"]', 'o Quebra-cabeça'],
+  ['corta fruta|cortar fruta|frutas', '[data-game="fruit"]', 'o Corta frutas'], ['cena', '[data-game="scene"]', 'a Cena de adesivos', 1],
+  ['sons dos bichos|som dos bichos|barulho dos bichos', '[data-game="sounds"]', 'o Sons dos bichos'], ['ritmo|tambor|bateria', '[data-game="rhythm"]', 'o Repita o ritmo'],
+  ['lava rapido|lavar|caminha|betoneira|obra', '[data-game="wash"]', 'o Lava-rápido da obra'], ['bichinho', '[data-game="pet"]', 'o Meu bichinho', 1],
+  ['cozinh', '[data-game="cook"]', 'a Cozinha'], ['separar|guardar', '[data-game="sort"]', 'o Separar e guardar'],
+  ['sombra', '[data-game="shadow"]', 'o Qual é a sombra'], ['ligue os pontos|ligar os pontos|pontinho', '[data-game="dots"]', 'o Ligue os pontos'],
+  ['labirinto', '[data-game="maze"]', 'o Labirinto'], ['rotina', '[data-game="routine"]', 'a Minha rotina'],
+  ['livro|livrinho', '[data-game="story"]', 'os Livrinhos de histórias'], ['estatua|danca', '[data-game="statue"]', 'a Estátua'],
+  ['emoc|sentimento|como ele se sente', '[data-game="emotions"]', 'o Como ele se sente'], ['sequencia|o que vem depois', '[data-game="sequence"]', 'o O que vem depois'],
+  ['rima|silaba|sons das palavras', '[data-game="sounds2"]', 'o Sons das palavras'], ['sumiu', '[data-game="missing"]', 'o O que sumiu'],
+  ['oposto', '[data-game="opposites"]', 'o Opostos'], ['mais ou menos', '[data-game="more"]', 'o Mais ou menos'],
+  ['colorir', '[data-go="color"]', 'o Colorir'], ['tracar|traco|tracinho', '[data-go="trace"]', 'o Traçar e pintar'],
+  ['letra|numero', '[data-go="letters"]', 'o Letras e números', 1], ['desenho livre', '[data-go="free"]', 'o Desenho livre'],
+  ['espelho', '[data-go="kaleido"]', 'o Espelho mágico'], ['meus desenhos', '[data-go="gallery"]', 'os Meus desenhos'],
+  ['adesivo|figurinha', '[data-go="album"]', 'os Meus adesivos', 1]
+];
 const CHAT_NUMS = ['zero', 'um', 'dois', 'tres', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez'];
 // perguntas que o amigo faz para puxar conversa: [pergunta, botões de resposta]
 const CHAT_ASK = {
@@ -9505,6 +9529,9 @@ function chatScript(raw) {
   if (has('medo|assust|monstr|pesadel')) return { t: 'Tudo bem sentir medo. Chame um adulto para ficar pertinho de você. Vamos respirar juntos? Puxa o ar... e solta devagarinho.', safe: true };
   if (has('trist|chor|chatead|saudade|sozinh')) return { t: 'Ah, que pena. Quer um abraço? 🤗 Conta para a mamãe ou o papai como você está, eles adoram ajudar.', safe: true };
   if (has('brav|raiva|zangad|nervos')) return { t: 'Quando fico bravo, eu conto até cinco bem devagar. Vamos juntos? Um... dois... três... quatro... cinco. Melhorou?', safe: true };
+  // pediu um jogo pelo nome: abre na hora, sem esperar a IA
+  const verb = has('jog|brinc|abr|quer|vamos|bora|coloca|bota|leva|ir pr|ir para|pode|vou'), op = CHAT_OPEN.find(o => has(` (?:${o[0]})`) && (verb || !o[3]));
+  if (op) { chat.riddle = null; return { t: `Eba! Vamos para ${op[2]}! Divirta-se, ${N}!`, act: chatOpen('#home ' + op[1]) }; }
   if (chat.riddle) { const r = chat.riddle; chat.riddle = null; chat.again = chatRiddle; return { t: `${pick(['Boa tentativa!', 'Pensou bem!', 'Hmm, será?'])} A resposta é... ${r[1]} Quer outra adivinha?`, chips: [['🤔 Outra!', 'outra'], ['🙂 Não', 'não']] }; }
   // pedidos: história, adivinha, música, contar, jogar, desenhar, respirar
   if (has('historia|conta um|conta uma|historinha')) return chatStory();
@@ -9560,20 +9587,22 @@ const chatAiOn = () => !!(prefs.aiModel && prefs.aiReady === prefs.aiModel && pl
 function chatClean(t) {
   t = String(t || '').split('<|')[0].replace(/[*#_`]/g, '').replace(/\s+/g, ' ').trim();
   if (!t || /[Ѐ-ӿ　-鿿가-힯]/.test(t) || CHAT_BAD.test(chatNorm(t))) return '';
+  // resposta em inglês ou espanhol costuma vir sem sentido: melhor a resposta pronta
+  if ((chatNorm(t).match(/ (the|you|and|is|are|what|hola|eres|muy|que tal) /g) || []).length >= 2) return '';
   return (t.match(/[^.!?]+[.!?]*/g) || [t]).slice(0, 2).join(' ').slice(0, 220).trim();
 }
 async function chatAi(text) {
   const m = AI_MODELS[prefs.aiModel], f = chatF();
-  const sys = `Você é ${f[1]}, ${f[2] === 'a' ? 'uma' : 'um'} ${f[3]} amigo de um app infantil, conversando com ${prefs.name}, uma criança de 3 a 6 anos. `
-    + 'Responda sempre em português do Brasil, com no máximo duas frases curtas e palavras simples. Seja carinhoso, alegre e positivo. '
-    + 'Fale só de assuntos de criança: bichos, cores, brincadeiras, natureza, comida, família e sentimentos. '
-    + 'Nunca fale de violência nem de coisas de adulto, e nunca peça endereço, telefone, escola ou fotos. '
-    + 'Se a criança falar de dor, perigo ou tristeza, diga para chamar um adulto. Às vezes termine com uma pergunta simples.';
-  let p = `<|im_start|>system\n${sys}<|im_end|>\n`;
-  for (const [role, t] of chat.hist.slice(-6)) p += `<|im_start|>${role}\n${t}<|im_end|>\n`;
+  // prompt curto: no tablet, cada palavra a mais aqui atrasa a resposta
+  const sys = `Você é ${f[1]}, ${f[2] === 'a' ? 'uma' : 'um'} ${f[3]}, amigo de ${prefs.name}, uma criança pequena. `
+    + 'Responda em português do Brasil, em uma ou duas frases curtas, simples, alegres e que façam sentido com o que a criança disse. '
+    + 'Só assuntos de criança. Se falar de dor ou perigo, diga para chamar um adulto.';
+  let p = `<|im_start|>system\n${sys}<|im_end|>\n<|im_start|>user\nEu gosto de cachorro.<|im_end|>\n<|im_start|>assistant\nEu também! Cachorro é muito carinhoso. Qual é o nome do seu?<|im_end|>\n`;
+  for (const [role, t] of chat.hist.slice(-4)) p += `<|im_start|>${role}\n${t}<|im_end|>\n`;
   p += `<|im_start|>user\n${text}<|im_end|>\n<|im_start|>assistant\n`;
   try {
-    const r = await Promise.race([plug('LocalAI').generate({ name: m.file, prompt: p, maxTokens: 1280 }), new Promise((_, no) => setTimeout(() => no(new Error('demorou')), 45000))]);
+    const r = await Promise.race([plug('LocalAI').generate({ name: m.file, prompt: p, maxTokens: 1280, maxChars: 200, sentences: 2, temperature: 0.4, topK: 20 }),
+      new Promise((_, no) => setTimeout(() => no(new Error('demorou')), 30000))]);
     chat.aiLoaded = true; return chatClean(r.text);
   } catch (e) { return ''; }
 }
@@ -9605,7 +9634,8 @@ async function chatSend(text) {
   let r = chatScript(text);
   if (r.fallback && chatAiOn()) {
     const dots = chatMsg('friend dots', '...'); $('#chatFriend').classList.add('think');
-    const t = await chatAi(text); dots.remove(); $('#chatFriend').classList.remove('think');
+    const slow = setTimeout(() => say(pick(['Hmm, deixa eu pensar...', 'Hmm... pensando!'])), 2500);
+    const t = await chatAi(text); clearTimeout(slow); dots.remove(); $('#chatFriend').classList.remove('think');
     if (t) r = { t, chips: CHAT_DEFAULT };
   }
   chat.hist.push(['user', text], ['assistant', r.t]); if (chat.hist.length > 12) chat.hist.splice(0, 2);
@@ -9648,6 +9678,8 @@ chatTopShow();
 function chatStart() {
   chat.f = Math.min(prefs.chatFriend || 0, CHAT_FRIENDS.length - 1); chat.hist = []; chat.ask = chat.riddle = chat.again = null; chat.busy = false;
   $('#chatLog').innerHTML = ''; chatFriendShow();
+  // já carrega a IA enquanto o amigo dá oi (APKs antes da 6.4 não têm o load; aí carrega na primeira pergunta)
+  if (chatAiOn()) plug('LocalAI').load({ name: AI_MODELS[prefs.aiModel].file, maxTokens: 1280 }).then(() => { chat.aiLoaded = true; }, () => {});
   const f = chatF();
   chatSay({ t: `Oi, ${prefs.name}! Eu sou ${f[1]}, ${f[2] === 'a' ? 'uma' : 'um'} ${f[3]}. Aperte o microfone e fale comigo!` });
 }
@@ -9910,7 +9942,7 @@ GAME_INTRO.statue = 'Estátua! Dance quando a música tocar e fique paradinho qu
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 38, name: '6.3' };
+const APP_VERSION = { code: 39, name: '6.4' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)

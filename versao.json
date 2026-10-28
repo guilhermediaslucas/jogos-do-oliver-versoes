@@ -1,8 +1,8 @@
 {
-  "code": 38,
-  "name": "6.3",
-  "minApk": 35,
-  "notes": "Versão 6.3: o botão Conversar agora fica fixo no topo da tela inicial e mostra o amigo escolhido (Lulu, Totó, Dino ou Bip).",
+  "code": 39,
+  "name": "6.4",
+  "minApk": 39,
+  "notes": "Versão 6.4: na conversa, pedir um jogo pelo nome (\"quero jogar a corrida\") abre o jogo na hora. A IA do tablet ficou mais rápida (já carrega ao entrar e responde com frases curtas) e mais coerente. O botão de conversar não tampa mais o \"Oi\" da tela inicial. Precisa instalar o APK novo para a IA melhorar.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/JogosDoOliver.apk"
 }
