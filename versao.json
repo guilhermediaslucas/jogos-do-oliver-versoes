@@ -1,8 +1,8 @@
 {
-  "code": 40,
-  "name": "6.5",
-  "minApk": 39,
-  "notes": "Versão 6.5: a voz escolhida pelos pais vale desde a abertura do app (antes caía na voz padrão). Cada amigo da conversa tem seu tom de voz e, com a IA instalada, é ele quem dá oi ao abrir. Os desenhos coloridos e o adesivo do Oliver seguem a pele e o cabelo do personagem. A foto da tela inicial ficou sem o lápis.",
+  "code": 41,
+  "name": "6.6",
+  "minApk": 41,
+  "notes": "Versão 6.6: tela inicial nova com 7 portas coloridas (Desenhar, Diversão, Faz de conta, Música, Aprender, Desafios e Inglês), a fileira \"Brincou agora há pouco\" e o selo NOVO. Dois jogos novos em Música: Vozes mágicas (a criança grava a voz e ouve como robô, ET, monstro, ratinho...) e Estúdio musical (cria a música, canta junto, põe efeitos e guarda). Na área dos pais dá para esconder jogos do menu. Ícone do app sem o lápis. Precisa instalar o APK novo (microfone).",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/JogosDoOliver.apk"
 }
