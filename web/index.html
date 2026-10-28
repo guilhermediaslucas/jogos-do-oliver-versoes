@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 34, name: '5.7' }; -->
+<!-- const APP_VERSION = { code: 35, name: '6.0' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -261,6 +261,31 @@ button:active { transform: scale(.92); }
   transition: left .8s cubic-bezier(.5, 0, .7, 1), top .8s cubic-bezier(.3, -.6, .7, 1), font-size .8s; }
 @media (max-height: 460px) { .routine-col h3 { font-size: 17px; } .routine-card { font-size: 15px; } .routine-jarTitle { font-size: 16px; } }
 @media (orientation: portrait) { .routine-play { flex-direction: column; } .routine-side { width: 100%; height: 170px; flex-direction: row; align-items: center; } .routine-jar { height: 100%; } .routine-week { flex: 1; } }
+/* conversar: o amigo à esquerda, a conversa e o microfone à direita */
+.chat-play { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 12px; }
+.chat-stage { position: relative; border-radius: 24px; background: linear-gradient(#bfe9ff, #eaf8ff); display: grid; place-items: center; overflow: hidden; box-shadow: 0 4px 0 var(--shadow); min-height: 0; }
+.chat-friend { font-size: clamp(90px, 32vmin, 280px); line-height: 1; transform-origin: 50% 90%; }
+.chat-friend.talk { animation: chat-talk .3s ease-in-out infinite; }
+.chat-friend.think { animation: l-float 2s ease-in-out infinite; }
+.chat-friend.hop { animation: l-hop .9s ease-in-out; }
+@keyframes chat-talk { 50% { transform: scale(1.05, .93) } }
+.chat-name { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); background: var(--paper); border-radius: 999px; padding: 2px 14px; font-size: 20px; box-shadow: 0 2px 0 var(--shadow); white-space: nowrap; }
+.chat-side { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+.chat-log { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 4px; scrollbar-width: none; }
+.chat-log::-webkit-scrollbar { display: none; }
+.chat-msg { max-width: 88%; padding: 10px 16px; border-radius: 22px; font-size: clamp(18px, 3.4vmin, 26px); font-weight: 800; line-height: 1.25; box-shadow: 0 3px 0 var(--shadow); animation: pop .35s ease-out; }
+.chat-msg.friend { align-self: flex-start; background: var(--paper); border-bottom-left-radius: 6px; }
+.chat-msg.kid { align-self: flex-end; background: #c8f7c5; border-bottom-right-radius: 6px; }
+.chat-msg.dots { opacity: .6; }
+.chat-chips { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; flex: none; }
+.chat-chip { padding: 8px 14px; border-radius: 999px; background: var(--tray); box-shadow: 0 3px 0 var(--shadow); font-size: 20px; font-weight: 800; }
+.chat-mic { flex: none; align-self: center; width: 104px; height: 104px; border-radius: 50%; font-size: 50px; background: #ff6b3d; box-shadow: 0 0 0 6px #fff, 0 6px 14px rgba(0,0,0,.2); }
+.chat-mic.on { background: #43a047; animation: wash-pulse 1s ease-in-out infinite; }
+.chat-mic:disabled { opacity: .5; }
+@media (orientation: portrait) { .chat-play { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, .7fr) minmax(0, 1.3fr); } }
+@media (max-height: 520px) { .chat-mic { width: 80px; height: 80px; font-size: 38px; } .chat-chip { font-size: 16px; padding: 6px 10px; } .chat-name { font-size: 16px; } }
+.aiBox { display: grid; gap: 8px; padding: 10px 12px; border-radius: 16px; background: var(--paper); box-shadow: 0 2px 0 var(--shadow); }
+.aiBox h3 { margin: 0; font-size: 20px; }
 /* labirinto */
 .maze-play { border-radius: 24px; overflow: hidden; background: #bfe6a6; box-shadow: 0 4px 0 var(--shadow); }
 #mazeCv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
@@ -668,6 +693,7 @@ button:active { transform: scale(.92); }
     <button class="mode" style="background:#6fa83a" data-game="maze"><span>🧭</span>Labirinto</button>
     <button class="mode" style="background:#ffa726" data-game="routine"><span>⭐</span>Minha rotina</button>
     <button class="mode" style="background:#7e57c2" data-game="story"><span>📚</span>Histórias</button>
+    <button class="mode" style="background:#00897b" data-game="chat"><span>🦉</span>Conversar</button>
   </div>
   <h3 class="shelf">🔤 Inglês</h3>
   <div class="modes">
@@ -778,6 +804,18 @@ button:active { transform: scale(.92); }
       <canvas class="routine-jar" id="routineJar" aria-label="Pote de estrelas da semana"></canvas>
       <div class="routine-week" id="routineWeek"></div>
     </aside>
+  </div>
+</section>
+<section id="g-chat" class="screen game" hidden>
+  <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Conversar</h2><span class="score" id="chatMode"></span>
+    <button class="round" id="chatWho" aria-label="Trocar de amigo">🦉</button></div>
+  <div class="play chat-play">
+    <button class="chat-stage" id="chatStage" aria-label="Fazer cócegas no amigo"><span class="chat-friend" id="chatFriend">🦉</span><b class="chat-name" id="chatName"></b></button>
+    <div class="chat-side">
+      <div class="chat-log" id="chatLog" aria-live="polite"></div>
+      <div class="chat-chips" id="chatChips"></div>
+      <button class="chat-mic" id="chatMic" aria-label="Falar com o amigo">🎤</button>
+    </div>
   </div>
 </section>
 <section id="g-maze" class="screen game" hidden>
@@ -934,6 +972,14 @@ button:active { transform: scale(.92); }
     <label class="prow" for="pPitch">Tom da voz <select id="pPitch"><option value="1">Normal</option><option value="1.1">Alegre</option><option value="1.25">Bem fininho</option></select></label>
     <p class="pused" id="pVoiceInfo"></p>
     <p class="pused" id="pVoiceTip">Vozes com 🌐 soam mais naturais, mas precisam de internet. Para vozes melhores sem internet, toque em "Baixar vozes" e instale a voz de "Português (Brasil)" em alta qualidade.</p>
+    <div class="aiBox">
+      <h3>🦉 Conversar: IA no tablet (opcional)</h3>
+      <p class="pused">Sem a IA, o amigo do jogo Conversar responde com falas prontas, escritas para crianças. Com a IA, ele inventa respostas novas, sem internet, mas pode errar ou falar algo sem sentido. Dor, medo e tristeza continuam sempre com as respostas prontas, que pedem ajuda a um adulto.</p>
+      <label class="prow" for="pAiModel">IA <select id="pAiModel"><option value="">Desligada (só falas prontas)</option>
+        <option value="small">Pequena · baixa 550 MB</option><option value="medium">Média · baixa 1,6 GB</option></select></label>
+      <p class="pused" id="pAiInfo"></p>
+      <div class="pbtns"><button class="pbtn ok" id="pAiGet" hidden>⬇️ Baixar a IA</button><button class="pbtn" id="pAiDel" hidden>🗑️ Apagar a IA</button></div>
+    </div>
     <p class="pused" id="pVer"></p>
     <p class="pused" id="pUpdLog"></p>
     <p class="pused credit">Desenvolvido por Guilherme Dias</p>
@@ -3448,10 +3494,10 @@ function say(t, lang = 'pt-BR', rate = .9) {
   const pitch = prefs.pitch || 1.1;
   try {
     const tts = plug('TextToSpeech');
-    if (tts) { tts.speak({ text: t, lang, rate, pitch, ...(v >= 0 ? { voice: v } : {}) }).catch(() => {}); return; }
+    if (tts) return tts.speak({ text: t, lang, rate, pitch, ...(v >= 0 ? { voice: v } : {}) }).catch(() => {});   // a promessa termina quando acaba de falar
     speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = lang; u.rate = rate; u.pitch = pitch;
     if (v >= 0) u.voice = speechSynthesis.getVoices().find(x => x.voiceURI === want) || null;
-    speechSynthesis.speak(u);
+    return new Promise(res => { u.onend = u.onerror = res; speechSynthesis.speak(u); setTimeout(res, 600 + t.length * 110); });
   } catch (e) {}
 }
 loadVoices(); try { speechSynthesis.onvoiceschanged = loadVoices; } catch (e) {}
@@ -3962,7 +4008,7 @@ function openParents() {
   $('#pFaceRow').hidden = !prefs.photo; $('#pFace').value = avatar.face === 'draw' ? 'draw' : 'photo';
   $('#pName').value = prefs.name; $('#pSound').checked = prefs.sound; $('#pColorsEn').checked = prefs.colorsEn; $('#pLimit').value = prefs.limit;
   $('#pUsed').textContent = `Usado hoje: ${minutes(usage.ms)} min` + (prefs.limit ? ` de ${prefs.limit} min` : '');
-  renderUpdate();
+  renderUpdate(); aiRender();
   $('#parents').hidden = false;
 }
 function savePrefs() { keep('oliver-prefs', prefs); }
@@ -5875,8 +5921,178 @@ const STORY_BOOKS = [
     ['Que festa divertida! O Totó deu uma lambida em {N}.', (x, t) => {
       storyParty(x, t); storyHearts(x, t); storyKid(x, 170, 245, .7, t, 'cheer', Math.abs(Math.sin(t * 3)) * 8);
       storyE(x, '🐶', 255, 205 - Math.abs(Math.sin(t * 3 + 1)) * 14, 74); }]
+  ] },
+  // contos clássicos (domínio público) recontados com a criança dentro da história, sem sustos
+  { title: '{N} e os Três Porquinhos', color: '#f06292', pages: [
+    ['Três porquinhos construíram suas casinhas: uma de palha, uma de madeira e uma de tijolos.', (x, t) => {
+      storyDay(x, t); storyE(x, '🛖', 75, 190, 90); storyE(x, '🏚️', 200, 190, 90); storyE(x, '🏠', 325, 190, 90);
+      for (const [px, k] of [[75, 0], [200, 1], [325, 2]]) storyE(x, '🐷', px + 30, 238 - Math.abs(Math.sin(t * 3 + k)) * 8, 34); }],
+    ['{N} chegou para brincar, mas lá vinha o Lobo, soprando bem forte: fuuuu!', (x, t) => {
+      storyDay(x, t); storyE(x, '🛖', 300, 190, 90); storyE(x, '🐺', 110, 200, 90, Math.sin(t * 2) * .05); storyKid(x, 215, 245, .5, t, 'wave');
+      x.strokeStyle = 'rgba(255,255,255,.9)'; x.lineWidth = 4; for (let i = 0; i < 3; i++) { const k = (t * 1.5 + i / 3) % 1; x.beginPath(); x.moveTo(150 + k * 120, 170 + i * 15); x.lineTo(190 + k * 120, 170 + i * 15); x.stroke(); }
+      storyWord(x, 'FUUUU!', 120, 110, 30, '#5c6bc0', -.1); }],
+    ['A casa de palha voou! Os porquinhos correram com {N} para a casa de tijolos.', (x, t) => {
+      storyDay(x, t); storyE(x, '🏠', 330, 190, 100);
+      for (let i = 0; i < 5; i++) storyE(x, '🌾', ((t * 60 + i * 50) % 300) + 20, 60 + Math.sin(t * 3 + i) * 20 + i * 12, 26, t * 3 + i);
+      for (let i = 0; i < 3; i++) storyE(x, '🐷', 120 + i * 45 + Math.sin(t * 8 + i) * 4, 232, 36); storyKid(x, 60, 245, .45, t, ''); }],
+    ['O Lobo soprou, soprou e soprou... mas a casa de tijolos nem se mexeu!', (x, t) => {
+      storyDay(x, t); storyE(x, '🏠', 280, 180, 140); storyE(x, '🐺', 90, 205, 80, Math.sin(t * 6) * .08);
+      storyE(x, '🧱', 250, 250, 26); storyE(x, '🧱', 310, 250, 26); storyWord(x, 'FUUU...', 110, 110, 24, '#5c6bc0', -.1); }],
+    ['{N} teve uma ideia: "Lobo, em vez de soprar casas, sopre as velas do bolo!"', (x, t) => {
+      storyParty(x, t); storyE(x, '🎂', 200, 200, 80); storyE(x, '🐺', 320, 200, 80); storyKid(x, 80, 245, .55, t, 'wave');
+      storyE(x, '💡', 80, 70 + storyBob(t, 0, 6), 34); }],
+    ['O Lobo virou amigo, e todos comeram bolo juntos na casa de tijolos. Fim da confusão!', (x, t) => {
+      storyParty(x, t); storyE(x, '🐺', 300, 205, 70, Math.sin(t * 4) * .1); storyE(x, '🍰', 230, 222, 34);
+      for (let i = 0; i < 3; i++) storyE(x, '🐷', 140 + i * 40, 222 - Math.abs(Math.sin(t * 4 + i)) * 12, 36); storyKid(x, 60, 245, .5, t, 'cheer'); storyHearts(x, t); }]
+  ] },
+  { title: 'Chapeuzinho Vermelho e {N}', color: '#e53935', pages: [
+    ['Chapeuzinho Vermelho chamou {N} para levar uma cesta de doces para a vovó.', (x, t) => {
+      storyDay(x, t); storyE(x, '🏡', 70, 185, 90); storyE(x, '👧🏻', 220, 205, 74); storyE(x, '🧺', 255, 232, 30); storyKid(x, 310, 245, .5, t, 'wave'); }],
+    ['No caminho da floresta, os dois colheram flores de todas as cores.', (x, t) => {
+      storyDay(x, t); for (const [px, s] of [[30, 120], [370, 110]]) storyE(x, '🌳', px, 160, s);
+      for (let i = 0; i < 7; i++) storyE(x, ['🌸', '🌼', '🌷', '🌺'][i % 4], 60 + i * 45, 250 - (i % 2) * 10, 26, Math.sin(t * 2 + i) * .15);
+      storyE(x, '👧🏻', 160, 205, 70); storyKid(x, 250, 245, .5, t, ''); }],
+    ['Atrás de uma árvore apareceu o Lobo: "Aonde vocês vão com essa cesta?"', (x, t) => {
+      storyDay(x, t); storyE(x, '🌳', 320, 160, 130); storyE(x, '🐺', 330 - Math.abs(Math.sin(t)) * 20, 205, 70);
+      storyE(x, '👧🏻', 120, 205, 70); storyKid(x, 200, 245, .5, t, ''); storyE(x, '❓', 300, 110, 30); }],
+    ['{N} lembrou: "Não conversamos com estranhos!" E os dois seguiram pelo caminho certinho.', (x, t) => {
+      storyDay(x, t); storyE(x, '🌳', 40, 160, 110); storyE(x, '🐺', 60, 215, 50);
+      x.strokeStyle = '#d7b98a'; x.lineWidth = 18; x.beginPath(); x.moveTo(120, 280); x.quadraticCurveTo(250, 240, 400, 250); x.stroke();
+      const k = (t * .15) % 1; storyE(x, '👧🏻', 170 + k * 100, 210, 66); storyKid(x, 240 + k * 100, 245, .48, t, ''); }],
+    ['Na casa da vovó, ela abriu a porta com um abraço bem gostoso.', (x, t) => {
+      storyDay(x, t); storyE(x, '🏡', 320, 175, 130); storyE(x, '👵🏻', 230, 205, 76); storyE(x, '👧🏻', 150, 207, 66); storyKid(x, 80, 245, .48, t, 'cheer'); storyHearts(x, t); }],
+    ['Todos lancharam os doces da cesta. E o Lobo? Foi comer frutinhas na floresta!', (x, t) => {
+      storyParty(x, t); storyE(x, '🧺', 200, 225, 40); storyE(x, '🍪', 160, 230, 24); storyE(x, '🧁', 240, 230, 24);
+      storyE(x, '👵🏻', 290, 205, 66); storyE(x, '👧🏻', 120, 205, 62); storyKid(x, 50, 245, .45, t, 'wave'); storyE(x, '🐺', 370, 100, 40); storyE(x, '🫐', 345, 95, 18); }]
+  ] },
+  { title: '{N} e os Três Ursos', color: '#ff8f00', pages: [
+    ['{N} e Cachinhos Dourados acharam uma casinha na floresta. Toc, toc! Não tinha ninguém.', (x, t) => {
+      storyDay(x, t); storyE(x, '🌳', 40, 160, 110); storyE(x, '🏡', 280, 175, 130); storyE(x, '👧🏼', 150, 207, 66); storyKid(x, 90, 245, .45, t, '');
+      storyWord(x, 'TOC, TOC!', 280, 70, 24, '#6d4c41', .1); }],
+    ['Na mesa havia três tigelas de mingau: uma grande, uma média e uma pequena.', (x, t) => {
+      storyFill(x, '#fff3e0', '#ffe0b2'); storyGround(x, 230, '#a1662f', '#8d5a2b');
+      for (const [px, s] of [[110, 70], [210, 52], [295, 36]]) { storyE(x, '🥣', px, 222 - s * .35, s); x.globalAlpha = .6; storyE(x, '♨️', px, 175 - s * .5 + storyBob(t, px, 4), s * .4); x.globalAlpha = 1; }
+      storyWord(x, 'GRANDE', 110, 270, 16, '#6d4c41'); storyWord(x, 'MÉDIA', 210, 270, 16, '#6d4c41'); storyWord(x, 'PEQUENA', 295, 270, 16, '#6d4c41'); }],
+    ['O mingau grande estava quente demais, o médio frio demais, e o pequeno... na medida certa!', (x, t) => {
+      storyFill(x, '#fff3e0', '#ffe0b2'); storyGround(x, 230, '#a1662f', '#8d5a2b');
+      storyE(x, '🥵', 90, 120, 44); storyE(x, '🥶', 200, 120, 44); storyE(x, '😋', 310, 120 + storyBob(t, 0, 5), 50);
+      for (const [px, s] of [[90, 60], [200, 48], [310, 36]]) storyE(x, '🥣', px, 215, s); }],
+    ['Os três ursos voltaram para casa: Papai Urso, Mamãe Ursa e o Ursinho.', (x, t) => {
+      storyDay(x, t); storyE(x, '🏡', 70, 175, 110);
+      for (const [px, s, k] of [[190, 100, 0], [280, 80, 1], [355, 54, 2]]) storyE(x, '🐻', px, 240 - s * .5 - Math.abs(Math.sin(t * 3 + k)) * 6, s); }],
+    ['{N} pediu desculpas pelo mingau, e o Ursinho achou graça: "Tudo bem! Vamos brincar?"', (x, t) => {
+      storyDay(x, t); storyE(x, '🐻', 300, 185, 100); storyE(x, '🐻', 230, 205, 60); storyE(x, '👧🏼', 140, 207, 62); storyKid(x, 70, 245, .48, t, 'wave');
+      storyE(x, '💬', 260, 120 + storyBob(t, 0, 4), 34); }],
+    ['E todos brincaram juntos a tarde inteira. Que dia gostoso na floresta!', (x, t) => {
+      storyDay(x, t); storyE(x, '⚽', 200 + Math.sin(t * 2) * 80, 240 - Math.abs(Math.sin(t * 4)) * 40, 30);
+      storyE(x, '🐻', 320, 210 - Math.abs(Math.sin(t * 3)) * 10, 60); storyE(x, '👧🏼', 120, 207, 60); storyKid(x, 220, 245, .48, t, 'cheer', Math.abs(Math.sin(t * 3 + 1)) * 10); }]
+  ] },
+  { title: 'A Lebre, a Tartaruga e {N}', color: '#7cb342', pages: [
+    ['A Lebre vivia dizendo: "Eu sou a mais rápida da floresta! Ninguém me vence!"', (x, t) => {
+      storyDay(x, t); storyE(x, '🐇', 200, 210 - Math.abs(Math.sin(t * 5)) * 30, 90); storyE(x, '🐢', 330, 228, 54); storyKid(x, 70, 245, .5, t, ''); }],
+    ['A Tartaruga respondeu: "Vamos apostar uma corrida?" E {N} foi o juiz da corrida.', (x, t) => {
+      storyDay(x, t); storyE(x, '🐇', 150, 215, 70); storyE(x, '🐢', 230, 225, 60); storyKid(x, 330, 245, .5, t, 'wave'); storyE(x, '🏁', 355, 150 + storyBob(t, 0, 4), 36); }],
+    ['Já! A Lebre disparou lá na frente. A Tartaruga foi devagar, mas sem parar.', (x, t) => {
+      storyDay(x, t); storyE(x, '🐇', (t * 120 % 500) - 50, 215 - Math.abs(Math.sin(t * 8)) * 20, 60); storyE(x, '🐢', 60 + (t * 8 % 100), 228, 54);
+      storyWord(x, 'JÁ!', 200, 80, 40, '#e53935'); }],
+    ['A Lebre achou que tinha tempo de sobra e tirou uma soneca debaixo da árvore.', (x, t) => {
+      storyDay(x, t); storyE(x, '🌳', 290, 160, 140); storyE(x, '🐇', 280, 228, 54); storyZzz(x, t, 300, 190); storyE(x, '🐢', 80 + Math.sin(t * .5) * 10, 230, 50); }],
+    ['Devagarinho, passo a passo, a Tartaruga passou pela Lebre e chegou na linha de chegada!', (x, t) => {
+      storyDay(x, t); storyE(x, '🌳', 60, 160, 110); storyE(x, '🐇', 60, 228, 44); storyZzz(x, t, 80, 200);
+      storyE(x, '🐢', 260 + Math.sin(t) * 10, 228, 56); storyE(x, '🏁', 350, 190, 50); storyKid(x, 360, 245, .4, t, 'cheer'); }],
+    ['A Tartaruga venceu! {N} aprendeu: quem não desiste chega lá!', (x, t) => {
+      storyParty(x, t); storyE(x, '🐢', 200, 200 - Math.abs(Math.sin(t * 3)) * 12, 90); storyE(x, '🏆', 200, 120, 46); storyE(x, '🐇', 330, 220, 54);
+      storyKid(x, 80, 245, .5, t, 'cheer'); }]
+  ] },
+  { title: '{N} e o Patinho Feio', color: '#29b6f6', pages: [
+    ['Na lagoa nasceram patinhos amarelinhos e um patinho cinza, bem diferente dos outros.', (x, t) => {
+      storyDay(x, t, 200); x.fillStyle = '#4fc3f7'; x.beginPath(); x.ellipse(200, 250, 190, 45, 0, 0, TAU); x.fill();
+      for (let i = 0; i < 3; i++) storyE(x, '🐥', 110 + i * 50, 245 + Math.sin(t * 2 + i) * 3, 34); storyGrayDuck(x, 300, 245 + Math.sin(t * 2) * 3, 1); }],
+    ['Os outros não queriam brincar com ele. Mas {N} chegou e disse: "Vem brincar comigo!"', (x, t) => {
+      storyDay(x, t); for (let i = 0; i < 3; i++) storyE(x, '🐥', 60 + i * 40, 232, 30); storyGrayDuck(x, 250, 228, 1.1); storyKid(x, 330, 245, .5, t, 'wave'); storyE(x, '💛', 290, 150 + storyBob(t, 0, 5), 26); }],
+    ['{N} e o patinho brincaram o verão inteiro: nadaram, pularam nas poças e correram na grama.', (x, t) => {
+      storyDay(x, t); storyGrayDuck(x, 150 + Math.sin(t * 2) * 60, 228 - Math.abs(Math.sin(t * 4)) * 20, 1); storyKid(x, 270 + Math.sin(t * 2) * 60, 245, .5, t, 'cheer', Math.abs(Math.sin(t * 4 + 1)) * 14);
+      storyE(x, '💦', 150 + Math.sin(t * 2) * 60, 250, 26); }],
+    ['O inverno chegou, e {N} levou um cachecol bem quentinho para o amigo.', (x, t) => {
+      storyFill(x, '#b3c7e6', '#eef4ff'); storyGround(x, 240, '#ffffff', '#e3edf9');
+      for (let i = 0; i < 20; i++) storyE(x, '❄️', (i * 47) % 400, ((t * 30 + i * 37) % 300), 12);
+      storyGrayDuck(x, 230, 232, 1.1); storyE(x, '🧣', 230, 215, 30); storyKid(x, 110, 245, .5, t, 'wave'); }],
+    ['Na primavera, o patinho tinha crescido e virado um lindo cisne branco!', (x, t) => {
+      storyDay(x, t, 200); x.fillStyle = '#4fc3f7'; x.beginPath(); x.ellipse(200, 250, 190, 45, 0, 0, TAU); x.fill();
+      storyE(x, '🦢', 230, 215 + Math.sin(t * 2) * 4, 110); for (let i = 0; i < 4; i++) { x.globalAlpha = Math.abs(Math.sin(t * 2 + i)); storyE(x, '✨', 170 + i * 40, 140 - (i % 2) * 20, 20); } x.globalAlpha = 1;
+      storyKid(x, 70, 200, .45, t, 'cheer'); }],
+    ['Cada um é bonito do seu jeito. E o cisne nunca esqueceu do seu amigo {N}!', (x, t) => {
+      storyDay(x, t); storyE(x, '🦢', 270, 200, 100); storyKid(x, 140, 245, .58, t, 'wave'); storyHearts(x, t); }]
+  ] },
+  { title: '{N} e o Pé de Feijão', color: '#43a047', pages: [
+    ['{N} plantou um feijão mágico no quintal e regou com muito carinho.', (x, t) => {
+      storyDay(x, t); x.fillStyle = '#8d5a2b'; x.beginPath(); x.ellipse(230, 243, 40, 10, 0, 0, TAU); x.fill();
+      storyE(x, '🫘', 230, 236, 20); storyE(x, '🚿', 270, 180, 40, -.4); for (let i = 0; i < 4; i++) storyE(x, '💧', 250 + i * 6, 200 + ((t * 60 + i * 12) % 40), 12);
+      storyKid(x, 120, 245, .55, t, ''); }],
+    ['No dia seguinte, o pé de feijão tinha crescido até lá em cima, nas nuvens!', (x, t) => {
+      storyDay(x, t); storyBeanstalk(x, 220, 240, -30, t); storyCloud(x, 220, 30, 1.4); storyKid(x, 110, 245, .5, t, 'cheer'); storyE(x, '😲', 110, 100, 30); }],
+    ['{N} subiu, subiu, subiu... e lá em cima encontrou um castelo de nuvens!', (x, t) => {
+      storyFill(x, '#a5d8ff', '#fdf0ff'); for (const [cx, cy, s] of [[60, 250, 2], [200, 270, 2.4], [340, 250, 2]]) storyCloud(x, cx, cy, s);
+      storyE(x, '🏰', 280, 170, 130); storyKid(x, 110, 245, .5, t, 'wave'); }],
+    ['No castelo morava um gigante que estava muito sozinho. Ninguém brincava com ele.', (x, t) => {
+      storyFill(x, '#a5d8ff', '#fdf0ff'); storyCloud(x, 200, 275, 3); storyE(x, '🧔🏽', 270, 150, 190); storyE(x, '💧', 250, 150 + ((t * 30) % 40), 14);
+      storyKid(x, 90, 245, .42, t, ''); }],
+    ['O gigante tinha uma galinha que botava ovos de ouro, mas preferia muito ter um amigo.', (x, t) => {
+      storyFill(x, '#a5d8ff', '#fdf0ff'); storyCloud(x, 200, 275, 3); storyE(x, '🐔', 200, 205, 70);
+      x.fillStyle = '#ffd23f'; x.strokeStyle = INK; x.lineWidth = 2; x.beginPath(); x.ellipse(250, 238, 12, 15, 0, 0, TAU); x.fill(); x.stroke();
+      x.globalAlpha = Math.abs(Math.sin(t * 3)); storyE(x, '✨', 268, 222, 16); x.globalAlpha = 1; storyE(x, '🧔🏽', 340, 150, 150); storyKid(x, 80, 245, .42, t, ''); }],
+    ['{N} virou amigo do gigante, e agora eles brincam juntos nas nuvens todo domingo!', (x, t) => {
+      storyFill(x, '#a5d8ff', '#fdf0ff'); storyCloud(x, 200, 275, 3); storyE(x, '🧔🏽', 290, 150, 170, Math.sin(t * 2) * .05);
+      storyE(x, '🪁', 150 + Math.sin(t) * 30, 70 + Math.cos(t * 1.3) * 15, 40); storyKid(x, 120, 245, .5, t, 'cheer', Math.abs(Math.sin(t * 3)) * 12); storyHearts(x, t); }]
+  ] },
+  { title: 'O Leão e o Ratinho', color: '#a1887f', pages: [
+    ['Na savana, um leão grandão dormia no sol. {N} olhava tudo de longe, bem quietinho.', (x, t) => {
+      storySunset(x, t); storyE(x, '🦁', 230, 205, 120); storyZzz(x, t, 270, 140); storyKid(x, 70, 245, .45, t, ''); }],
+    ['Um ratinho passou correndo por cima do nariz do leão, e ele acordou: grrr!', (x, t) => {
+      storySunset(x, t); storyE(x, '🦁', 230, 205, 120); storyE(x, '🐭', 170 + Math.sin(t * 6) * 20, 150, 36); storyWord(x, 'GRRR!', 320, 100, 30, '#e65100', .15); storyKid(x, 60, 245, .42, t, ''); }],
+    ['"Por favor, me solta! Um dia eu te ajudo", pediu o ratinho. E o leão deixou ele ir.', (x, t) => {
+      storySunset(x, t); storyE(x, '🦁', 250, 205, 120); storyE(x, '🐭', 130 - (t * 30 % 80), 235, 34); storyE(x, '🙏', 140, 180, 26); storyKid(x, 60, 245, .42, t, 'wave'); }],
+    ['Dias depois, o leão ficou preso numa rede e não conseguia sair.', (x, t) => {
+      storySunset(x, t); storyE(x, '🦁', 220, 205, 110, Math.sin(t * 6) * .05);
+      x.strokeStyle = '#6d4c41'; x.lineWidth = 2; for (let i = -6; i <= 6; i++) { x.beginPath(); x.moveTo(160 + i * 10, 140); x.lineTo(220 + i * 10, 260); x.moveTo(280 + i * 10, 140); x.lineTo(220 + i * 10, 260); x.stroke(); }
+      storyKid(x, 70, 245, .42, t, ''); storyE(x, '😟', 70, 150, 26); }],
+    ['O ratinho chegou correndo e roeu a rede com os dentinhos. {N} ajudou a puxar!', (x, t) => {
+      storySunset(x, t); storyE(x, '🦁', 220, 205, 110); storyE(x, '🐭', 170, 240, 34); storyWord(x, 'NHAC NHAC!', 200, 100, 22, '#6d4c41', -.1); storyKid(x, 330, 245, .45, t, 'cheer'); }],
+    ['O leão ficou livre e agradeceu. Até um amigo pequenininho pode ajudar muito!', (x, t) => {
+      storySunset(x, t); storyE(x, '🦁', 250, 200, 110); storyE(x, '🐭', 250, 130 + storyBob(t, 0, 4), 34); storyKid(x, 110, 245, .5, t, 'cheer'); storyHearts(x, t); }]
+  ] },
+  // histórias novas que ajudam a criança a reconhecer o que sente
+  { title: '{N} e o arco-íris das emoções', color: '#8e24aa', pages: [
+    ['Hoje {N} descobriu que cada sentimento tem uma cor, como um arco-íris.', (x, t) => {
+      storyDay(x, t); const cs = ['#e53935', '#fb8c00', '#fdd835', '#43a047', '#1e88e5', '#8e24aa'];
+      x.lineWidth = 12; cs.forEach((c, i) => { x.strokeStyle = c; x.beginPath(); x.arc(200, 250, 160 - i * 12, Math.PI, TAU); x.stroke(); }); storyKid(x, 200, 245, .5, t, 'wave'); }],
+    ['Amarelo é a alegria! Quando {N} está feliz, dá vontade de pular e sorrir.', (x, t) => {
+      storyFill(x, '#fff59d', '#fffde7'); storyGround(x, 240, '#fdd835'); storyE(x, '😀', 300, 110, 70); storyKid(x, 150, 245, .6, t, 'cheer', Math.abs(Math.sin(t * 4)) * 20); }],
+    ['Azul é a tristeza. Quando {N} fica triste, um abraço ajuda muito.', (x, t) => {
+      storyFill(x, '#90caf9', '#e3f2fd'); storyGround(x, 240, '#64b5f6'); storyE(x, '😢', 300, 110, 70); storyE(x, '🤗', 160, 120, 50); storyKid(x, 150, 245, .55, t, ''); }],
+    ['Vermelho é a raiva. Quando {N} fica bravo, respira fundo e conta até cinco.', (x, t) => {
+      storyFill(x, '#ef9a9a', '#ffebee'); storyGround(x, 240, '#e57373'); storyE(x, '😠', 300, 110, 70);
+      const k = Math.floor(t % 5) + 1; storyWord(x, String(k), 110, 100, 50, '#c62828'); storyKid(x, 160, 245, .55, t, ''); }],
+    ['Roxo é o medo. Quando {N} sente medo, chama um adulto para ficar pertinho.', (x, t) => {
+      storyFill(x, '#ce93d8', '#f3e5f5'); storyGround(x, 240, '#ba68c8'); storyE(x, '😨', 300, 110, 70); storyE(x, '👩🏽', 220, 190, 90); storyKid(x, 140, 245, .5, t, ''); storyE(x, '💜', 180, 120, 30); }],
+    ['Verde é a calma. Todas as cores juntas formam o arco-íris de {N}. Tudo bem sentir!', (x, t) => {
+      storyFill(x, '#a5d6a7', '#e8f5e9'); storyGround(x, 240, '#66bb6a'); storyE(x, '😌', 300, 110, 70); storyKid(x, 180, 245, .6, t, 'cheer'); storyHearts(x, t); }]
   ] }
 ];
+// patinho cinza (desenhado; o emoji de patinho é sempre amarelo)
+function storyGrayDuck(x, cx, by, s) {
+  x.save(); x.translate(cx, by); x.scale(s, s); x.strokeStyle = INK; x.lineWidth = 2.5; x.fillStyle = '#9e9e9e';
+  x.beginPath(); x.ellipse(0, -14, 22, 14, 0, 0, TAU); x.fill(); x.stroke();
+  x.beginPath(); x.arc(-14, -30, 11, 0, TAU); x.fill(); x.stroke();
+  x.fillStyle = '#ff9800'; x.beginPath(); x.moveTo(-24, -31); x.lineTo(-34, -28); x.lineTo(-24, -25); x.closePath(); x.fill(); x.stroke();
+  x.fillStyle = INK; x.beginPath(); x.arc(-17, -33, 2, 0, TAU); x.fill(); x.restore();
+}
+// pé de feijão subindo até as nuvens, com folhas que balançam
+function storyBeanstalk(x, bx, by, top, t) {
+  x.strokeStyle = '#2e7d32'; x.lineWidth = 12; x.lineCap = 'round'; x.beginPath(); x.moveTo(bx, by);
+  for (let y = by; y > top; y -= 10) x.lineTo(bx + Math.sin(y / 30 + t * .5) * 18, y); x.stroke();
+  for (let y = by - 30; y > top + 20; y -= 34) { const lx = bx + Math.sin(y / 30 + t * .5) * 18, sd = (y / 34 | 0) % 2 ? 1 : -1; storyE(x, '🍃', lx + sd * 18, y, 24, sd * .6); }
+}
 // página final
 function storyEnd(x, t) {
   storyFill(x, '#fff3cf', '#ffd9a0'); const cs = ['#e53935', '#fdd835', '#1e88e5', '#43a047', '#8e24aa', '#ec407a'];
@@ -8943,10 +9159,278 @@ addEventListener('keydown', e => {
 $('#snkMode').onclick = () => { snkSave.slow = !snkSave.slow; keep('oliver-snake', snkSave); blip(620); snakeStart(); };
 GAMES.snake = snakeStart; GAME_INTRO.snake = 'Leve a cobrinha até as frutas!';
 
+/* ================= conversar: um amiguinho que ouve pelo microfone e responde ================= */
+// Sem internet: respostas prontas por palavra-chave (sempre seguras). Opcional (área dos pais): IA que roda no tablet;
+// mesmo com ela, dor, medo, tristeza e os pedidos de história, música e jogo continuam com as respostas prontas.
+// [emoji, nome, artigo, o que é]
+const CHAT_FRIENDS = [['🦉', 'Lulu', 'a', 'corujinha'], ['🐶', 'Totó', 'o', 'cachorrinho'], ['🦖', 'Dino', 'o', 'dinossauro'], ['🤖', 'Bip', 'o', 'robô']];
+const chatNorm = s => ' ' + String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim() + ' ';
+// [palavras, emoji, curiosidade, som (nome em ANIMAL_SOUNDS)]
+const CHAT_ANIMALS = [
+  ['cachorr|cao |au au', '🐶', 'O cachorro abana o rabo quando está feliz!', 'cachorro'], ['gat', '🐱', 'O gato adora dormir no solzinho e faz miau!', 'gato'],
+  ['vaca|boi ', '🐄', 'A vaca dá leite e faz muuu!', 'vaca'], ['leao|leoa', '🦁', 'O leão tem uma juba enorme e é o rei da floresta!', 'leão'],
+  ['elefant', '🐘', 'O elefante usa a tromba para beber água e tomar banho!', 'elefante'], ['macac', '🐵', 'O macaco pula de galho em galho e adora banana!', 'macaco'],
+  ['passar|pombo|papagaio', '🐦', 'O passarinho faz ninho nas árvores e canta piu piu!', 'passarinho'], ['pato', '🦆', 'O pato nada no lago e faz quá quá!', 'pato'],
+  ['galinha|pintinho', '🐔', 'A galinha bota ovo e faz có có có!', 'galinha'], ['galo ', '🐓', 'O galo canta bem cedinho para acordar todo mundo!', 'galo'],
+  ['porc', '🐷', 'O porco adora rolar na lama para se refrescar!', 'porco'], ['cavalo|ponei', '🐴', 'O cavalo corre muito rápido!', 'cavalo'],
+  ['sapo|ra ', '🐸', 'O sapo dá pulos enormes e come mosquitos!', 'sapo'], ['ovelha|carneir', '🐑', 'A ovelha tem uma lã bem fofinha!', 'ovelha'],
+  ['coruja', '🦉', 'A coruja fica acordada de noite e vira a cabeça para trás!', 'coruja'], ['abelha', '🐝', 'A abelha voa de flor em flor e faz mel!', 'abelha'],
+  ['dino|rex ', '🦖', 'Os dinossauros viveram há muito, muito tempo, antes das pessoas!', ''], ['peix', '🐟', 'O peixe respira debaixo da água!', ''],
+  ['tubara', '🦈', 'O tubarão troca de dente a vida inteira!', ''], ['baleia', '🐳', 'A baleia azul é o maior animal do mundo!', ''],
+  ['golfinh', '🐬', 'O golfinho é muito esperto e adora pular nas ondas!', ''], ['coelh', '🐰', 'O coelho tem orelhas compridas e adora cenoura!', ''],
+  ['girafa', '🦒', 'A girafa tem o pescoço mais comprido de todos!', ''], ['tartaruga', '🐢', 'A tartaruga anda devagarinho e leva a casinha nas costas!', ''],
+  ['urso', '🐻', 'O urso dorme quase o inverno inteiro!', ''], ['borboleta', '🦋', 'A borboleta já foi uma lagartinha!', ''],
+  ['pinguim', '🐧', 'O pinguim não voa, mas nada muito bem!', ''], ['zebra', '🦓', 'Cada zebra tem listras diferentes, como um desenho só dela!', ''],
+  ['tigre', '🐯', 'O tigre é um gatão listrado que adora nadar!', ''], ['jacare', '🐊', 'O jacaré gosta de tomar sol na beira do rio!', ''],
+  ['polvo', '🐙', 'O polvo tem oito braços para abraçar!', ''], ['joaninha', '🐞', 'A joaninha tem bolinhas pretas nas costas!', ''],
+  ['formiga', '🐜', 'A formiga é pequenininha, mas carrega coisas bem pesadas!', ''], ['cobra', '🐍', 'A cobra não tem pernas e anda rastejando!', '']
+];
+const CHAT_COLORS = [['vermelh', 'Vermelho, como o morango e o caminhão de bombeiros!'], ['azul', 'Azul, da cor do céu e do mar!'],
+  ['amarel', 'Amarelo, como o sol e a banana!'], ['verde', 'Verde, como as folhas e o sapo!'], ['laranja', 'Laranja, como a cenoura e a abóbora!'],
+  ['roxo|roxa|lilas', 'Roxo, como a uva e a berinjela!'], ['rosa', 'Rosa, como o porquinho e a flor!'], ['preto|preta', 'Preto, como a noite sem lua!'],
+  ['branc', 'Branco, como a nuvem e a neve!'], ['marrom', 'Marrom, como o chocolate e o tronco da árvore!'], ['arco iris|colorid', 'Todas as cores juntas, como o arco-íris!']];
+const CHAT_FOODS = [['pizza', '🍕'], ['sorvete', '🍦'], ['banana', '🍌'], ['maca', '🍎'], ['chocolate', '🍫'], ['bolo', '🎂'], ['morango', '🍓'], ['uva', '🍇'],
+  ['pao ', '🍞'], ['arroz|feijao', '🍛'], ['batata', '🍟'], ['macarra', '🍝'], ['melancia', '🍉'], ['biscoito|bolacha', '🍪'], ['leite', '🥛'], ['suco', '🧃'],
+  ['pipoca', '🍿'], ['hamburguer', '🍔'], ['ovo', '🥚'], ['cenoura', '🥕'], ['brocolis', '🥦'], ['laranja', '🍊'], ['abacaxi', '🍍'], ['pera ', '🍐'], ['manga', '🥭'], ['frango', '🍗'], ['peixe', '🐟']];
+const CHAT_RIDDLES = [['tem dente, mas não morde', 'O pente!'], ['cai em pé e corre deitado', 'A chuva!'], ['tem coroa, mas não é rei, e tem escamas, mas não é peixe', 'O abacaxi!'],
+  ['quanto mais se tira, maior fica', 'O buraco!'], ['tem cabeça e tem dente, mas não é gente', 'O alho!'], ['tem pescoço, mas não tem cabeça', 'A garrafa!'],
+  ['tem olhos, mas não enxerga', 'A batata!'], ['anda com a casa nas costas', 'O caracol e a tartaruga!'], ['tem asas, mas não voa, e tem bico, mas não bica', 'O bule!'],
+  ['é cheio de buraquinhos, mas segura a água', 'A esponja!'], ['sobe quando a chuva desce', 'O guarda-chuva!']];
+const CHAT_MINI = ['Era uma vez uma nuvem chamada Fofinha que queria brincar. Ela desceu bem devagar até o jardim de {N}. Os dois brincaram de esconde-esconde até o sol aparecer. Fim!',
+  'Um dia, {N} achou uma estrelinha caída no quintal. Ela estava com saudade do céu. {N} amarrou a estrelinha num balão, e ela voltou para casa brilhando de alegria. Fim!',
+  'A formiguinha Tita carregava uma folha enorme. {N} ajudou a levar a folha até o formigueiro, e as formigas fizeram uma festa de agradecimento. Fim!',
+  'O trenzinho Piuí estava com medo de subir a montanha. {N} disse: você consegue! E o trenzinho subiu, devagar e sempre: piuí, piuí! Fim!',
+  'Um peixinho se perdeu da mamãe no fundo do mar. {N} e o polvo procuraram atrás das pedras, e lá estava ela, com um abraço de oito braços! Fim!',
+  'A lua estava com sono, mas o céu estava muito escuro. {N} acendeu as estrelas uma por uma, e a lua dormiu feliz. Boa noite, lua! Fim!'];
+const CHAT_GAMES = [['memory', '🃏 Memória'], ['bubbles', '🎈 Balões'], ['piano', '🎹 Piano'], ['maze', '🧭 Labirinto'], ['cook', '🍕 Cozinha'], ['pet', '🐶 Bichinho'],
+  ['dots', '🔢 Pontos'], ['sort', '📦 Separar'], ['shadow', '👤 Sombras'], ['puzzle', '🧩 Quebra-cabeça'], ['story', '📚 Histórias'], ['wash', '🧽 Lava-rápido']];
+const CHAT_NUMS = ['zero', 'um', 'dois', 'tres', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez'];
+// perguntas que o amigo faz para puxar conversa: [pergunta, botões de resposta]
+const CHAT_ASK = {
+  animal: ['Qual é o seu bicho favorito?', [['🐶', 'cachorro'], ['🐱', 'gato'], ['🦁', 'leão'], ['🦖', 'dinossauro'], ['🐘', 'elefante'], ['🐵', 'macaco']]],
+  color: ['Qual é a sua cor favorita?', [['🔴', 'vermelho'], ['🔵', 'azul'], ['🟡', 'amarelo'], ['🟢', 'verde'], ['🟣', 'roxo'], ['🩷', 'rosa']]],
+  food: ['Qual comida você mais gosta?', [['🍕', 'pizza'], ['🍌', 'banana'], ['🍎', 'maçã'], ['🍦', 'sorvete'], ['🍫', 'chocolate'], ['🍝', 'macarrão']]],
+  feel: ['Como você está se sentindo agora?', [['😀 Feliz', 'estou feliz'], ['😢 Triste', 'estou triste'], ['😠 Bravo', 'estou bravo'], ['😴 Com sono', 'estou com sono']]],
+  age: ['Quantos anos você tem?', [['3', '3 anos'], ['4', '4 anos'], ['5', '5 anos'], ['6', '6 anos']]],
+  play: ['Do que você mais gosta de brincar?', [['⚽ Bola', 'de bola'], ['🚗 Carrinho', 'de carrinho'], ['🎨 Desenhar', 'de desenhar'], ['🧱 Blocos', 'de blocos']]]
+};
+const CHAT_DEFAULT = [['📖 História', 'conta uma história'], ['🤔 Adivinha', 'adivinha'], ['🎵 Música', 'canta uma música'], ['🎮 Brincar', 'vamos brincar'], ['🐾 Bichos', 'me fala de um bicho']];
+const chat = { f: 0, ask: null, riddle: null, again: null, hist: [], busy: false, listening: false, aiLoaded: false, asked: [] };
+const chatF = () => CHAT_FRIENDS[chat.f];
+const chatCap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const chatOpen = sel => () => { const b = document.querySelector(sel); if (b) b.click(); };
+// puxa assunto com uma pergunta que ainda não fez
+function chatQuestion() {
+  const keys = Object.keys(CHAT_ASK).filter(k => !chat.asked.includes(k)), k = pick(keys.length ? keys : Object.keys(CHAT_ASK));
+  chat.asked.push(k); if (chat.asked.length >= Object.keys(CHAT_ASK).length) chat.asked = [];
+  chat.ask = k; return { q: CHAT_ASK[k][0], chips: CHAT_ASK[k][1].map(([e, w]) => [e.length < 3 ? `${e} ${chatCap(w)}` : e, w]) };
+}
+// sorteia sem repetir a última
+const chatPick = (list, key) => { const opts = list.filter(o => o !== chat[key]); return chat[key] = pick(opts.length ? opts : list); };
+function chatStory() { chat.again = chatStory; return { t: chatPick(CHAT_MINI, 'lastStory').replace(/\{N\}/g, prefs.name) + ' Quer outra?', chips: [['👍 Quero!', 'quero outra'], ['📚 Livrinhos', '', chatOpen('[data-game="story"]')]] }; }
+function chatRiddle() { const r = chat.riddle = chatPick(CHAT_RIDDLES, 'lastRiddle'); return { t: `O que é, o que é: ${r[0]}?`, chips: [['🤷 Não sei', 'não sei'], ['💡 Já sei!', 'já sei']] }; }
+// respostas prontas; fallback: true quando não entendeu (é aí que a IA, se ligada, responde)
+function chatScript(raw) {
+  const s = chatNorm(raw), has = re => new RegExp(re).test(s), N = prefs.name, f = chatF(), ask = chat.ask, again = chat.again;
+  chat.ask = null; chat.again = null;
+  // primeiro, o que é sério: sempre a resposta pronta, pedindo ajuda a um adulto
+  if (has('machuc|dodoi|doend|doi |dor |sangu|caiu|cai |bati|me bateu|queim|cortei')) return { t: 'Ai, que dodói! Chame a mamãe, o papai ou um adulto agora para cuidar de você, tá bom?', safe: true };
+  if (has('medo|assust|monstr|pesadel')) return { t: 'Tudo bem sentir medo. Chame um adulto para ficar pertinho de você. Vamos respirar juntos? Puxa o ar... e solta devagarinho.', safe: true };
+  if (has('trist|chor|chatead|saudade|sozinh')) return { t: 'Ah, que pena. Quer um abraço? 🤗 Conta para a mamãe ou o papai como você está, eles adoram ajudar.', safe: true };
+  if (has('brav|raiva|zangad|nervos')) return { t: 'Quando fico bravo, eu conto até cinco bem devagar. Vamos juntos? Um... dois... três... quatro... cinco. Melhorou?', safe: true };
+  if (chat.riddle) { const r = chat.riddle; chat.riddle = null; chat.again = chatRiddle; return { t: `${pick(['Boa tentativa!', 'Pensou bem!', 'Hmm, será?'])} A resposta é... ${r[1]} Quer outra adivinha?`, chips: [['🤔 Outra!', 'outra'], ['🙂 Não', 'não']] }; }
+  // pedidos: história, adivinha, música, contar, jogar, desenhar, respirar
+  if (has('historia|conta um|conta uma|historinha')) return chatStory();
+  if (has('adivinha|charada|piada|o que e o que e')) { chat.again = chatRiddle; return chatRiddle(); }
+  if (has('cant|music')) return { t: 'Vou tocar Brilha, brilha, estrelinha no piano! Escuta só.', act: () => SONG.forEach((n, j) => n >= 0 && setTimeout(() => note(KEYS[n][0]), j * 450)) };
+  if (has('contar|conta ate|numer')) return { t: 'Vamos contar juntos! Um, dois, três, quatro, cinco, seis, sete, oito, nove, dez! Muito bem!', act: () => celebrate(false) };
+  if (has('jog|brinc')) { const g = shuffle([...CHAT_GAMES]).slice(0, 3); return { t: `Eba! Que tal ${g.map(x => x[1].slice(x[1].indexOf(' ') + 1)).join(', ').replace(/, ([^,]*)$/, ' ou $1')}?`, chips: g.map(([id, l]) => [l, '', chatOpen(`[data-game="${id}"]:not([data-lang])`)]) }; }
+  if (has('desenh|pint|colori')) return { t: 'Eba, vamos desenhar!', chips: [['🎨 Colorir', '', chatOpen('[data-go="color"]')], ['🖌️ Desenho livre', '', chatOpen('[data-go="free"]')]] };
+  if (has('respir|calm')) return { t: 'Vamos respirar como um balão. Enche a barriga de ar... segura... e solta bem devagar. Mais uma vez? Puxa... e solta. Que calminho!' };
+  // "quer outra?" (história ou adivinha)
+  if (again && has('sim|quero|outra|mais|de novo|pode|bora|vamos')) return again();
+  if (again && has('nao|chega')) return { t: 'Tudo bem! Sobre o que vamos conversar agora?', chips: CHAT_DEFAULT };
+  // bichos, cores e comidas
+  const an = CHAT_ANIMALS.find(a => has(a[0]));
+  if (an) { const snd = an[3] && ANIMAL_SOUNDS.find(a => a[1] === an[3]); return { t: `${ask === 'animal' ? 'Que bicho legal! ' : ''}${an[2]} ${an[1]}`, act: snd ? () => animalSound(snd) : null }; }
+  if (has('bicho|animal')) { const a = pick(CHAT_ANIMALS), q = chatQuestion(); chat.ask = 'animal'; return { t: `Sabia? ${a[2]} ${a[1]} ${CHAT_ASK.animal[0]}`, chips: CHAT_ASK.animal[1].map(([e, w]) => [`${e} ${chatCap(w)}`, w]) }; }
+  const co = CHAT_COLORS.find(c => has(c[0]));
+  if (co) return { t: (ask === 'color' ? 'Que cor linda! ' : '') + co[1] };
+  const fo = CHAT_FOODS.find(c => has(c[0]));
+  if (fo) return { t: `Hmm, ${fo[0].split('|')[0].trim()}! Que gostoso! ${fo[1]} Comida boa deixa a gente forte para brincar!` };
+  // conversa
+  const num = s.match(/ (\d{1,2}) /)?.[1] ?? CHAT_NUMS.findIndex(w => s.includes(` ${w} `));
+  if ((ask === 'age' || has('anos')) && +num > 0 && !has('voce|vc ')) return { t: `${num} anos? Uau, que grande! Daqui a pouco vai estar do meu tamanho!` };
+  if (has('quantos anos|sua idade')) { chat.ask = 'age'; return { t: `Eu tenho cinco anos de ${f[3]}! E você, quantos anos tem?`, chips: CHAT_ASK.age[1].map(([e, w]) => [e, w]) }; }
+  if (has('seu nome|quem e voce|quem e vc|como voce chama|como te chama|voce e quem')) return { t: `Eu sou ${f[1]}, ${f[2] === 'a' ? 'uma' : 'um'} ${f[3]}! E você é ${N}! Que nome bonito!` };
+  const me = s.match(/ (?:meu nome e|me chamo|eu sou o|eu sou a) ([a-z]+) /);
+  if (me) return { t: `Que nome bonito, ${chatCap(me[1])}!` };
+  if (has('tudo bem|como voce esta|como vai|ce ta bem')) { chat.ask = 'feel'; return { t: `Estou ${f[2] === 'a' ? 'ótima' : 'ótimo'}! E você, como está se sentindo?`, chips: CHAT_ASK.feel[1] }; }
+  if (has('^ (oi|ola|ei|e ai|bom dia|boa tarde|boa noite|alo) ')) return { t: `Oi, ${N}! Que bom te ver! Sobre o que vamos conversar?`, chips: CHAT_DEFAULT };
+  if (has('feliz|alegre|contente| bem |otim|legal|divertid')) return { t: 'Que bom! Eu também fico feliz! 😀 O que você mais gostou de fazer hoje?' };
+  if (has('sono|cansad|dormir|cama ')) return { t: 'Dormir faz a gente crescer forte! Que tal pedir para um adulto ler uma história antes de dormir?' };
+  if (has('fome')) { chat.ask = 'food'; return { t: 'Fome? Pede um lanchinho gostoso para um adulto! Qual comida você mais gosta?', chips: CHAT_ASK.food[1].map(([e, w]) => [`${e} ${chatCap(w)}`, w]) }; }
+  if (has('obrigad|valeu')) return { t: 'De nada! 💖' };
+  if (has('te amo|amo voce|gosto de voce|amig')) return { t: `Eu também gosto muito de você, ${N}! 💖` };
+  if (has('tchau|ate logo|ate amanha|ate mais')) return { t: `Tchau, ${N}! Volte para conversar comigo! 👋` };
+  if (has('mamae|papai| mae | pai |vovo|avo|irma|tia |tio |prim')) return { t: 'Que legal! Família é muito especial. O que vocês gostam de fazer juntos?' };
+  if (has('escola|creche|professor|colega')) return { t: 'Na escola a gente aprende um monte e faz amigos! Do que você mais gosta lá?' };
+  if (has('por que|porque|como funciona|o que e ')) return { t: `Que pergunta boa! ${pick(['Pergunta para a mamãe ou o papai, eles vão adorar explicar!', 'Vamos descobrir juntos com um adulto?'])}` };
+  if (has('sim|nao|talvez')) { const q = chatQuestion(); return { t: `Entendi! ${q.q}`, chips: q.chips }; }
+  if (ask) return { t: pick(['Que legal! Me conta mais!', 'Adorei saber disso!', 'Hmm, que interessante!']), fallback: true };
+  const q = chatQuestion();
+  return { t: `${pick(['Hmm, que interessante!', 'Que legal!', 'Ah, é?'])} ${q.q}`, chips: q.chips, fallback: true };
+}
+
+/* IA opcional no tablet (modelos abertos Qwen2.5 da LiteRT Community, baixados do Hugging Face) */
+const AI_MODELS = {
+  small: { file: 'qwen2.5-0.5b-q8.task', label: 'Pequena', mb: 547, ram: 3, url: 'https://huggingface.co/litert-community/Qwen2.5-0.5B-Instruct/resolve/main/Qwen2.5-0.5B-Instruct_multi-prefill-seq_q8_ekv1280.task' },
+  medium: { file: 'qwen2.5-1.5b-q8.task', label: 'Média', mb: 1598, ram: 6, url: 'https://huggingface.co/litert-community/Qwen2.5-1.5B-Instruct/resolve/main/Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv1280.task' }
+};
+const CHAT_BAD = / (mort|matar|mata |sangu|arma|tiro|faca|sexo|pelad|drog|cervej|vinho|cigarr|alcool|endereco|telefone|senha|idiota|burr|odio|diabo|inferno|suicid|beijo na boca|namor)/;
+const chatAiOn = () => !!(prefs.aiModel && prefs.aiReady === prefs.aiModel && plug('LocalAI'));
+// tira o que não é para criança e corta em duas frases curtas
+function chatClean(t) {
+  t = String(t || '').split('<|')[0].replace(/[*#_`]/g, '').replace(/\s+/g, ' ').trim();
+  if (!t || /[Ѐ-ӿ　-鿿가-힯]/.test(t) || CHAT_BAD.test(chatNorm(t))) return '';
+  return (t.match(/[^.!?]+[.!?]*/g) || [t]).slice(0, 2).join(' ').slice(0, 220).trim();
+}
+async function chatAi(text) {
+  const m = AI_MODELS[prefs.aiModel], f = chatF();
+  const sys = `Você é ${f[1]}, ${f[2] === 'a' ? 'uma' : 'um'} ${f[3]} amigo de um app infantil, conversando com ${prefs.name}, uma criança de 3 a 6 anos. `
+    + 'Responda sempre em português do Brasil, com no máximo duas frases curtas e palavras simples. Seja carinhoso, alegre e positivo. '
+    + 'Fale só de assuntos de criança: bichos, cores, brincadeiras, natureza, comida, família e sentimentos. '
+    + 'Nunca fale de violência nem de coisas de adulto, e nunca peça endereço, telefone, escola ou fotos. '
+    + 'Se a criança falar de dor, perigo ou tristeza, diga para chamar um adulto. Às vezes termine com uma pergunta simples.';
+  let p = `<|im_start|>system\n${sys}<|im_end|>\n`;
+  for (const [role, t] of chat.hist.slice(-6)) p += `<|im_start|>${role}\n${t}<|im_end|>\n`;
+  p += `<|im_start|>user\n${text}<|im_end|>\n<|im_start|>assistant\n`;
+  try {
+    const r = await Promise.race([plug('LocalAI').generate({ name: m.file, prompt: p, maxTokens: 1280 }), new Promise((_, no) => setTimeout(() => no(new Error('demorou')), 45000))]);
+    chat.aiLoaded = true; return chatClean(r.text);
+  } catch (e) { return ''; }
+}
+
+/* tela e fala */
+function chatMsg(who, text) {
+  const log = $('#chatLog'), el = document.createElement('div'); el.className = 'chat-msg ' + who; el.textContent = text; log.appendChild(el);
+  while (log.children.length > 30) log.firstChild.remove();
+  log.scrollTop = log.scrollHeight; return el;
+}
+function chatChips(list) {
+  const box = $('#chatChips'); box.innerHTML = '';
+  for (const [label, text, fn] of list || CHAT_DEFAULT) btn(box, 'chat-chip', label, label, () => { if (chat.busy || chat.listening) return; blip(620); if (fn) fn(); else chatSend(text); });
+}
+async function chatSay(r) {
+  chatMsg('friend', r.t); chatChips(r.chips);
+  const fe = $('#chatFriend'); fe.classList.remove('think'); fe.classList.add('talk');
+  const done = say(r.t.replace(/\p{Extended_Pictographic}/gu, ''));
+  await Promise.race([done, new Promise(res => setTimeout(res, 1200 + r.t.length * 90))]);
+  fe.classList.remove('talk');
+  if (r.act && alive('chat')) r.act();
+}
+async function chatSend(text) {
+  if (chat.busy) return;
+  text = String(text || '').trim();
+  chatMsg('kid', text || '...');
+  if (!text) { chatSay({ t: pick(['Não ouvi direitinho. Fala de novo, bem pertinho do tablet?', 'Hmm? Pode falar mais alto?']) }); return; }
+  chat.busy = true; $('#chatMic').disabled = true;
+  let r = chatScript(text);
+  if (r.fallback && chatAiOn()) {
+    const dots = chatMsg('friend dots', '...'); $('#chatFriend').classList.add('think');
+    const t = await chatAi(text); dots.remove(); $('#chatFriend').classList.remove('think');
+    if (t) r = { t, chips: CHAT_DEFAULT };
+  }
+  chat.hist.push(['user', text], ['assistant', r.t]); if (chat.hist.length > 12) chat.hist.splice(0, 2);
+  chat.busy = false; $('#chatMic').disabled = false;
+  if (alive('chat')) await chatSay(r);
+}
+// ouvir: no app usa o reconhecimento de voz do Android; no navegador, o do Chrome
+function chatWebListen() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return Promise.reject(new Error('sem reconhecimento de voz'));
+  return new Promise((res, no) => {
+    const r = new SR(); r.lang = 'pt-BR'; r.interimResults = false; r.maxAlternatives = 1; let got = '';
+    r.onresult = e => { got = e.results[0][0].transcript; }; r.onerror = e => e.error === 'no-speech' ? res('') : no(new Error(e.error)); r.onend = () => res(got);
+    r.start(); chat.webRec = r;
+  });
+}
+async function chatListen() {
+  const mic = $('#chatMic');
+  if (chat.busy) return;
+  if (chat.listening) { try { plug('Voice')?.stop(); chat.webRec?.stop(); } catch (e) {} return; }
+  try { speechSynthesis.cancel(); } catch (e) {} try { plug('TextToSpeech')?.stop(); } catch (e) {}
+  chat.listening = true; mic.classList.add('on'); mic.textContent = '👂'; $('#chatFriend').classList.remove('talk');
+  let text = null;
+  try { const V = plug('Voice'); text = V ? (await V.listen({ lang: 'pt-BR' })).text : await chatWebListen(); }
+  catch (e) { toast(/permiss|not-allowed/i.test(e.message || e) ? 'Os pais precisam liberar o microfone 🎤' : 'Não deu para ouvir agora. Use os botões 🙂'); }
+  chat.listening = false; mic.classList.remove('on'); mic.textContent = '🎤';
+  if (text !== null && alive('chat')) chatSend(text);
+}
+function chatFriendShow() {
+  const f = chatF(); $('#chatFriend').textContent = f[0]; $('#chatName').textContent = f[1]; $('#chatWho').textContent = f[0];
+  $('#chatMode').textContent = chatAiOn() ? '🤖 IA' : ''; $('#chatMode').hidden = !chatAiOn();
+}
+function chatStart() {
+  chat.f = Math.min(prefs.chatFriend || 0, CHAT_FRIENDS.length - 1); chat.hist = []; chat.ask = chat.riddle = chat.again = null; chat.busy = false;
+  $('#chatLog').innerHTML = ''; chatFriendShow();
+  const f = chatF();
+  chatSay({ t: `Oi, ${prefs.name}! Eu sou ${f[1]}, ${f[2] === 'a' ? 'uma' : 'um'} ${f[3]}. Aperte o microfone e fale comigo!` });
+}
+$('#chatMic').onclick = chatListen;
+$('#chatWho').onclick = () => {
+  if (chat.busy || chat.listening) return;
+  prefs.chatFriend = (chat.f + 1) % CHAT_FRIENDS.length; savePrefs(); blip(620); chat.f = prefs.chatFriend; chatFriendShow();
+  const f = chatF(); chatSay({ t: `Oi! Agora sou eu, ${f[1]}! Vamos conversar?` });
+};
+$('#chatStage').onclick = () => {
+  if (chat.busy || chat.listening) return;
+  const fe = $('#chatFriend'); fe.classList.remove('hop'); void fe.offsetWidth; fe.classList.add('hop');
+  chatSay({ t: pick(['Hihihi! Faz cócegas!', 'Ei, que carinho gostoso!', 'Hihi! De novo!']) });
+};
+// a IA ocupa memória: solta quando a criança sai da conversa
+setInterval(() => { if (chat.aiLoaded && !alive('chat')) { chat.aiLoaded = false; try { plug('LocalAI')?.unload(); } catch (e) {} } }, 4000);
+GAMES.chat = chatStart;
+
+/* área dos pais: baixar, ligar e apagar a IA */
+let aiPct = -1;
+async function aiRender() {
+  const sel = $('#pAiModel'), info = $('#pAiInfo'), get = $('#pAiGet'), del = $('#pAiDel'), A = plug('LocalAI'), m = AI_MODELS[prefs.aiModel || ''];
+  sel.value = prefs.aiModel || '';
+  if (!A) { info.textContent = 'A IA no tablet só funciona no app instalado (no navegador o amigo usa só as falas prontas).'; get.hidden = del.hidden = true; return; }
+  let st0 = {}; try { st0 = await A.status({ name: m ? m.file : '' }); } catch (e) {}
+  const gb = b => (b / 1e9).toLocaleString('pt-BR', { maximumFractionDigits: 1 }), ram = st0.ram ? `Memória do tablet: ${gb(st0.ram)} GB. ` : '', free = st0.free ? `Espaço livre: ${gb(st0.free)} GB.` : '';
+  if (!m) { info.textContent = ram + free; get.hidden = true; del.hidden = !prefs.aiReady; return; }
+  const ready = st0.exists && prefs.aiReady === prefs.aiModel;
+  const weak = st0.ram && st0.ram / 1e9 < m.ram ? ` ⚠️ Este tablet tem pouca memória para a IA ${m.label}: ela pode ficar lenta ou fechar o app${prefs.aiModel === 'medium' ? '; prefira a Pequena' : ''}.` : '';
+  info.textContent = aiPct >= 0 ? `Baixando a IA ${m.label}: ${aiPct}%... Pode fechar esta área, o download continua.`
+    : ready ? `IA ${m.label} pronta ✔️ e ligada no jogo Conversar. A primeira resposta demora alguns segundos.${weak}`
+    : `Para usar a IA ${m.label}, baixe uma vez (${m.mb >= 1000 ? (m.mb / 1000).toLocaleString('pt-BR') + ' GB' : m.mb + ' MB'}; use o Wi-Fi). Precisa de um tablet com ${m.ram} GB de memória ou mais. ${ram}${free}${weak}`;
+  get.hidden = ready || aiPct >= 0; del.hidden = !(st0.exists || prefs.aiReady) || aiPct >= 0;
+}
+$('#pAiModel').onchange = e => { prefs.aiModel = e.target.value; savePrefs(); blip(600); aiRender(); };
+$('#pAiGet').onclick = async () => {
+  const U = plug('Updater'), A = plug('LocalAI'), key = prefs.aiModel, m = AI_MODELS[key];
+  if (!U || !A || !m || aiPct >= 0) return;
+  const st0 = await A.status({ name: m.file }).catch(() => ({}));
+  if (st0.free && st0.free < m.mb * 1.15e6) { toast('Falta espaço no tablet para a IA 📦'); return; }
+  confirmAsk(`Baixar a IA ${m.label} (${m.mb >= 1000 ? '1,6 GB' : m.mb + ' MB'})? Use o Wi-Fi.`, async () => {
+    await A.remove().catch(() => {}); prefs.aiReady = ''; savePrefs();
+    aiPct = 0; aiRender();
+    const h = await U.addListener('progress', e => { if (e.name === 'ai/' + m.file && e.pct !== aiPct) { aiPct = Math.max(0, e.pct); if (!$('#parents').hidden) aiRender(); } });
+    try { await U.download({ url: m.url, name: 'ai/' + m.file }); prefs.aiReady = key; savePrefs(); toast(`IA ${m.label} pronta! 🦉`); }
+    catch (e) { toast('Não deu para baixar a IA. Confira a internet 📶'); }
+    aiPct = -1; h.remove(); aiRender();
+  });
+};
+$('#pAiDel').onclick = () => confirmAsk('Apagar a IA do tablet? O amigo volta a usar só as falas prontas.', async () => {
+  try { await plug('LocalAI')?.remove(); } catch (e) {} prefs.aiReady = ''; savePrefs(); toast('IA apagada'); aiRender();
+});
+
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 34, name: '5.7' };
+const APP_VERSION = { code: 35, name: '6.0' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)

@@ -1,8 +1,8 @@
 {
-  "code": 34,
-  "name": "5.7",
-  "minApk": 19,
-  "notes": "Minha rotina: o pote de estrelas não fica mais gigante na tela depois de marcar uma tarefa.",
+  "code": 35,
+  "name": "6.0",
+  "minApk": 35,
+  "notes": "Versão 6.0: jogo Conversar (um amiguinho que ouve pelo microfone e responde), IA opcional no tablet na área dos pais e 8 histórias novas (Três Porquinhos, Chapeuzinho Vermelho, Três Ursos, Lebre e Tartaruga, Patinho Feio, Pé de Feijão, Leão e Ratinho e o Arco-íris das emoções).",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/JogosDoOliver.apk"
 }
