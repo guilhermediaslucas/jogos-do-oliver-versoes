@@ -1,8 +1,8 @@
 {
-  "code": 37,
-  "name": "6.2",
+  "code": 38,
+  "name": "6.3",
   "minApk": 35,
-  "notes": "Versão 6.2: novo grupo Aprender brincando, com Estátua (dançar e parar), Como ele se sente? (emoções), O que vem depois? (sequências e padrões), Sons das palavras (som inicial, rimas e sílabas), O que sumiu? (memória), Opostos e Mais ou menos?",
+  "notes": "Versão 6.3: o botão Conversar agora fica fixo no topo da tela inicial e mostra o amigo escolhido (Lulu, Totó, Dino ou Bip).",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/JogosDoOliver.apk"
 }
