@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 41, name: '6.6' }; -->
+<!-- const APP_VERSION = { code: 42, name: '6.7' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -54,12 +54,13 @@ button:active { transform: scale(.92); }
 /* início */
 #home { overflow-y: auto; }
 .homeIn { max-width: 920px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 16px; }
-/* padding-top deixa livre a faixa do topo, onde ficam os botões de voz, conversa e pais */
-.hero { display: flex; align-items: center; justify-content: center; gap: 16px; padding-top: 70px; }
+/* em tela larga o título fica entre os botões de voz e dos pais; em tela estreita desce para não ficar embaixo deles */
+.hero { display: flex; align-items: center; justify-content: center; gap: 16px; padding-top: 14px; }
+@media (max-width: 1000px) { .hero { padding-top: 70px; } }
 .hero > canvas { width: clamp(64px, 14vw, 104px); height: auto; flex: none; filter: drop-shadow(0 5px 0 var(--shadow)); }
-.heroKid { position: relative; flex: none; width: clamp(70px, 11vw, 110px); }
+.heroKid { position: relative; flex: none; width: clamp(80px, 11.5vw, 140px); }
 .heroKid canvas { width: 100%; height: auto; display: block; }
-.bubble { position: absolute; bottom: 66%; left: 50%; transform: translateX(-50%); white-space: nowrap; background: var(--paper); border-radius: 16px; padding: 4px 12px; font-size: 18px; font-weight: 800; box-shadow: 0 2px 0 var(--shadow); }
+.bubble { position: absolute; bottom: 70%; left: 50%; transform: translateX(-50%); white-space: nowrap; background: var(--paper); border-radius: 16px; padding: 4px 12px; font-size: 18px; font-weight: 800; box-shadow: 0 2px 0 var(--shadow); }
 @media (max-width: 560px) { .heroKid { display: none; } }
 #home h1 { margin: 0; font-size: clamp(36px, 8vw, 66px); font-weight: 800; line-height: .95; text-wrap: balance; }
 #home h1 b { color: var(--pick); display: inline-block; transform: rotate(-3deg); }
@@ -78,12 +79,12 @@ button:active { transform: scale(.92); }
 .mode[hidden], .door[hidden] { display: none; }
 /* portas da tela inicial: cada uma abre uma prateleira de jogos */
 .doors { display: flex; flex-wrap: wrap; justify-content: center; gap: 18px; padding: 6px 0 10px; }
-.door { position: relative; flex: 0 1 calc(25% - 14px); min-width: 150px; aspect-ratio: 1 / 1.05; border: 5px solid #fff; border-radius: 38px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding: 0 6px 14px; overflow: hidden;
+.door { position: relative; flex: 0 1 calc(25% - 14px); min-width: 150px; height: clamp(150px, calc((100dvh - 290px) / 2), 230px); border: 5px solid #fff; border-radius: 38px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding: 0 6px 14px; overflow: hidden;
   background: radial-gradient(circle at 20% 15%, rgba(255,255,255,.35) 0 12%, transparent 13%), radial-gradient(circle at 85% 80%, rgba(255,255,255,.22) 0 9%, transparent 10%), radial-gradient(circle at 75% 20%, rgba(255,255,255,.18) 0 6%, transparent 7%), linear-gradient(160deg, var(--d2), var(--d1) 70%);
   box-shadow: 0 8px 0 rgba(0,0,0,.18), inset 0 -10px 0 rgba(0,0,0,.08); color: #fff; font: inherit; cursor: pointer; }
 .door .dE { position: absolute; inset: 0 0 38px; font-style: normal; }
 .door .dE b { position: absolute; line-height: 1; font-weight: 400; animation: doorBob 2.6s ease-in-out infinite; }
-.door .dE b:nth-child(1) { font-size: clamp(64px, 9vw, 92px); left: 50%; top: 50%; translate: -50% -50%; }
+.door .dE b:nth-child(1) { font-size: clamp(56px, 8vw, 88px); left: 50%; top: 50%; translate: -50% -50%; }
 .door .dE b:nth-child(2) { font-size: clamp(30px, 4vw, 42px); left: 8%; top: 9%; rotate: -14deg; animation-delay: -.9s; }
 .door .dE b:nth-child(3) { font-size: clamp(30px, 4vw, 42px); right: 8%; top: 12%; rotate: 12deg; animation-delay: -1.7s; }
 .door .dN { position: relative; font-size: clamp(22px, 3vw, 28px); font-weight: 800; text-shadow: 0 3px 0 rgba(0,0,0,.25); background: rgba(0,0,0,.12); border-radius: 999px; padding: 2px 16px; white-space: nowrap; }
@@ -97,10 +98,12 @@ button:active { transform: scale(.92); }
 .doorBar h2 { margin: 0; font-size: clamp(30px, 5vw, 44px); font-weight: 800; color: var(--d1); text-shadow: 0 3px 0 rgba(0,0,0,.08); }
 @media (max-width: 560px) { .door { min-width: 0; flex-basis: calc(50% - 10px); } }
 /* os últimos jogos ficam a um toque, logo abaixo do nome */
-.recentT { margin-bottom: -4px; }
+.recentT { margin: 0 4px -6px; font-size: 20px; }
+/* com a fileira de recentes, as portas encolhem um pouco para tudo caber sem rolar */
+#home:has(#recent .mode) .door { height: clamp(140px, calc((100dvh - 440px) / 2), 230px); }
 .recent { display: flex; gap: 12px; overflow-x: auto; padding: 4px 2px 10px; scrollbar-width: none; }
-.recent .mode { flex: none; width: 118px; border-radius: 24px; font-size: 16px; }
-.recent .mode span { font-size: 46px; }
+.recent .mode { flex: none; width: 100px; border-radius: 22px; font-size: 14px; }
+.recent .mode span { font-size: 40px; }
 /* selo de jogo novo */
 .isNew::after { content: 'NOVO'; position: absolute; top: 6px; right: 6px; z-index: 1; background: #ffd600; color: #c62828; font-size: 15px; font-weight: 900; padding: 2px 9px; border-radius: 999px; rotate: 10deg; box-shadow: 0 2px 0 rgba(0,0,0,.2); text-shadow: none; animation: newPulse 1.4s ease-in-out infinite; }
 @keyframes newPulse { 50% { scale: 1.12; } }
@@ -548,6 +551,7 @@ button:active { transform: scale(.92); }
 .k-pill.k-pos { background: var(--sun); font-size: clamp(22px, 5vmin, 40px); padding: 0 18px; }
 .round { pointer-events: auto; width: clamp(44px, 9vmin, 60px); height: clamp(44px, 9vmin, 60px); border-radius: 16px; border: 0; background: var(--paper); box-shadow: 0 4px 0 var(--shade); font-size: clamp(20px, 4.5vmin, 30px); cursor: pointer; }
 .k-grow { flex: 1; }
+.round.wide { width: auto; padding: 0 16px; }
 #kRank { position: fixed; right: max(12px, env(safe-area-inset-right, 0px)); top: calc(clamp(56px, 11vmin, 80px) + env(safe-area-inset-top, 0px)); margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; pointer-events: none; counter-reset: r; }
 #kRank li { counter-increment: r; display: flex; align-items: center; gap: 4px; font-size: clamp(13px, 2.8vmin, 20px); background: rgba(255,247,234,.85); border-radius: 999px; padding: 0 10px 0 6px; border-left: 6px solid var(--c); }
 #kRank li::before { content: counter(r) "º"; font-size: .7em; font-weight: 800; }
@@ -656,17 +660,17 @@ button:active { transform: scale(.92); }
 .homeVoice { position: absolute; top: 10px; left: max(16px, env(safe-area-inset-left, 0px)); }
 #parentBtn { position: absolute; top: 10px; right: max(16px, env(safe-area-inset-right, 0px)); opacity: .6; }
 #parentBtn.hasUpd { opacity: 1; }
-/* o amigo da conversa fica sempre à vista no topo, mesmo rolando a tela */
-.chatTop { position: fixed; z-index: 5; top: 10px; right: calc(max(16px, env(safe-area-inset-right, 0px)) + 76px); display: flex; align-items: center; gap: 6px; height: 64px; padding: 0 16px 0 8px; border: 0; border-radius: 32px; background: #00897b; color: #fff; font: inherit; box-shadow: 0 4px 0 rgba(0, 0, 0, .2); cursor: pointer; }
-.chatTop .ctF { font-size: 40px; line-height: 1; animation: ctBob 2.4s ease-in-out infinite; }
-.chatTop .ctTxt { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.05; }
+/* o amigo da conversa fica ao lado do personagem que dá oi */
+.chatTop { flex: none; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 12px 10px; border: 0; border-radius: 26px; background: #00897b; color: #fff; font: inherit; box-shadow: 0 4px 0 rgba(0, 0, 0, .2); cursor: pointer; }
+.chatTop .ctF { font-size: 48px; line-height: 1; animation: ctBob 2.4s ease-in-out infinite; }
+.chatTop .ctTxt { display: flex; flex-direction: column; align-items: center; line-height: 1.05; }
 .chatTop small { font-size: 13px; font-weight: 700; opacity: .9; }
 .chatTop b { font-size: 20px; font-weight: 800; }
 .chatTop:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0, 0, 0, .2); }
 .chatTop .ctF.hop { animation: ctHop .5s ease 3, ctBob 2.4s ease-in-out 1.5s infinite; }
 @keyframes ctHop { 0%, 100% { transform: translateY(0) scale(1); } 40% { transform: translateY(-12px) scale(1.15); } }
 @keyframes ctBob { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-4px) rotate(-6deg); } }
-@media (max-width: 560px) { .chatTop .ctTxt { display: none; } .chatTop { padding: 0 10px; } }
+@media (max-width: 560px) { .chatTop .ctTxt { display: none; } }
 #parentBtn.hasUpd::after { content: ''; position: absolute; top: 2px; right: 2px; width: 14px; height: 14px; border-radius: 50%; background: #e53935; border: 2px solid #fff; }
 .hold { --p: 0; background: conic-gradient(var(--pick) calc(var(--p) * 1turn), var(--paper) 0); touch-action: none; }
 .panel { text-align: left; width: min(92vw, 540px); max-height: 86vh; overflow-y: auto; justify-items: stretch; }
@@ -744,6 +748,8 @@ button:active { transform: scale(.92); }
 #mapNodes.compact .mapNode small { display: none; }
 #mapNodes.compact .mapNode b { font-size: 12px; padding: 0 8px; }
 .avRow div { display: flex; gap: 10px; flex-wrap: wrap; }
+.avPhoto { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.avPhoto p { margin: 0; flex: 1; min-width: 180px; font-size: 16px; }
 @media (max-aspect-ratio: 4/5) { .avWrap { grid-template-columns: minmax(0, 1fr); grid-template-rows: 40% 1fr; } }
 .song { display: flex; flex-direction: column; gap: 16px; }
 .songPick { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; flex: none; }
@@ -4521,17 +4527,26 @@ const OUTFITS = {
   astro: { shirt: '#eceff1', shorts: '#cfd8dc', sleeve: '#eceff1', longSleeve: true, tights: '#eceff1', cap: '#eceff1' },
   bombeiro: { shirt: '#c62828', shorts: '#37474f', sleeve: '#c62828', longSleeve: true, tights: '#37474f', belt: '#ffd23f', cap: '#c62828' },
   galo: { shirt: '#ffffff', shorts: '#1f1f1f', sleeve: '#ffffff', stripes: 'v', stripe: '#1f1f1f', cap: '#1f1f1f' },
-  polo: { shirt: '#ffffff', shorts: '#a7b9b1', sleeve: '#d6efe6', stripes: 'h', stripe: '#bfe3d6', collar: '#2f3b57', cap: '#2f3b57' }
+  polo: { shirt: '#ffffff', shorts: '#a7b9b1', sleeve: '#d6efe6', stripes: 'h', stripe: '#bfe3d6', collar: '#2f3b57', cap: '#2f3b57' },
+  brasil: { shirt: '#ffd600', shorts: '#1e63c8', sleeve: '#2e9e4f', collar: '#2e9e4f', cap: '#2e9e4f' },
+  dino: { shirt: '#66bb6a', shorts: '#2e7d32', sleeve: '#66bb6a', spikes: '#ffb300', cap: '#2e7d32' },
+  pijama: { shirt: '#90caf9', shorts: '#90caf9', sleeve: '#90caf9', longSleeve: true, tights: '#90caf9', stripes: 'h', stripe: '#e3f2fd', cap: '#5c6bc0' },
+  vestido: { shirt: '#f06292', shorts: '#f06292', sleeve: '#f8bbd0', skirt: '#f06292', cap: '#f06292' },
+  chef: { shirt: '#ffffff', shorts: '#455a64', sleeve: '#ffffff', longSleeve: true, buttons: '#e53935', cap: '#ffffff' }
 };
 const AV_OPTS = [
   ['face', 'Rosto', [['photo', '📷 Foto'], ['draw', '🎨 Desenho']]],
-  ['outfit', 'Roupa', [['mixer', '🚛 Betoneira'], ['galo', '⚫⚪ Listrada'], ['polo', '🌴 Polo']]],
-  ['skin', 'Pele', ['#f3d3b5', '#e0ac82', '#c99068', '#a8714a', '#6e4630']],
-  ['hair', 'Cor do cabelo', ['#1f140e', '#4a2c1a', '#8a5a2b', '#d9a441']],
-  ['style', 'Cabelo', [['crespinho', 'Crespinho'], ['liso', 'Liso'], ['espetado', 'Espetado']]],
-  ['cap', 'Boné', [[false, 'Sem'], [true, 'Com']]],
-  ['glasses', 'Óculos', [[false, 'Sem'], [true, 'Com']]]
+  ['outfit', 'Roupa', [['mixer', '🚛 Betoneira'], ['galo', '⚫⚪ Listrada'], ['polo', '🌴 Polo'], ['brasil', '⚽ Brasil'], ['super', '🦸 Super-herói'],
+    ['aranha', '🕷️ Aranha'], ['astro', '🚀 Astronauta'], ['bombeiro', '🚒 Bombeiro'], ['dino', '🦖 Dinossauro'], ['chef', '👨‍🍳 Cozinheiro'], ['pijama', '🌙 Pijama'], ['vestido', '👗 Vestido']]],
+  ['skin', 'Pele', ['#f3d3b5', '#e0ac82', '#c99068', '#a8714a', '#6e4630', '#4a2f22']],
+  ['hair', 'Cor do cabelo', ['#1f140e', '#4a2c1a', '#8a5a2b', '#d9a441', '#f3d98c', '#b5452a', '#7e57c2', '#26a6d1']],
+  ['style', 'Cabelo', [['crespinho', 'Crespinho'], ['afro', 'Black'], ['liso', 'Liso'], ['espetado', 'Espetado'], ['moicano', 'Moicano'],
+    ['comprido', 'Comprido'], ['chuquinhas', 'Chuquinhas'], ['raspado', 'Raspadinho']]],
+  ['cap', 'Na cabeça', [[false, 'Nada'], [true, '🧢 Boné'], ['obra', '⛑️ Capacete de obra'], ['coroa', '👑 Coroa'], ['mago', '🧙 Chapéu de mago'], ['fone', '🎧 Fone'], ['laco', '🎀 Laço']]],
+  ['glasses', 'Óculos', [[false, 'Sem'], [true, '👓 Óculos'], ['sol', '🕶️ Escuros'], ['estrela', '⭐ De estrela'], ['coracao', '💖 De coração']]]
 ];
+// chapéus que cobrem o cabelo; os outros (coroa, fone, laço) ficam por cima dele
+const HAT_HIDES_HAIR = [true, 'obra', 'mago'];
 // Betoneira amarela numa caixa de 100 x 60; lw é a espessura da linha em unidades de quem chama. fill = null desenha só o contorno.
 function drawMixer(x, ox, oy, s, fill = '#ffd23f', lw = 3.5, ink = INK) {
   const F = () => { if (fill) x.fill(); };
@@ -4557,6 +4572,15 @@ function oliverHair(x, a) {
     x.lineTo(80, 40); x.quadraticCurveTo(50, 22, 20, 40);
   } else if (a.style === 'liso') {
     x.moveTo(20, 44); x.bezierCurveTo(16, 4, 84, 4, 80, 40); x.quadraticCurveTo(60, 26, 44, 32); x.quadraticCurveTo(32, 36, 20, 44);
+  } else if (a.style === 'afro') {   // black power: uma nuvem grande e redonda
+    x.moveTo(14, 54); x.bezierCurveTo(-14, -24, 114, -24, 86, 54); x.quadraticCurveTo(80, 30, 64, 27); x.quadraticCurveTo(50, 24, 36, 27); x.quadraticCurveTo(20, 30, 15, 50);
+  } else if (a.style === 'moicano') {
+    x.moveTo(40, 30); for (let i = 0; i < 4; i++) { x.lineTo(42 + i * 5, i % 2 ? 6 : 1); x.lineTo(45 + i * 5, 14); } x.lineTo(60, 30); x.quadraticCurveTo(50, 26, 40, 30);
+  } else if (a.style === 'comprido') {   // cai até os ombros dos dois lados
+    x.moveTo(17, 76); x.bezierCurveTo(6, 0, 94, 0, 83, 76); x.lineTo(76, 76); x.lineTo(78, 40); x.quadraticCurveTo(62, 26, 46, 31); x.quadraticCurveTo(30, 35, 24, 42); x.lineTo(24, 76); x.closePath();
+  } else if (a.style === 'chuquinhas') {   // duas chuquinhas redondas nos lados
+    for (const sd of [-1, 1]) { x.moveTo(50 + sd * 41 + 10, 24); x.arc(50 + sd * 41, 24, 10, 0, TAU); }
+    x.moveTo(20, 44); x.bezierCurveTo(16, 4, 84, 4, 80, 44); x.quadraticCurveTo(66, 28, 50, 28); x.quadraticCurveTo(34, 28, 20, 44);
   } else {
     const a0 = Math.PI + .12, a1 = TAU - .12, n = a.plain ? 14 : 26;
     x.moveTo(21.5, 46);
@@ -4607,20 +4631,62 @@ function oliverHead(x, a) {
     for (const ex of [18.5, 81.5]) { x.beginPath(); x.ellipse(ex, 48, 6, 8, 0, 0, TAU); x.fill(); x.stroke(); }
     x.save(); x.beginPath(); x.ellipse(50, 43, 31.5, 30, 0, 0, TAU); x.clip(); x.drawImage(photoImg, 18.5, 12.5, 63, 63); x.restore();
     x.beginPath(); x.ellipse(50, 43, 31.5, 30, 0, 0, TAU); x.stroke();
-    if (a.cap) { const fit = OUTFITS[a.outfit] || OUTFITS.mixer; x.fillStyle = fit.cap; x.beginPath(); x.arc(50, 33, 32, Math.PI, TAU); x.closePath(); x.fill(); x.stroke(); x.beginPath(); x.ellipse(81, 33, 20, 6, 0, 0, TAU); x.fill(); x.stroke(); }
+    if (a.cap) oliverHat(x, a, -4);
     return;
   }
   x.fillStyle = a.skin;
   for (const ex of [18.5, 81.5]) { x.beginPath(); x.ellipse(ex, 48, 6, 8, 0, 0, TAU); if (!a.plain) x.fill(); x.stroke(); }
   x.beginPath(); x.ellipse(50, 43, 31.5, 30, 0, 0, TAU); if (!a.plain) x.fill(); x.stroke();
-  if (!a.cap) oliverHair(x, a);
+  if (!HAT_HIDES_HAIR.includes(a.cap)) oliverHair(x, a);
   oliverFace(x, a);
-  if (a.glasses) { x.save(); x.lineWidth = 3; for (const ex of [40.5, 59.5]) { x.beginPath(); x.arc(ex, 45, 8.5, 0, TAU); x.stroke(); } x.beginPath(); x.moveTo(49, 45); x.lineTo(51, 45); x.stroke(); x.restore(); }
-  if (a.cap) {
-    const fit = OUTFITS[a.outfit] || OUTFITS.mixer;
-    x.fillStyle = fit.cap; x.beginPath(); x.arc(50, 37, 32, Math.PI, TAU); x.closePath(); if (!a.plain) x.fill(); x.stroke();
-    x.beginPath(); x.ellipse(81, 37, 20, 6, 0, 0, TAU); if (!a.plain) x.fill(); x.stroke();
+  if (a.glasses) oliverGlasses(x, a);
+  if (a.cap) oliverHat(x, a, 0);
+}
+function oliverGlasses(x, a) {
+  const F = () => { if (!a.plain) x.fill(); };
+  x.save(); x.lineWidth = 3;
+  if (a.glasses === 'sol') {   // óculos escuros com brilho
+    x.fillStyle = '#1d1d24'; for (const ex of [40, 60]) { x.beginPath(); x.roundRect(ex - 9.5, 38, 19, 13, [3, 3, 7, 7]); F(); x.stroke(); }
+    x.beginPath(); x.moveTo(49.5, 41); x.lineTo(50.5, 41); x.moveTo(30.5, 41); x.lineTo(21, 40); x.moveTo(69.5, 41); x.lineTo(79, 40); x.stroke();
+    if (!a.plain) { x.fillStyle = 'rgba(255,255,255,.55)'; for (const ex of [35, 55]) { x.beginPath(); x.ellipse(ex, 41.5, 2.4, 1.5, -.5, 0, TAU); x.fill(); } }
+  } else if (a.glasses === 'estrela' || a.glasses === 'coracao') {
+    x.fillStyle = a.glasses === 'estrela' ? '#ffd23f' : '#ff4f8b';
+    for (const ex of [40, 60]) {
+      x.beginPath();
+      if (a.glasses === 'estrela') for (let i = 0; i < 10; i++) { const r = i % 2 ? 4.6 : 10.5, t = -Math.PI / 2 + i * Math.PI / 5; x.lineTo(ex + r * Math.cos(t), 45 + r * Math.sin(t)); }
+      else { x.moveTo(ex, 53); x.bezierCurveTo(ex - 14, 44, ex - 7, 34, ex, 40.5); x.bezierCurveTo(ex + 7, 34, ex + 14, 44, ex, 53); }
+      x.closePath(); x.globalAlpha = .75; F(); x.globalAlpha = 1; x.stroke();
+    }
+    x.beginPath(); x.moveTo(49, 44); x.lineTo(51, 44); x.stroke();
+  } else { for (const ex of [40.5, 59.5]) { x.beginPath(); x.arc(ex, 45, 8.5, 0, TAU); x.stroke(); } x.beginPath(); x.moveTo(49, 45); x.lineTo(51, 45); x.stroke(); }
+  x.restore();
+}
+// o que vai na cabeça; dy sobe um pouco quando o rosto é a foto
+function oliverHat(x, a, dy) {
+  const F = () => { if (!a.plain) x.fill(); }, fit = OUTFITS[a.outfit] || OUTFITS.mixer;
+  x.save(); x.translate(0, dy);
+  if (a.cap === 'obra') {   // capacete amarelo da obra, igual ao do pessoal da betoneira
+    x.fillStyle = '#ffc400'; x.beginPath(); x.arc(50, 36, 33, Math.PI, TAU); x.closePath(); F(); x.stroke();
+    x.beginPath(); x.roundRect(12, 32, 76, 7, 3); F(); x.stroke();
+    x.beginPath(); x.moveTo(50, 4); x.lineTo(50, 32); x.stroke();
+  } else if (a.cap === 'coroa') {
+    x.fillStyle = '#ffd23f'; x.beginPath(); x.moveTo(30, 22); x.lineTo(28, 2); x.lineTo(39, 12); x.lineTo(50, -2); x.lineTo(61, 12); x.lineTo(72, 2); x.lineTo(70, 22); x.closePath(); F(); x.stroke();
+    if (!a.plain) { x.fillStyle = '#e53935'; x.beginPath(); x.arc(50, 15, 3, 0, TAU); x.fill(); x.fillStyle = '#29b6f6'; for (const ex of [38, 62]) { x.beginPath(); x.arc(ex, 17, 2.2, 0, TAU); x.fill(); } }
+  } else if (a.cap === 'mago') {
+    x.fillStyle = '#5e35b1'; x.beginPath(); x.moveTo(22, 30); x.quadraticCurveTo(46, -10, 58, -32); x.quadraticCurveTo(66, 0, 78, 30); x.closePath(); F(); x.stroke();
+    x.beginPath(); x.ellipse(50, 30, 34, 7, 0, 0, TAU); F(); x.stroke();
+    if (!a.plain) { x.fillStyle = '#ffd23f'; for (const [sx, sy, r] of [[44, 10, 3.5], [58, 0, 2.5], [60, 18, 3]]) { x.beginPath(); for (let i = 0; i < 10; i++) { const rr = i % 2 ? r * .45 : r, t = -Math.PI / 2 + i * Math.PI / 5; x.lineTo(sx + rr * Math.cos(t), sy + rr * Math.sin(t)); } x.fill(); } }
+  } else if (a.cap === 'fone') {
+    x.save(); x.lineWidth = 6; x.beginPath(); x.arc(50, 42, 36, Math.PI * 1.05, Math.PI * 1.95); x.stroke(); x.restore();
+    x.fillStyle = '#e53935'; for (const ex of [11, 79]) { x.beginPath(); x.roundRect(ex, 36, 10, 20, 5); F(); x.stroke(); }
+  } else if (a.cap === 'laco') {
+    x.fillStyle = '#ff5c9d'; for (const sd of [-1, 1]) { x.beginPath(); x.moveTo(68, 16); x.quadraticCurveTo(68 + sd * 16, 2, 68 + sd * 14, 24); x.closePath(); F(); x.stroke(); }
+    x.beginPath(); x.arc(68, 16, 4, 0, TAU); F(); x.stroke();
+  } else {   // boné com a cor da roupa
+    x.fillStyle = fit.cap; x.beginPath(); x.arc(50, 37, 32, Math.PI, TAU); x.closePath(); F(); x.stroke();
+    x.beginPath(); x.ellipse(81, 37, 20, 6, 0, 0, TAU); F(); x.stroke();
   }
+  x.restore();
 }
 function oliverShirt(x, a, fit) {
   const path = () => { x.beginPath(); x.moveTo(30, 116); x.lineTo(30, 80); x.quadraticCurveTo(30, 70, 38, 70); x.lineTo(62, 70); x.quadraticCurveTo(70, 70, 70, 80); x.lineTo(70, 116); x.closePath(); };
@@ -4640,7 +4706,10 @@ function oliverShirt(x, a, fit) {
     x.stroke(); x.restore();
   }
   path(); x.stroke();
+  if (fit.skirt) { x.fillStyle = fit.skirt; x.beginPath(); x.moveTo(31, 98); x.lineTo(69, 98); x.lineTo(79, 124); x.quadraticCurveTo(50, 130, 21, 124); x.closePath(); if (!a.plain) x.fill(); x.stroke(); }
   if (a.plain && ART_TRACE) return;   // no traçado só o contorno da camiseta
+  if (fit.spikes) { x.fillStyle = fit.spikes; for (const sy of [80, 92, 104]) { x.beginPath(); x.moveTo(44, sy); x.lineTo(50, sy - 8); x.lineTo(56, sy); x.closePath(); if (!a.plain) x.fill(); x.stroke(); } }
+  if (fit.buttons) { x.fillStyle = fit.buttons; for (const sy of [80, 90, 100]) { x.beginPath(); x.arc(50, sy, 2.6, 0, TAU); if (!a.plain) x.fill(); x.stroke(); } }
   if (fit.belt) { x.fillStyle = fit.belt; x.beginPath(); x.rect(30, 104, 40, 6); if (!a.plain) x.fill(); x.stroke(); }
   if (fit.emblem === 'super') {   // emblema em losango no peito, com um "O" de Oliver
     x.save(); x.lineWidth = Math.min(x.lineWidth, 2.4); x.fillStyle = '#ffd23f';
@@ -4729,7 +4798,7 @@ setTimeout(() => {
   if (!chatAiOn()) { say(`Oi, ${prefs.name}!`); return; }
   const f = CHAT_FRIENDS[Math.min(prefs.chatFriend || 0, CHAT_FRIENDS.length - 1)], b = $('#chatTop .ctF');
   b.classList.remove('hop'); void b.offsetWidth; b.classList.add('hop');
-  say(`Oi, ${prefs.name}! Sou ${f[2]} ${f[1]}. Quando quiser conversar, é só tocar em mim aqui em cima!`, 'pt-BR', .9, f[4]);
+  say(`Oi, ${prefs.name}! Sou ${f[2]} ${f[1]}. Quando quiser conversar, é só tocar em mim!`, 'pt-BR', .9, f[4]);
 }, 1200);
 
 /* o Oliver aparece comemorando no canto da tela nas festas de acerto */
@@ -4745,6 +4814,14 @@ function cheer() {
 
 function renderAvOpts() {
   const box = $('#avOpts'); box.innerHTML = '';
+  if (prefs.photo && photoImg) {   // a pele e o cabelo saem das cores da foto
+    const row = document.createElement('section'); row.className = 'avRow avPhoto';
+    row.innerHTML = '<p>As cores da pele e do cabelo podem vir da foto da criança.</p>'; box.appendChild(row);
+    btn(row, 'pbtn ok', '📷 Fazer pela foto', 'Fazer o personagem pela foto', () => {
+      const keepCrop = crop; crop = { x: 0, y: 0, z: 1 }; Object.assign(avatar, photoLook(photoImg), { face: 'draw' }); crop = keepCrop;
+      keep('oliver-avatar-v2', avatar); renderAvOpts(); celebrate(false); say('Pronto! Fiz o seu personagem com as cores da sua foto.');
+    });
+  }
   for (const [key, label, vals] of AV_OPTS) {
     if (key === 'face' && !prefs.photo) continue;   // sem foto, o rosto é sempre o desenho
     const row = document.createElement('section'); row.className = 'avRow'; row.innerHTML = `<h3>${label}</h3><div></div>`; box.appendChild(row);
@@ -4768,7 +4845,7 @@ function openAvatar(from = 'g-adventure') {
     if (cv.width !== Math.round(r.width * d)) { cv.width = Math.round(r.width * d); cv.height = Math.round(r.height * d); }
     const x = cv.getContext('2d'), s = Math.min(cv.width / 130, cv.height / 190), k = (t - t0) / 1000;
     x.clearRect(0, 0, cv.width, cv.height);
-    x.fillStyle = '#c8ebb8'; x.fillRect(0, cv.height * .82, cv.width, cv.height * .18);
+    x.fillStyle = 'rgba(120,70,20,.14)'; x.beginPath(); x.ellipse(cv.width / 2, cv.height * .82, 34 * s, 7 * s, 0, 0, TAU); x.fill();
     drawAvatar(x, cv.width / 2 - 50 * s, cv.height * .82 - 150 * s - Math.abs(Math.sin(k * 6)) * 6 * s, s, 1, k * 8, false, 'wave');
     requestAnimationFrame(loop);
   })(t0);
@@ -10648,7 +10725,7 @@ GAME_INTRO.studio = 'Toque nos quadradinhos para criar a sua música, e aperte o
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 41, name: '6.6' };
+const APP_VERSION = { code: 42, name: '6.7' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)
