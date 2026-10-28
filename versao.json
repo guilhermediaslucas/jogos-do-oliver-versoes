@@ -1,8 +1,8 @@
 {
-  "code": 43,
-  "name": "6.8",
+  "code": 44,
+  "name": "6.9",
   "minApk": 41,
-  "notes": "Versão 6.8: tela inicial reorganizada. A engrenagem dos pais fica embaixo do botão de fala, os dois mais clarinhos; o Conversar fica no canto de cima, à direita; o personagem ficou maior, com o Oi saindo do lado direito dele.",
+  "notes": "Versão 6.9: a Corrida ganhou 6 velocidades (Lesminha, Tartaruga, Pintinho, Coelho, Guepardo e Foguete) e começa na Tartaruga. Na tela inicial o personagem ficou maior, o Oi fica na altura do rosto, a fileira virou Usados recentemente (o nome da Aventura não estica mais o quadradinho) e as portas se ajustam para caber na tela.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/MundoDoOliver.apk"
 }
