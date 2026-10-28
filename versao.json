@@ -1,8 +1,8 @@
 {
-  "code": 36,
-  "name": "6.1",
+  "code": 37,
+  "name": "6.2",
   "minApk": 35,
-  "notes": "Versão 6.1: o app agora se chama Mundo do Oliver. Colorir e Traçar mostram um modelo já pintado de cada desenho (Super Oliver com capa, Oliver Aranha, Oliver craque com a camisa do Galo no campo), o Oliver ficou com traços mais simples e o Traçar mostra só o contorno principal, mais fácil de seguir.",
+  "notes": "Versão 6.2: novo grupo Aprender brincando, com Estátua (dançar e parar), Como ele se sente? (emoções), O que vem depois? (sequências e padrões), Sons das palavras (som inicial, rimas e sílabas), O que sumiu? (memória), Opostos e Mais ou menos?",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/JogosDoOliver.apk"
 }

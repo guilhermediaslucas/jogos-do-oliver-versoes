@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 36, name: '6.1' }; -->
+<!-- const APP_VERSION = { code: 37, name: '6.2' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -289,6 +289,32 @@ button:active { transform: scale(.92); }
 .chat-mic:disabled { opacity: .5; }
 @media (orientation: portrait) { .chat-play { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, .7fr) minmax(0, 1.3fr); } }
 @media (max-height: 520px) { .chat-mic { width: 80px; height: 80px; font-size: 38px; } .chat-chip { font-size: 16px; padding: 6px 10px; } .chat-name { font-size: 16px; } }
+/* aprender brincando: cena em cima, pergunta no meio e opções grandes embaixo */
+.lq-play { display: flex; flex-direction: column; gap: 10px; }
+.lq-stage { flex: 1.15; min-height: 0; display: flex; align-items: center; justify-content: center; align-content: center; gap: 4px 18px; flex-wrap: wrap; background: var(--paper);
+  border-radius: 28px; box-shadow: 0 5px 0 var(--shadow); padding: 10px; font-size: clamp(42px, 11vmin, 104px); line-height: 1.1; text-align: center; overflow: hidden; }
+.lq-stage:empty { display: none; }
+.lq-text { display: block; width: 100%; font-size: clamp(20px, 4vmin, 32px); font-weight: 800; line-height: 1.2; }
+.lq-big { font-size: 1.4em; font-weight: 800; color: var(--pick); }
+.lq-hide { opacity: .25; }
+.lq-q { color: var(--pick); }
+.lq-ask { margin: 0; flex: none; text-align: center; font-size: clamp(22px, 4.4vmin, 34px); font-weight: 800; }
+.lq-opts { flex: 1; min-height: 0; display: flex; gap: 14px; justify-content: center; align-items: stretch; }
+.lq-opt { flex: 1; max-width: 280px; min-width: 0; background: var(--paper); border-radius: 28px; box-shadow: 0 5px 0 var(--shadow); display: grid; place-items: center; align-content: center;
+  font-size: clamp(42px, 11vmin, 96px); line-height: 1.1; padding: 8px; overflow: hidden; }
+.lq-opt small { display: block; font-size: clamp(15px, 2.8vmin, 22px); font-weight: 800; }
+.lq-opt.ok { box-shadow: 0 0 0 6px #7cd67a; animation: hop .4s; }
+.lq-opt.no { animation: shake .4s; }
+.lq-group { display: flex; flex-wrap: wrap; gap: 0 4px; justify-content: center; align-content: center; font-size: clamp(24px, 5.5vmin, 48px); max-width: 5.2em; }
+.lq-scene { position: relative; display: inline-block; width: 1.5em; height: 1.9em; }
+.lq-scene i, .lq-scene b { position: absolute; font-style: normal; font-weight: normal; line-height: 1; }
+/* estátua */
+.statue-play { border-radius: 24px; overflow: hidden; background: linear-gradient(#ffe3f1, #e3f0ff); touch-action: manipulation; }
+#statueCv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.statue-msg { position: absolute; top: 10px; left: 0; right: 0; margin: 0; text-align: center; font-size: clamp(24px, 5vmin, 40px); font-weight: 800; pointer-events: none; }
+.statue-btn { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); padding: 12px 34px; border-radius: 999px; font-size: clamp(26px, 5vmin, 40px); font-weight: 800;
+  background: #ec407a; color: #fff; box-shadow: 0 6px 0 rgba(0,0,0,.18); }
+.statue-btn:active { transform: translateX(-50%) scale(.94); }
 .aiBox { display: grid; gap: 8px; padding: 10px 12px; border-radius: 16px; background: var(--paper); box-shadow: 0 2px 0 var(--shadow); }
 .aiBox h3 { margin: 0; font-size: 20px; }
 /* labirinto */
@@ -701,6 +727,16 @@ button:active { transform: scale(.92); }
     <button class="mode" style="background:#7e57c2" data-game="story"><span>📚</span>Histórias</button>
     <button class="mode" style="background:#00897b" data-game="chat"><span>🦉</span>Conversar</button>
   </div>
+  <h3 class="shelf">🧠 Aprender brincando</h3>
+  <div class="modes">
+    <button class="mode" style="background:#ec407a" data-game="statue"><span>🧊</span>Estátua</button>
+    <button class="mode" style="background:#ffa000" data-game="emotions"><span>😊</span>Como ele se sente?</button>
+    <button class="mode" style="background:#26a69a" data-game="sequence"><span>➡️</span>O que vem depois?</button>
+    <button class="mode" style="background:#5c6bc0" data-game="sounds2"><span>🔠</span>Sons das palavras</button>
+    <button class="mode" style="background:#8d6e63" data-game="missing"><span>🙈</span>O que sumiu?</button>
+    <button class="mode" style="background:#7cb342" data-game="opposites"><span>↕️</span>Opostos</button>
+    <button class="mode" style="background:#e53935" data-game="more"><span>⚖️</span>Mais ou menos?</button>
+  </div>
   <h3 class="shelf">🔤 Inglês</h3>
   <div class="modes">
     <button class="mode" style="background:var(--e-learn)" data-en="learn"><span>📖</span>Aprender palavras</button>
@@ -824,6 +860,34 @@ button:active { transform: scale(.92); }
       <button class="chat-mic" id="chatMic" aria-label="Falar com o amigo">🎤</button>
     </div>
   </div>
+</section>
+<section id="g-statue" class="screen game" hidden>
+  <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Estátua</h2><span class="score" id="statueScore"></span></div>
+  <div class="play statue-play"><canvas id="statueCv"></canvas><p class="statue-msg" id="statueMsg"></p><button class="statue-btn" id="statueBtn">💃 Dançar</button></div>
+</section>
+<section id="g-emotions" class="screen game" hidden>
+  <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Como ele se sente?</h2><span class="score"></span><button class="round lqAgain" aria-label="Ouvir de novo">🔊</button></div>
+  <div class="play lq-play"><div class="lq-stage"></div><p class="lq-ask"></p><div class="lq-opts"></div></div>
+</section>
+<section id="g-sequence" class="screen game" hidden>
+  <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>O que vem depois?</h2><span class="score"></span><button class="round lqAgain" aria-label="Ouvir de novo">🔊</button></div>
+  <div class="play lq-play"><div class="lq-stage"></div><p class="lq-ask"></p><div class="lq-opts"></div></div>
+</section>
+<section id="g-sounds2" class="screen game" hidden>
+  <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Sons das palavras</h2><span class="score"></span><button class="round lqAgain" aria-label="Ouvir de novo">🔊</button></div>
+  <div class="play lq-play"><div class="lq-stage"></div><p class="lq-ask"></p><div class="lq-opts"></div></div>
+</section>
+<section id="g-missing" class="screen game" hidden>
+  <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>O que sumiu?</h2><span class="score"></span><button class="round lqAgain" aria-label="Ouvir de novo">🔊</button></div>
+  <div class="play lq-play"><div class="lq-stage"></div><p class="lq-ask"></p><div class="lq-opts"></div></div>
+</section>
+<section id="g-opposites" class="screen game" hidden>
+  <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Opostos</h2><span class="score"></span><button class="round lqAgain" aria-label="Ouvir de novo">🔊</button></div>
+  <div class="play lq-play"><div class="lq-stage"></div><p class="lq-ask"></p><div class="lq-opts"></div></div>
+</section>
+<section id="g-more" class="screen game" hidden>
+  <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Mais ou menos?</h2><span class="score"></span><button class="round lqAgain" aria-label="Ouvir de novo">🔊</button></div>
+  <div class="play lq-play"><div class="lq-stage"></div><p class="lq-ask"></p><div class="lq-opts"></div></div>
 </section>
 <section id="g-maze" class="screen game" hidden>
   <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Labirinto</h2><span class="score" id="mazeScore"></span><button class="round" id="mazeNew" aria-label="Outro labirinto">🔀</button></div>
@@ -9621,10 +9685,216 @@ $('#pAiDel').onclick = () => confirmAsk('Apagar a IA do tablet? O amigo volta a 
   try { await plug('LocalAI')?.remove(); } catch (e) {} prefs.aiReady = ''; savePrefs(); toast('IA apagada'); aiRender();
 });
 
+/* ================= aprender brincando: atividades curtas que treinam emoções, memória, sequência, sons, opostos e quantidades ================= */
+// Cada atividade monta uma rodada: cena, pergunta falada e opções grandes. Nunca dá para "perder": errou, o app dá uma dica e espera.
+const learnProg = load('oliver-learn', {});
+const lqCap = t => t.charAt(0).toUpperCase() + t.slice(1);
+const lqOpt = (html, label, ok, sayNo) => ({ html, label, ok, say: sayNo });
+// [como aparece, como se fala]
+const EMO_FACES = { feliz: ['😀', 'feliz'], triste: ['😢', 'triste'], bravo: ['😠', 'bravo'], medo: ['😨', 'com medo'], surpresa: ['😲', 'surpreso'], sono: ['😴', 'com sono'] };
+// [situação, emoji, sentimento, o que ajuda]
+const EMO_SIT = [
+  ['Ganhou um presente de aniversário', '🎁', 'feliz', 'Quando estamos felizes, dá vontade de sorrir e abraçar!'],
+  ['O sorvete caiu no chão', '🍦', 'triste', 'Tudo bem ficar triste. Um abraço ajuda!'],
+  ['O amigo pegou o brinquedo sem pedir', '🧸', 'bravo', 'Dá raiva, né? Respira fundo e fala: me devolve, por favor.'],
+  ['Ouviu um trovão bem alto', '⛈️', 'medo', 'Trovão assusta! Fique pertinho de um adulto.'],
+  ['A vovó chegou sem avisar', '👵', 'surpresa', 'Que surpresa boa!'],
+  ['Brincou o dia inteiro e já é de noite', '🌙', 'sono', 'Hora de descansar para brincar amanhã!'],
+  ['Ganhou um abraço bem apertado', '🤗', 'feliz', 'Abraço é muito gostoso!'],
+  ['A torre de blocos caiu', '🧱', 'triste', 'Que pena! Mas dá para montar de novo.'],
+  ['Um cachorro grandão latiu', '🐕', 'medo', 'Quando tiver medo, chame um adulto.'],
+  ['Alguém furou a fila do escorregador', '🛝', 'bravo', 'Quando der raiva, conte até cinco e peça ajuda.'],
+  ['Achou uma borboleta linda no jardim', '🦋', 'feliz', 'Que alegria ver a natureza!'],
+  ['O balão estourou: pou!', '🎈', 'surpresa', 'Que susto! Mas foi só o balão.'],
+  ['O amigo foi embora da festa', '👋', 'triste', 'Dá saudade, mas amanhã vocês brincam de novo.'],
+  ['Bocejou depois do banho quentinho', '🛁', 'sono', 'Banho quentinho dá soninho!']
+];
+// sequências do dia a dia: [passos, frase final]
+const SEQ_STORIES = [[['🌰', '🌱', '🌳'], 'A semente vira uma árvore!'], [['🥚', '🐣', '🐥'], 'Do ovo nasce o pintinho!'], [['🌱', '🌿', '🌻'], 'A plantinha cresce e vira flor!'],
+  [['🌑', '🌓', '🌕'], 'A lua vai ficando cheia!'], [['🌅', '☀️', '🌙'], 'Manhã, tarde e noite!'], [['👶', '🧒', '🧑'], 'O bebê cresce!'], [['☁️', '🌧️', '🌈'], 'Depois da chuva vem o arco-íris!'],
+  [['🍞', '🧈', '🥪'], 'Pão, manteiga e o lanche pronto!'], [['🐛', '🦋'], 'A lagarta vira borboleta!'], [['⏰', '🪥', '🎒'], 'Acorda, escova os dentes e vai para a escola!']];
+const SEQ_POOLS = [['🔴', '🔵', '🟡', '🟢'], ['⭐', '❤️', '🔺', '🟦'], ['🐶', '🐱', '🐰', '🐸'], ['🍎', '🍌', '🍇', '🍓'], ['🚗', '✈️', '⛵', '🚂']];
+// rimas e pedacinhos (sílabas)
+const RHYMES = [[['gato', '🐱'], ['pato', '🦆'], ['rato', '🐭']], [['pão', '🍞'], ['mão', '✋'], ['cão', '🐶']], [['sol', '☀️'], ['caracol', '🐌'], ['anzol', '🎣']],
+  [['leão', '🦁'], ['avião', '✈️'], ['balão', '🎈'], ['coração', '❤️']], [['vela', '🕯️'], ['estrela', '⭐'], ['panela', '🍲']], [['foguete', '🚀'], ['sorvete', '🍦'], ['patinete', '🛴']],
+  [['bola', '⚽'], ['cebola', '🧅'], ['sacola', '🛍️']], [['flor', '🌸'], ['trator', '🚜'], ['tambor', '🥁']]];
+const SYLLABLES = [['sol', '☀️', 'sol'], ['pão', '🍞', 'pão'], ['flor', '🌸', 'flor'], ['mar', '🌊', 'mar'], ['bola', '⚽', 'bo-la'], ['gato', '🐱', 'ga-to'], ['casa', '🏠', 'ca-sa'], ['uva', '🍇', 'u-va'],
+  ['pato', '🦆', 'pa-to'], ['banana', '🍌', 'ba-na-na'], ['sapato', '👟', 'sa-pa-to'], ['macaco', '🐵', 'ma-ca-co'], ['tomate', '🍅', 'to-ma-te'], ['jacaré', '🐊', 'ja-ca-ré'],
+  ['cavalo', '🐴', 'ca-va-lo'], ['abacaxi', '🍍', 'a-ba-ca-xi'], ['borboleta', '🦋', 'bor-bo-le-ta'], ['melancia', '🍉', 'me-lan-ci-a'], ['dinossauro', '🦖', 'di-nos-sau-ro'],
+  ['elefante', '🐘', 'e-le-fan-te'], ['tartaruga', '🐢', 'tar-ta-ru-ga']];
+const MISS_POOL = ['🍎', '⚽', '🐶', '🚗', '⭐', '🎈', '🧸', '🐟', '🌸', '🍌', '🦆', '🚀', '🍦', '🐱', '🎁', '☂️'];
+const LEARN = {
+  emotions(l) {
+    const s = pick(EMO_SIT), keys = [s[2], ...shuffle(Object.keys(EMO_FACES).filter(k => k !== s[2])).slice(0, l < 4 ? 2 : 3)];
+    return { stage: `<span>${s[1]}</span><b class="lq-text">${s[0]}</b>`, ask: 'Como você se sentiria?', say: `${s[0]}. Como você se sentiria?`,
+      opts: keys.map(k => lqOpt(`${EMO_FACES[k][0]}<small>${lqCap(EMO_FACES[k][1])}</small>`, EMO_FACES[k][1], k === s[2], `${lqCap(EMO_FACES[k][1])}? Hmm, pense de novo.`)),
+      after: `${lqCap(EMO_FACES[s[2]][1])}! ${s[3]}`, wait: 5000 };
+  },
+  sequence(l) {
+    if (Math.random() < .5) {   // padrão de cores, formas ou bichos
+      const p = shuffle(pick(SEQ_POOLS).slice()), pat = pick(l < 3 ? ['AB'] : l < 6 ? ['AB', 'AAB', 'ABB'] : ['AB', 'AAB', 'ABB', 'ABC']);
+      const unit = [...pat].map(ch => p['ABC'.indexOf(ch)]), seq = Array.from({ length: pat.length * 2 + (pat.length === 2 ? 3 : 1) }, (_, i) => unit[i % unit.length]), ans = seq.pop();
+      return { stage: seq.join(' ') + ' <span class="lq-q">❓</span>', ask: 'Qual vem depois?', say: 'Olhe o padrão. Qual vem depois?',
+        opts: [ans, ...shuffle(p.filter(e => e !== ans)).slice(0, 2)].map(e => lqOpt(e, e, e === ans)), after: 'Isso! Você achou o padrão!' };
+    }
+    const [steps, end] = pick(SEQ_STORIES), ans = steps[steps.length - 1];
+    const others = shuffle(SEQ_STORIES.map(s => s[0][s[0].length - 1]).filter(e => e !== ans)).slice(0, 2);
+    return { stage: steps.slice(0, -1).join(' ➡️ ') + ' ➡️ <span class="lq-q">❓</span>', ask: 'O que vem depois?', opts: [ans, ...others].map(e => lqOpt(e, e, e === ans)), after: `Isso! ${end}` };
+  },
+  sounds2(l) {
+    const kind = pick(l < 3 ? ['first', 'syl'] : ['first', 'rhyme', 'syl']);
+    if (kind === 'first') {   // som do começo da palavra
+      const ok = LETTERS.filter(x => !'HKWYQ'.includes(x[0])), t = pick(ok), others = shuffle(ok.filter(x => x[0] !== t[0])).slice(0, 2);
+      return { stage: `<span class="lq-big">${t[0]}</span>`, ask: `Qual começa com ${t[0]}?`, say: `Qual destes começa com ${t[0]}?`,
+        opts: [t, ...others].map(x => lqOpt(`${x[2]}<small>${x[1]}</small>`, x[1], x === t, `${x[1]} começa com ${x[0]}. Tente outro!`)), after: `${t[1]} começa com ${t[0]}!` };
+    }
+    if (kind === 'rhyme') {   // rimas
+      const g = pick(RHYMES), [t, r] = shuffle(g.slice()), others = shuffle(RHYMES.filter(x => x !== g)).slice(0, 2).map(x => pick(x));
+      return { stage: `<span>${t[1]}</span><b class="lq-text">${lqCap(t[0])}</b>`, ask: `O que rima com ${t[0]}?`,
+        opts: [r, ...others].map(x => lqOpt(`${x[1]}<small>${lqCap(x[0])}</small>`, x[0], x === r, `${lqCap(t[0])}, ${x[0]}... não rima. Escute de novo!`)), after: `${lqCap(t[0])} e ${r[0]}: rimam!` };
+    }
+    const w = pick(SYLLABLES), n = w[2].split('-').length;
+    return { stage: `<span>${w[1]}</span><b class="lq-text">${lqCap(w[0])}</b>`, ask: 'Quantos pedacinhos tem essa palavra?', say: `${w[0]}. Bata palmas: quantos pedacinhos tem?`,
+      opts: [1, 2, 3, 4].map(k => lqOpt(`${k}<small>${'👏'.repeat(k)}</small>`, String(k), k === n, 'Vamos bater palmas devagar: ' + w[2].split('-').join('... '))),
+      after: `${w[2].split('-').join('... ')}! ${n} ${n > 1 ? 'pedacinhos' : 'pedacinho'}!` };
+  },
+  missing(l) {
+    const n = Math.min(3 + (l / 3 | 0), 6), items = shuffle(MISS_POOL.slice()).slice(0, n), gone = pick(items);
+    return { pre: { stage: items.map(e => `<span>${e}</span>`).join(''), ask: 'Olhe bem!', ms: 2500 + n * 600, cover: 'Feche os olhos...' },
+      stage: items.map(e => e === gone ? '<span class="lq-hide">❔</span>' : `<span>${e}</span>`).join(''), ask: 'O que sumiu?',
+      opts: [gone, ...shuffle(items.filter(e => e !== gone)).slice(0, 2)].map(e => lqOpt(e, e, e === gone, 'Esse ainda está aqui. Procure de novo!')), after: 'Isso! Foi esse que sumiu!' };
+  },
+  opposites() {
+    const kind = pick(['size', 'pos', 'temp', 'speed']);
+    if (kind === 'size') {
+      const e = pick(['🐘', '🐶', '🍎', '🚗', '⭐', '🐻']), big = Math.random() < .5;
+      return { stage: '', ask: `Toque no ${big ? 'GRANDE' : 'PEQUENO'}`, opts: [lqOpt(`<span style="font-size:1.35em">${e}</span>`, 'grande', big), lqOpt(`<span style="font-size:.5em">${e}</span>`, 'pequeno', !big)], after: big ? 'Isso! Esse é o grande!' : 'Isso! Esse é o pequenininho!' };
+    }
+    if (kind === 'pos') {   // o bichinho em cima, embaixo, dentro ou ao lado da caixa
+      const [obj, name, art] = pick([['🐱', 'gato', 'o'], ['🐶', 'cachorro', 'o'], ['⚽', 'bola', 'a'], ['🧸', 'ursinho', 'o'], ['🐤', 'pintinho', 'o']]);
+      const POS = { 'em cima': ['bottom:0;left:.1em', 'top:0;left:.32em;font-size:.6em'], embaixo: ['top:0;left:.1em', 'bottom:0;left:.32em;font-size:.6em'],
+        dentro: ['bottom:.2em;left:.1em', 'bottom:.42em;left:.42em;font-size:.4em'], 'ao lado': ['bottom:.2em;left:0;font-size:.8em', 'bottom:.2em;right:0;font-size:.55em'] };
+      const want = pick(Object.keys(POS)), keys = [want, ...shuffle(Object.keys(POS).filter(k => k !== want)).slice(0, 2)];
+      return { stage: '', ask: `Onde ${art} ${name} está ${want.toUpperCase()} da caixa?`, say: `Onde ${art} ${name} está ${want} da caixa?`,
+        opts: keys.map(k => lqOpt(`<span class="lq-scene"><i style="${POS[k][0]}">📦</i><b style="${POS[k][1]}">${obj}</b></span>`, k, k === want, `Aqui ${art} ${name} está ${k} da caixa.`)), after: `Isso! ${lqCap(want)} da caixa!` };
+    }
+    const [a, b, wa, wb] = kind === 'temp' ? [['🧊', '⛄', '🍦', '❄️'], ['🔥', '☀️', '☕', '🌶️'], 'FRIO', 'QUENTE'] : [['🐆', '🚀', '🏎️', '🐇'], ['🐢', '🐌', '🦥'], 'RÁPIDO', 'DEVAGAR'];
+    const first = Math.random() < .5, good = pick(first ? a : b), bad = shuffle((first ? b : a).slice()).slice(0, 2), word = first ? wa : wb;
+    return { stage: '', ask: `Toque no que é ${word}`, opts: [good, ...bad].map(e => lqOpt(e, e, e === good, 'Hmm, esse não. Tente outro!')), after: `Isso! É ${word.toLowerCase()}!` };
+  },
+  more(l) {
+    const max = l < 3 ? 5 : l < 6 ? 7 : 9, a = 1 + (Math.random() * max | 0); let b;
+    do b = 1 + (Math.random() * max | 0); while (b === a || (l < 3 && Math.abs(a - b) < 2));
+    const e = pick(['🍎', '⭐', '🐟', '🎈', '🍪', '🐞']), more = Math.random() < .6, hi = Math.max(a, b), lo = Math.min(a, b);
+    const group = n => `<span class="lq-group">${e.repeat(n)}</span>`;
+    return { stage: '', ask: `Onde tem ${more ? 'MAIS' : 'MENOS'}?`, opts: [a, b].map(n => lqOpt(group(n), String(n), more ? n === hi : n === lo, 'Conte de novo devagarinho!')),
+      after: `Isso! ${hi} é mais que ${lo}!` };
+  }
+};
+let lq = { kind: '', tok: 0 };
+const lqEl = sel => $(`#g-${lq.kind} ${sel}`);
+function lqStart(kind) { lq = { kind, tok: lq.tok + 1, R: null }; lqRound(true); }
+function lqRound(first = false) {
+  const tok = ++lq.tok, kind = lq.kind, R = lq.R = LEARN[kind](learnProg[kind] || 0);
+  lqEl('.score').textContent = '⭐ ' + (learnProg[kind] || 0);
+  const stage = lqEl('.lq-stage'), ask = lqEl('.lq-ask'), opts = lqEl('.lq-opts'), live = () => tok === lq.tok && alive(kind);
+  opts.innerHTML = '';
+  const main = () => {
+    if (!live()) return;
+    stage.innerHTML = R.stage; ask.textContent = R.ask; lqOpts(R, tok);
+    setTimeout(() => live() && say(R.say || R.ask), first && !R.pre ? 2000 : 150);
+  };
+  if (!R.pre) { main(); return; }
+  stage.innerHTML = R.pre.stage; ask.textContent = R.pre.ask; setTimeout(() => live() && say(R.pre.ask), first ? 2000 : 100);
+  setTimeout(() => {
+    if (!live()) return;
+    stage.innerHTML = '<span>🙈</span>'; ask.textContent = R.pre.cover; say(R.pre.cover); setTimeout(main, 1500);
+  }, R.pre.ms + (first ? 1500 : 0));
+}
+function lqOpts(R, tok) {
+  const box = lqEl('.lq-opts'), kind = lq.kind; let solved = false;
+  for (const o of shuffle(R.opts.slice())) {
+    const b = btn(box, 'lq-opt', o.html, o.label, () => {
+      if (solved || tok !== lq.tok) return;
+      if (!o.ok) { b.classList.remove('no'); void b.offsetWidth; b.classList.add('no'); blip(200, .2); say(o.say || 'Quase! Tente de novo.'); return; }
+      solved = true; b.classList.add('ok'); blip(880, .2);
+      const n = learnProg[kind] = (learnProg[kind] || 0) + 1; keep('oliver-learn', learnProg); lqEl('.score').textContent = '⭐ ' + n;
+      say(R.after || pick(['Isso!', 'Muito bem!', 'Acertou!']));
+      if (n % 5 === 0) setTimeout(() => celebrate(), 900);
+      setTimeout(() => tok === lq.tok && alive(kind) && lqRound(), R.wait || 3400);
+    });
+  }
+}
+document.querySelectorAll('.lqAgain').forEach(b => b.onclick = () => { blip(620); if (lq.R) say(lq.R.say || lq.R.ask); });
+for (const k of Object.keys(LEARN)) GAMES[k] = () => lqStart(k);
+Object.assign(GAME_INTRO, { emotions: 'Vamos pensar nos sentimentos!', sequence: 'Descubra o que vem depois!', sounds2: 'Vamos brincar com os sons das palavras!',
+  missing: 'Jogo da memória: o que sumiu?', opposites: 'Vamos brincar de opostos!', more: 'Onde tem mais? Onde tem menos?' });
+
+/* ================= estátua: dança enquanto a música toca; quando ela para, fica paradinho (treina o controle do corpo) ================= */
+let stt = null;
+function statueStart() {
+  const cv = $('#statueCv'), r = cv.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2);
+  cv.width = Math.max(1, Math.round(r.width * d)); cv.height = Math.max(1, Math.round(r.height * d));
+  if (stt?.music) stt.music.stop();
+  if (stt?.raf) cancelAnimationFrame(stt.raf);
+  stt = { phase: 'wait', next: performance.now() + 3000, dance: 0, still: true, music: null, lastTap: 0, nudged: false, ok: true, told: false, raf: 0, song: Math.random() * CHIP_SONGS.length | 0 };
+  $('#statueScore').textContent = '⭐ ' + (learnProg.statue || 0); $('#statueMsg').textContent = 'Aperte para dançar quando a música tocar!';
+  stt.raf = requestAnimationFrame(statueLoop);
+}
+function statueMusic(on) {
+  if (stt.music) { stt.music.stop(); stt.music = null; }
+  if (!on || !st.sound) return;
+  try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); stt.music = chipPlay(ac, ac.destination, CHIP_SONGS[stt.song], { volume: .5 }); } catch (e) {}
+}
+function statueTap() {
+  if (!stt) return;
+  stt.lastTap = performance.now();
+  if (stt.phase === 'play') { stt.dance = .7; blip(600 + Math.random() * 400, .05); }
+  else if (stt.phase === 'freeze' && stt.ok) { stt.ok = false; say('Opa! Na estátua não pode mexer!'); $('#statueMsg').textContent = '😮 Mexeu! Fica paradinho!'; blip(200, .2); }
+}
+$('#statueBtn').addEventListener('pointerdown', e => { e.preventDefault(); statueTap(); });
+$('#statueCv').addEventListener('pointerdown', e => { e.preventDefault(); statueTap(); });
+function statueLoop(t) {
+  if (!alive('statue')) { statueMusic(false); stt.raf = 0; return; }
+  const S = stt, msg = $('#statueMsg');
+  if (t > S.next) {
+    if (S.phase === 'play') {   // a música para: estátua!
+      statueMusic(false); S.phase = 'freeze'; S.ok = true; S.next = t + 2500 + Math.random() * 2000;
+      say('Estátua!'); msg.textContent = '🧊 Estátua!';
+    } else {
+      if (S.phase === 'freeze' && S.ok) {
+        const n = learnProg.statue = (learnProg.statue || 0) + 1; keep('oliver-learn', learnProg); $('#statueScore').textContent = '⭐ ' + n;
+        say(pick(['Muito bem, ficou paradinho!', 'Que estátua perfeita!', 'Isso!'])); if (n % 5 === 0) celebrate(false);
+      }
+      S.phase = 'play'; S.next = t + 4000 + Math.random() * 5000; S.nudged = false; S.lastTap = t;
+      statueMusic(true); msg.textContent = '🎵 Dança!';
+    }
+  }
+  if (S.phase === 'play' && !S.nudged && t - S.lastTap > 3500) { S.nudged = true; say('Dança! Aperte o botão!'); }
+  S.dance = Math.max(0, S.dance - 1 / 60);
+  // desenho: luzes de festa e o personagem dançando (ou parado como estátua)
+  const cv = $('#statueCv'), x = cv.getContext('2d'), W = cv.width, H = cv.height, k = t / 1000;
+  x.clearRect(0, 0, W, H);
+  if (S.phase === 'play') for (let i = 0; i < 6; i++) {
+    x.fillStyle = `hsla(${(i * 60 + k * 90) % 360} 90% 65% / .35)`; x.beginPath(); x.arc(W * (i + .5) / 6, H * .2 + Math.sin(k * 3 + i) * H * .05, H * .09, 0, TAU); x.fill();
+  }
+  const s = H * .55 / 150, dancing = S.phase === 'play' && S.dance > 0, cx = W / 2, by = H * .82;
+  x.save();
+  if (S.phase === 'freeze') { x.shadowColor = '#4fc3f7'; x.shadowBlur = 30; }
+  const hop = dancing ? Math.abs(Math.sin(k * 10)) * H * .05 : 0, tilt = dancing ? Math.sin(k * 8) * .12 : 0;
+  x.translate(cx, by - hop); x.rotate(tilt);
+  drawAvatar(x, -50 * s, -150 * s, s, dancing && Math.sin(k * 4) > 0 ? -1 : 1, dancing ? k * 12 : 0, false, dancing ? (Math.sin(k * 6) > 0 ? 'cheer' : 'wave') : '');
+  x.restore();
+  if (S.phase === 'freeze') { x.font = `${H * .12}px ${EMOJI}`; x.textAlign = 'center'; x.fillText('🧊', cx + H * .22, H * .3); }
+  S.raf = requestAnimationFrame(statueLoop);
+}
+GAMES.statue = statueStart;
+GAME_INTRO.statue = 'Estátua! Dance quando a música tocar e fique paradinho quando ela parar!';
+
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 36, name: '6.1' };
+const APP_VERSION = { code: 37, name: '6.2' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)
