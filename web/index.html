@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 45, name: '6.10' }; -->
+<!-- const APP_VERSION = { code: 46, name: '6.11' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -405,6 +405,25 @@ button:active { transform: scale(.92); }
 .st-sbtn canvas { width: 100%; height: auto; border-radius: 12px; }
 .st-del { position: absolute; top: -6px; right: -6px; width: 40px; height: 40px; border-radius: 50%; background: #fff; box-shadow: 0 2px 0 var(--shadow); font-size: 20px; }
 @media (max-width: 760px) { .st-ibtn { width: 66px; font-size: 0; } .st-ibtn span { font-size: 32px; } .st-head { width: 40px; font-size: 20px; } }
+/* jogos de canvas: corre-corre, construtor, dinos, bombeiro, esconde-esconde e parquinho */
+.cv-play { border-radius: 24px; overflow: hidden; touch-action: none; box-shadow: 0 6px 0 var(--shadow); }
+.cv-play canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.ch-tray { width: min(820px, 94vw); }
+.ch-worlds { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; width: 100%; }
+.ch-wcard { display: grid; place-items: center; gap: 2px; padding: 10px; border-radius: 24px; box-shadow: 0 5px 0 rgba(0,0,0,.18); font-size: 21px; font-weight: 800; color: var(--ink); }
+.ch-wcard span { font-size: 58px; line-height: 1.1; }
+.ch-wcard small { font-size: 15px; }
+.ch-shop { display: grid; gap: 10px; width: 100%; }
+.ch-item { display: flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 800; padding: 8px 16px; border-radius: 22px; background: #fff; box-shadow: 0 4px 0 var(--shadow); text-align: left; }
+.ch-item b { font-size: 40px; font-weight: 400; }
+.ch-item span { flex: 1; }
+.ch-item.have { background: #d7f0c4; }
+.ch-item.cant { opacity: .55; }
+.dn-btns, .pk-tray { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.dn-btn { font-size: 40px; padding: 4px 20px; border-radius: 22px; background: var(--paper); box-shadow: 0 4px 0 var(--shadow); }
+.dn-btn.big { font-size: 24px; font-weight: 800; background: #ffd23f; }
+.pk-btn { font-size: 34px; width: 64px; height: 64px; border-radius: 18px; background: var(--paper); box-shadow: 0 4px 0 var(--shadow); }
+.pk-btn[aria-pressed="true"] { background: var(--pick); }
 .statue-btn:active { transform: translateX(-50%) scale(.94); }
 .aiBox { display: grid; gap: 8px; padding: 10px 12px; border-radius: 16px; background: var(--paper); box-shadow: 0 2px 0 var(--shadow); }
 .aiBox h3 { margin: 0; font-size: 20px; }
@@ -827,6 +846,8 @@ button:active { transform: scale(.92); }
     <button class="mode" style="background:#e53935" data-game="kart"><span>🏎️</span>Corrida do <span class="advName">Oliver</span></button>
     <button class="mode" style="background:#5c6bc0" data-game="blocks"><span>🧱</span>Encaixa blocos</button>
     <button class="mode" style="background:#689f38" data-game="snake"><span>🐍</span>Cobrinha</button>
+    <button class="mode" style="background:#7cb342" data-game="chase"><span>🥚</span>Corre-Corre dos Bichos</button>
+    <button class="mode" style="background:#29b6f6" data-game="park"><span>⚽</span>Parquinho</button>
     <button class="mode" style="background:var(--g-bal)" data-game="bubbles"><span>🎈</span>Estoura balão</button>
     <button class="mode" style="background:var(--g-fruit)" data-game="fruit"><span>🍉</span>Corta frutas</button>
   </div>
@@ -835,6 +856,9 @@ button:active { transform: scale(.92); }
   <div class="doorBar" style="--d1:#ec407a"><button class="round doorBack" aria-label="Voltar">⬅️</button><h2>🧸 Faz de conta</h2></div>
   <div class="modes">
     <button class="mode" style="background:#f06292" data-game="pet"><span>🐶</span>Meu bichinho</button>
+    <button class="mode" style="background:#66bb6a" data-game="dino"><span>🦖</span>Ovos de dinossauro</button>
+    <button class="mode" style="background:#ffa000" data-game="build"><span>🏗️</span>Construtor da obra</button>
+    <button class="mode" style="background:#e53935" data-game="fire"><span>🚒</span>Bombeiro mirim</button>
     <button class="mode" style="background:#ff9800" data-game="cook"><span>🍕</span>Cozinha</button>
     <button class="mode" style="background:#1e88e5" data-game="wash"><span>🧽</span>Lava-rápido da obra</button>
     <button class="mode" style="background:#7e57c2" data-game="story"><span>📚</span>Histórias</button>
@@ -875,6 +899,7 @@ button:active { transform: scale(.92); }
     <button class="mode" style="background:#8d6e63" data-game="missing"><span>🙈</span>O que sumiu?</button>
     <button class="mode" style="background:#26a69a" data-game="sequence"><span>➡️</span>O que vem depois?</button>
     <button class="mode" style="background:#f4a62a" data-game="sort"><span>📦</span>Separar e guardar</button>
+    <button class="mode" style="background:#ab47bc" data-game="hide"><span>🔍</span>Esconde-esconde</button>
   </div>
   </div>
   <div class="doorSec" data-sec="en" hidden>
@@ -1022,6 +1047,35 @@ button:active { transform: scale(.92); }
   <div class="st-bottom"><button class="st-play-btn" id="stPlay" aria-label="Tocar">▶️</button><span class="st-fx" id="stFx"></span>
     <button class="st-sing" id="stSing">🎤 Cantar junto</button><button class="st-vfx" id="stSingFx" hidden></button><button class="st-save" id="stSave">💾 Guardar</button></div>
   <div class="over" id="stSongsBox" hidden><div class="tray st-songs"><h2>🎶 Minhas músicas</h2><div class="st-list" id="stList"></div><button class="pbtn ok" id="stSongsClose">Fechar</button></div></div>
+</section>
+<section id="g-chase" class="screen game" hidden>
+  <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2 id="chTitle">Corre-Corre dos Bichos</h2><span class="score" id="chCoins">🪙 0</span><span class="score" id="chShoe">👣</span>
+    <button class="round" id="chMapBtn" aria-label="Escolher o lugar">🗺️</button><button class="round" id="chShopBtn" aria-label="Loja de tênis">🛒</button></div>
+  <div class="play cv-play"><canvas id="chCv"></canvas></div>
+  <div class="over" id="chMap" hidden><div class="tray ch-tray"><h2>Onde vamos brincar?</h2><div class="ch-worlds" id="chWorlds"></div></div></div>
+  <div class="over" id="chShopBox" hidden><div class="tray ch-tray"><h2>🛒 Loja de tênis</h2><div class="ch-shop" id="chShopList"></div><button class="pbtn ok" id="chShopClose">Voltar</button></div></div>
+</section>
+<section id="g-build" class="screen game" hidden>
+  <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Construtor da obra</h2></div>
+  <div class="play cv-play"><canvas id="bdCv"></canvas></div>
+</section>
+<section id="g-dino" class="screen game" hidden>
+  <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Ovos de dinossauro</h2></div>
+  <div class="play cv-play"><canvas id="dnCv"></canvas></div>
+  <div class="dn-btns" id="dnBtns"></div>
+</section>
+<section id="g-fire" class="screen game" hidden>
+  <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Bombeiro mirim</h2></div>
+  <div class="play cv-play"><canvas id="frCv"></canvas></div>
+</section>
+<section id="g-hide" class="screen game" hidden>
+  <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Esconde-esconde</h2></div>
+  <div class="play cv-play"><canvas id="hdCv"></canvas></div>
+</section>
+<section id="g-park" class="screen game" hidden>
+  <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Parquinho</h2></div>
+  <div class="play cv-play"><canvas id="pkCv"></canvas></div>
+  <div class="pk-tray" id="pkTray"></div>
 </section>
 <section id="g-emotions" class="screen game" hidden>
   <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Como ele se sente?</h2><span class="score"></span><button class="round lqAgain" aria-label="Ouvir de novo">🔊</button></div>
@@ -3140,7 +3194,7 @@ function doorOpen(d, quiet) {
 document.querySelectorAll('.door').forEach(b => b.onclick = () => { b.classList.remove('squish'); void b.offsetWidth; b.classList.add('squish'); doorOpen(b.dataset.door); });
 document.querySelectorAll('.doorBack').forEach(b => b.onclick = () => doorOpen(null));
 // jogos novos ganham o selo NOVO até a criança abrir (ou por 3 semanas)
-const NEW_MODES = ['game:voices', 'game:studio'];
+const NEW_MODES = ['game:voices', 'game:studio', 'game:chase', 'game:park', 'game:dino', 'game:build', 'game:fire', 'game:hide'];
 const novos = load('oliver-novos', { seen: {}, played: {} });
 const recents = load('oliver-recentes', { l: [] });
 function isNew(k) {
@@ -9799,7 +9853,10 @@ const CHAT_OPEN = [
   ['espelho', '[data-go="kaleido"]', 'o Espelho mágico'], ['meus desenhos', '[data-go="gallery"]', 'os Meus desenhos'],
   ['adesivo|figurinha', '[data-go="album"]', 'os Meus adesivos', 1],
   ['estudio|fazer musica|fazer uma musica|criar musica|criar uma musica|inventar musica|musica', '[data-game="studio"]', 'o Estúdio musical', 1],
-  ['voz|vozes|robo|gravar|microfone|et ', '[data-game="voices"]', 'as Vozes mágicas', 1]
+  ['voz|vozes|robo|gravar|microfone|et ', '[data-game="voices"]', 'as Vozes mágicas', 1],
+  ['dinossauro', '[data-game="dino"]', 'os Ovos de dinossauro', 1], ['corre corre|roubar|pegar ovo|ovo', '[data-game="chase"]', 'o Corre-Corre dos Bichos', 1],
+  ['construtor|construir|guindaste|escavadeira', '[data-game="build"]', 'o Construtor da obra', 1], ['bombeiro|fogo|incendio', '[data-game="fire"]', 'o Bombeiro mirim', 1],
+  ['esconde', '[data-game="hide"]', 'o Esconde-esconde', 1], ['parquinho|bola', '[data-game="park"]', 'o Parquinho', 1]
 ];
 const CHAT_NUMS = ['zero', 'um', 'dois', 'tres', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez'];
 // perguntas que o amigo faz para puxar conversa: [pergunta, botões de resposta]
@@ -10738,12 +10795,659 @@ async function studioLoad(m) {
 $('#stSongs').onclick = () => { studioPlay(false); studioSongs(); };
 $('#stSongsClose').onclick = () => { $('#stSongsBox').hidden = true; };
 GAMES.studio = studioStart;
+
+/* ================= ajudantes dos jogos de canvas novos ================= */
+// deixa o canvas do tamanho da tela (resolução limitada a ~1400 px de largura, para o tablet não travar); devolve a escala usada
+function fitCanvas(cv) {
+  const r = cv.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2, 1400 / Math.max(1, r.width));
+  const W = Math.max(1, Math.round(r.width * d)), H = Math.max(1, Math.round(r.height * d));
+  if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+  return d;
+}
+// emoji guardado como imagem, desenhado com o centro em (cx, cy)
+function emoDraw(x, e, cx, cy, size, flip = 1, rot = 0) {
+  x.save(); x.translate(cx, cy); if (rot) x.rotate(rot); x.scale(flip, 1); x.drawImage(kEmo(e), -size / 2, -size * .56, size, size); x.restore();
+}
+const ptIn = (cv, e) => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; };
+function confettiAt(list, px, py, n = 26, sp = 1) { for (let i = 0; i < n; i++) list.push({ x: px, y: py, vx: (Math.random() - .5) * 520 * sp, vy: -Math.random() * 520 * sp, c: `hsl(${Math.random() * 360 | 0} 90% 60%)`, t: 1.2 }); }
+function confettiDraw(x, list, dt, k = 1) {
+  for (const f of list) { f.t -= dt; f.x += f.vx * dt * k; f.y += f.vy * dt * k; f.vy += 900 * dt; x.fillStyle = f.c; x.fillRect(f.x - 5 * k, f.y - 3 * k, 10 * k, 6 * k); }
+  for (let i = list.length - 1; i >= 0; i--) if (list[i].t <= 0) list.splice(i, 1);
+}
+function chirp(f, d = .1, type = 'triangle', v = .12) { if (!st.sound) return; try { audioOn(); tone(type, f, f * 1.5, ac.currentTime, d, v); } catch (e) {} }
+
+/* ================= corre-corre dos bichos: pega o ovo (ou o filhote) no ninho e corre para a sua casa antes da mamãe alcançar ================= */
+// cada mundo: chão, manchas, trilha, chão da casa, cerca, enfeites, casa e os 5 bichos [bicho, nome, o que guarda, filhote, cor do ovo (null = filhote que anda)]
+const CH_WORLDS = {
+  fazenda: { name: 'Fazenda', icon: '🐔', ground: '#8ccf5c', spot: '#79bf4a', path: '#e2b779', base: '#f3d98a', fence: '#8a5a2b', deco: ['🌼', '🌷', '🌸'], home: 'barn', homeName: 'Minha fazenda',
+    animals: [['🐔', 'a galinha', 'o ovo', '🐥', '#fffdf6'], ['🦆', 'a pata', 'o ovo de pata', '🦆', '#cfeaff'], ['🦃', 'o peru', 'o ovo de peru', '🐣', '#e8c9a0'], ['🐷', 'a porca', 'o porquinho', '🐷', null], ['🐴', 'a égua', 'o potrinho', '🐴', null]] },
+  selva: { name: 'Selva', icon: '🐒', ground: '#4fa65a', spot: '#3e9149', path: '#c99a5e', base: '#d9c27a', fence: '#6b4a24', deco: ['🌴', '🌺', '🍌'], home: '🛖', homeName: 'Casa da selva',
+    animals: [['🦜', 'a arara', 'o ovo de arara', '🦜', '#9fd6ff'], ['🐍', 'a cobra', 'o ovo de cobra', '🐍', '#f4f0d0'], ['🐒', 'a macaca', 'o macaquinho', '🐒', null], ['🐊', 'o jacaré', 'o ovo de jacaré', '🐊', '#e9e4c8'], ['🐅', 'a tigresa', 'o tigrinho', '🐯', null]] },
+  floresta: { name: 'Floresta', icon: '🦊', ground: '#6aad55', spot: '#579a45', path: '#b5875a', base: '#e0c58e', fence: '#5d3d1e', deco: ['🌲', '🍄', '🌳'], home: '🏕️', homeName: 'Minha cabana',
+    animals: [['🦉', 'a coruja', 'o ovo de coruja', '🦉', '#f5f0e6'], ['🦔', 'o ouriço', 'o ourizinho', '🦔', null], ['🦊', 'a raposa', 'a raposinha', '🦊', null], ['🦌', 'a corça', 'o filhote de cervo', '🦌', null], ['🐻', 'a ursa', 'o ursinho', '🐻', null]] },
+  montanha: { name: 'Montanha', icon: '🐐', ground: '#a9b89a', spot: '#96a687', path: '#d2bf98', base: '#e6dcc2', fence: '#6e5a40', deco: ['🪨', '⛰️', '🌲'], home: '⛺', homeName: 'Acampamento',
+    animals: [['🦅', 'a águia', 'o ovo de águia', '🦅', '#efe6d5'], ['🐑', 'a ovelha', 'o cordeirinho', '🐑', null], ['🐐', 'a cabra', 'o cabritinho', '🐐', null], ['🦙', 'a lhama', 'a lhaminha', '🦙', null], ['🐆', 'a onça-das-neves', 'a oncinha', '🐆', null]] },
+  gelo: { name: 'Gelo', icon: '🐧', ground: '#e6f3fb', spot: '#cfe5f2', path: '#b9d7ea', base: '#ffffff', fence: '#7fa8c4', deco: ['❄️', '⛄', '🧊'], home: 'igloo', homeName: 'Meu iglu',
+    animals: [['🐧', 'a pinguim', 'o ovo de pinguim', '🐧', '#ffffff'], ['🦭', 'a foca', 'a foquinha', '🦭', null], ['🐇', 'a lebre', 'o coelhinho', '🐇', null], ['🐻‍❄️', 'a ursa polar', 'o ursinho polar', '🐻‍❄️', null], ['🦣', 'a mamute', 'o mamutinho', '🦣', null]] },
+  safari: { name: 'Safári', icon: '🦒', ground: '#e3c06a', spot: '#d4ae54', path: '#c79a55', base: '#f4e0a8', fence: '#7a5526', deco: ['🌳', '🌾', '🪨'], home: '🚙', homeName: 'Base do safári',
+    animals: [['🦩', 'o flamingo', 'o ovo de flamingo', '🦩', '#ffc4dc'], ['🦓', 'a zebra', 'a zebrinha', '🦓', null], ['🦒', 'a girafa', 'a girafinha', '🦒', null], ['🐘', 'a elefanta', 'o elefantinho', '🐘', null], ['🦁', 'a leoa', 'o leãozinho', '🦁', null]] },
+  dinos: { name: 'Dinossauros', icon: '🦖', ground: '#9cc46b', spot: '#89b35a', path: '#b98f5f', base: '#d8c79a', fence: '#5a4632', deco: ['🌋', '🌿', '🪨'], home: '🛖', homeName: 'Caverna',
+    animals: [['🦎', 'o lagarto', 'o ovo de lagarto', '🦎', '#e6f0c0'], ['🐢', 'a tartaruga', 'o ovo de tartaruga', '🐢', '#f2ead2'], ['🦕', 'a pescoçuda', 'o ovo de pescoçudo', '🦕', '#b5e07a'], ['🐉', 'a dragoa', 'o ovo de dragão', '🐉', '#ff9e80'], ['🦖', 'a mamãe rex', 'o ovo de rex', '🦖', '#c5e1a5']] }
+};
+const CH_W = 1600, CH_H = 1000, CH_FARM = { x: 40, y: 290, w: 380, h: 420 };
+// ninhos: quanto mais longe, mais rápida a mamãe e mais moedas
+const CH_NESTS = [[700, 210, 95, 5], [760, 800, 130, 10], [1200, 840, 160, 15], [1150, 470, 178, 20], [1440, 250, 228, 40]];
+const CH_SHOES = [['👣', 'Pé no chão', 0, 150], ['👟', 'Tênis', 20, 190], ['⚡', 'Tênis relâmpago', 60, 235], ['🛼', 'Patins', 150, 290]];
+const CH_CARRY = .92;
+const chSave = load('oliver-corre', { coins: 0, shoe: 0, world: '', babies: {} });
+let ch = null;
+const chKeep = () => { chSave.babies[ch.world] = ch.babies.slice(-30).map(b => [b.emo, Math.round(b.x), Math.round(b.y)]); keep('oliver-corre', chSave); };
+function chaseStart() {
+  if (ch?.raf) cancelAnimationFrame(ch.raf);
+  ch = { raf: 0, run: false, world: chSave.world || 'fazenda', t: 0, last: 0, fx: [], flies: [], eggs: [], babies: [], down: false };
+  chHud(); ch.raf = requestAnimationFrame(chaseLoop);
+  if (chSave.world) chWorld(chSave.world); else chMap();
+}
+function chMap() {
+  ch.run = false; const box = $('#chWorlds'); box.innerHTML = '';
+  for (const [id, w] of Object.entries(CH_WORLDS)) {
+    const n = (chSave.babies[id] || []).length;
+    const b = btn(box, 'ch-wcard', `<span>${w.icon}</span><b>${w.name}</b><small>${n ? '🐣 ' + n : '&nbsp;'}</small>`, w.name, () => { blip(620); $('#chMap').hidden = true; chWorld(id); });
+    b.style.background = w.ground;
+  }
+  $('#chMap').hidden = false; say('Escolha um lugar para brincar!');
+}
+function chWorld(id) {
+  const W = CH_WORLDS[id]; chSave.world = id; keep('oliver-corre', chSave);
+  Object.assign(ch, { world: id, bg: null, fx: [], flies: [], eggs: [], run: true,
+    kid: { x: CH_FARM.x + CH_FARM.w / 2, y: CH_FARM.y + CH_FARM.h / 2 + 60, tx: null, ty: null, carry: null, inv: 0, face: 1, walk: 0 },
+    animals: W.animals.map(([emo, name, item, baby, egg], i) => { const [nx, ny, speed, reward] = CH_NESTS[i]; return { emo, name, item, baby, egg, nx, ny, speed, reward, x: nx - 56, y: ny + 6, has: true, state: 'home', t: 0, face: -1, refill: 0, big: i >= 3 }; }),
+    babies: (chSave.babies[id] || []).map(([emo, x, y]) => ({ emo, x, y, vx: 0, vy: 0, coinT: 3 + Math.random() * 5, turn: 0 })) });
+  $('#chTitle').textContent = W.name;
+  say(`${W.name}! Pegue ${W.animals[0][2]} e volte correndo para casa!`);
+}
+function chHud() { $('#chCoins').textContent = '🪙 ' + chSave.coins; $('#chShoe').textContent = CH_SHOES[chSave.shoe][0]; }
+const chInHome = (px, py, m = 0) => px > CH_FARM.x - m && px < CH_FARM.x + CH_FARM.w + m && py > CH_FARM.y - m && py < CH_FARM.y + CH_FARM.h + m;
+const chNeed = a => CH_SHOES.findIndex(s => s[3] * CH_CARRY > a.speed * 1.04);
+// tela -> mundo
+function chWorldPt(e) { const cv = $('#chCv'), [px, py] = ptIn(cv, e); return [(px - ch.ox) / ch.sc, (py - ch.oy) / ch.sc]; }
+$('#chCv').addEventListener('pointerdown', e => { if (!ch?.run) return; ch.down = true; [ch.kid.tx, ch.kid.ty] = chWorldPt(e); });
+$('#chCv').addEventListener('pointermove', e => { if (ch?.run && ch.down) [ch.kid.tx, ch.kid.ty] = chWorldPt(e); });
+addEventListener('pointerup', () => { if (ch) ch.down = false; });
+function chStep(dt) {
+  const k = ch.kid; ch.t += dt; k.inv -= dt;
+  if (k.tx !== null) {
+    const dx = k.tx - k.x, dy = k.ty - k.y, d = Math.hypot(dx, dy), v = CH_SHOES[chSave.shoe][3] * (k.carry ? CH_CARRY : 1) * dt;
+    if (d > 4) { k.x += dx / d * Math.min(v, d); k.y += dy / d * Math.min(v, d); k.walk += dt; if (Math.abs(dx) > 3) k.face = dx > 0 ? 1 : -1; }
+    else if (!ch.down) k.tx = null;
+  }
+  k.x = Math.max(30, Math.min(CH_W - 30, k.x)); k.y = Math.max(110, Math.min(CH_H - 20, k.y));
+  for (const a of ch.animals) {
+    if (!a.has && a.state === 'home') { a.refill -= dt; if (a.refill <= 0) { a.has = true; chirp(900, .08); } }
+    if (a.has && !k.carry && k.inv <= 0 && Math.hypot(k.x - a.nx, k.y - a.ny) < 70) {   // pegou!
+      a.has = false; k.carry = a; a.state = 'alert'; a.t = .7; chirp(700, .12); chirp(1000, .15);
+      say(`Pegou ${a.item}! Corre para casa!`);
+    }
+    if (a.state === 'alert') { a.t -= dt; if (a.t <= 0) a.state = 'chase'; }
+    else if (a.state === 'chase') {
+      if (k.carry !== a || chInHome(k.x, k.y)) { a.state = 'back'; continue; }
+      const dx = k.x - a.x, dy = k.y - a.y, d = Math.hypot(dx, dy);
+      a.x += dx / d * a.speed * dt; a.y += dy / d * a.speed * dt; a.face = dx > 0 ? 1 : -1;
+      if (chInHome(a.x, a.y, 20)) { a.state = 'back'; continue; }   // bicho não entra na casa
+      if (d < 44) {
+        k.carry = null; k.inv = 1.4; a.state = 'back'; ch.flies.push({ a, fx: k.x, fy: k.y - 110, t: 0 }); chirp(220, .3, 'sawtooth', .07);
+        const N = a.name[0].toUpperCase() + a.name.slice(1);
+        say(chNeed(a) > chSave.shoe ? `Ops! ${N} pegou de volta! Esse bicho corre mais que você. Compre um tênis na loja!` : `Ops! ${N} pegou de volta! Tenta de novo!`);
+      }
+    } else if (a.state === 'back') {
+      const hx = a.nx - 56, hy = a.ny + 6, dx = hx - a.x, dy = hy - a.y, d = Math.hypot(dx, dy);
+      if (d < 4) { a.state = 'home'; a.face = -1; } else { const v = Math.min(d, a.speed * .6 * dt); a.x += dx / d * v; a.y += dy / d * v; a.face = dx > 0 ? 1 : -1; }
+    }
+  }
+  if (k.carry && chInHome(k.x, k.y)) {   // chegou em casa
+    const a = k.carry; k.carry = null; a.refill = 4; chSave.coins += a.reward; chHud();
+    const ex = CH_FARM.x + 60 + Math.random() * (CH_FARM.w - 120), ey = CH_FARM.y + 190 + Math.random() * (CH_FARM.h - 230);
+    if (a.egg) ch.eggs.push({ a, x: ex, y: ey, t: 7 }); else ch.babies.push({ emo: a.baby, x: ex, y: ey, vx: 0, vy: 0, coinT: 4, turn: 0 });
+    confettiAt(ch.fx, k.x, k.y - 60); [523, 659, 784, 1047].forEach((f, i) => blip(f, .18, i * .11));
+    say(`Eba! Agora ${a.item} mora com você! Ganhou ${a.reward} moedas!`); chKeep();
+  }
+  for (const f of ch.flies) { f.t += dt * 1.6; if (f.t >= 1) { f.a.has = true; f.done = true; } }
+  ch.flies = ch.flies.filter(f => !f.done);
+  for (const e of ch.eggs) if ((e.t -= dt) <= 0) { ch.babies.push({ emo: e.a.baby, x: e.x, y: e.y, vx: 0, vy: 0, coinT: 4, turn: 0 }); confettiAt(ch.fx, e.x, e.y, 14); chirp(1200, .1); say('Nasceu! Que fofo!'); e.done = true; chKeep(); }
+  ch.eggs = ch.eggs.filter(e => !e.done);
+  for (const b of ch.babies) {   // filhotes passeiam e soltam moedinhas
+    b.turn -= dt; if (b.turn <= 0) { const an = Math.random() * TAU; b.vx = Math.cos(an) * 40; b.vy = Math.sin(an) * 40; b.turn = 1 + Math.random() * 2; }
+    b.x = Math.max(CH_FARM.x + 30, Math.min(CH_FARM.x + CH_FARM.w - 30, b.x + b.vx * dt)); b.y = Math.max(CH_FARM.y + 170, Math.min(CH_FARM.y + CH_FARM.h - 30, b.y + b.vy * dt));
+    if ((b.coinT -= dt) <= 0) { b.coinT = 6 + Math.random() * 3; ch.fx.push({ coin: true, x: b.x, y: b.y - 30, t: 1.1, vx: 0, vy: -50 }); }
+  }
+  for (const f of ch.fx) if (f.coin && f.t - dt <= 0 && !f.paid) { f.paid = true; chSave.coins++; chHud(); chirp(1400, .05, 'square', .04); }
+}
+// cenário parado: desenhado uma vez por mundo e por tamanho de tela
+function chPaintBg(W, H) {
+  const w = CH_WORLDS[ch.world], c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+  g.fillStyle = w.ground; g.fillRect(0, 0, W, H); g.save(); g.translate(ch.ox, ch.oy); g.scale(ch.sc, ch.sc);
+  let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  g.fillStyle = w.spot; for (let i = 0; i < 240; i++) { g.beginPath(); g.ellipse(rnd() * CH_W, rnd() * CH_H, 10 + rnd() * 18, 5 + rnd() * 6, 0, 0, TAU); g.fill(); }
+  g.strokeStyle = w.path; g.lineCap = 'round'; g.lineWidth = 46;
+  for (const [nx, ny] of CH_NESTS) { g.beginPath(); g.moveTo(CH_FARM.x + CH_FARM.w, CH_FARM.y + CH_FARM.h / 2); g.quadraticCurveTo((CH_FARM.x + CH_FARM.w + nx) / 2, ny + (ny < 500 ? 120 : -120), nx, ny); g.stroke(); }
+  for (let i = 0; i < 34; i++) { const px = rnd() * CH_W, py = rnd() * CH_H; if (chInHome(px, py, 60) || CH_NESTS.some(([nx, ny]) => Math.hypot(px - nx, py - ny) < 110)) continue; g.drawImage(kEmo(w.deco[i % 3]), px - 22, py - 24, 44, 44); }
+  const F = CH_FARM; g.fillStyle = w.base; g.beginPath(); g.roundRect(F.x, F.y, F.w, F.h, 30); g.fill();
+  g.strokeStyle = INK; g.lineWidth = 6;
+  if (w.home === 'barn') {
+    g.fillStyle = '#d9483b'; g.beginPath(); g.moveTo(F.x + 40, F.y + 150); g.lineTo(F.x + 40, F.y + 60); g.lineTo(F.x + 120, F.y + 6); g.lineTo(F.x + 200, F.y + 60); g.lineTo(F.x + 200, F.y + 150); g.closePath(); g.fill(); g.stroke();
+    g.fillStyle = '#fff8ea'; g.beginPath(); g.rect(F.x + 95, F.y + 90, 50, 60); g.fill(); g.stroke();
+  } else if (w.home === 'igloo') {
+    g.fillStyle = '#fff'; g.beginPath(); g.arc(F.x + 120, F.y + 150, 95, Math.PI, TAU); g.closePath(); g.fill(); g.stroke();
+    g.strokeStyle = '#a9c9de'; g.lineWidth = 3; for (const yy of [F.y + 90, F.y + 120]) { g.beginPath(); g.moveTo(F.x + 35, yy); g.lineTo(F.x + 205, yy); g.stroke(); }
+    g.fillStyle = '#4a6b85'; g.beginPath(); g.arc(F.x + 120, F.y + 150, 32, Math.PI, TAU); g.fill();
+  } else g.drawImage(kEmo(w.home), F.x + 30, F.y - 10, 180, 180);
+  g.strokeStyle = w.fence; g.lineWidth = 9; g.beginPath(); g.roundRect(F.x, F.y, F.w, F.h, 30); g.stroke();
+  g.lineWidth = 6; for (let px = F.x + 20; px < F.x + F.w; px += 40) for (const py of [F.y, F.y + F.h]) { g.beginPath(); g.moveTo(px, py - 14); g.lineTo(px, py + 14); g.stroke(); }
+  g.font = '800 34px "Baloo 2", sans-serif'; g.textAlign = 'center'; g.fillStyle = INK; g.fillText(w.homeName, F.x + F.w / 2, F.y - 28);
+  w.animals.forEach(([, , , , egg], i) => {
+    const [nx, ny] = CH_NESTS[i];
+    if (egg) { g.fillStyle = '#d9b36a'; g.beginPath(); g.ellipse(nx, ny + 8, 52, 24, 0, 0, TAU); g.fill(); g.strokeStyle = '#8a6a30'; g.lineWidth = 4; g.stroke(); }
+    else { g.fillStyle = 'rgba(120,80,40,.35)'; g.beginPath(); g.ellipse(nx, ny + 10, 64, 30, 0, 0, TAU); g.fill(); }
+  });
+  g.restore(); return c;
+}
+function chEgg(x, px, py, r, color, wob = 0) {
+  x.save(); x.translate(px, py); x.rotate(wob); x.fillStyle = color; x.strokeStyle = INK; x.lineWidth = 3;
+  x.beginPath(); x.ellipse(0, 0, r * .78, r, 0, 0, TAU); x.fill(); x.stroke();
+  if (color !== '#fffdf6' && color !== '#ffffff') { x.fillStyle = 'rgba(80,50,20,.28)'; for (const [a, b] of [[-.3, -.3], [.3, .1], [-.1, .45]]) { x.beginPath(); x.arc(a * r, b * r, r * .14, 0, TAU); x.fill(); } }
+  x.restore();
+}
+const chItem = (x, a, px, py, size) => a.egg ? chEgg(x, px, py, size * .45, a.egg) : emoDraw(x, a.baby, px, py, size * .85, -1);
+function chaseLoop(t) {
+  if (!alive('chase')) { ch.raf = 0; return; }
+  const dt = Math.min(.05, (t - ch.last) / 1000 || 0); ch.last = t;
+  const cv = $('#chCv'); fitCanvas(cv); const W = cv.width, H = cv.height, x = cv.getContext('2d');
+  const sc = Math.min(W / CH_W, H / CH_H);
+  if (sc !== ch.sc || !ch.bg || ch.bg.width !== W) { ch.sc = sc; ch.ox = (W - CH_W * sc) / 2; ch.oy = (H - CH_H * sc) / 2; ch.bg = ch.animals ? chPaintBg(W, H) : null; }
+  if (!ch.animals) { ch.raf = requestAnimationFrame(chaseLoop); return; }
+  if (ch.run) chStep(dt);
+  x.drawImage(ch.bg, 0, 0); x.save(); x.translate(ch.ox, ch.oy); x.scale(sc, sc);
+  for (const e of ch.eggs) chEgg(x, e.x, e.y, 22, e.a.egg, e.t < 2 ? Math.sin(ch.t * 30) * .25 : 0);
+  const list = [...ch.babies.map(b => ({ y: b.y, f: () => emoDraw(x, b.emo, b.x, b.y - 18, 44, b.vx > 0 ? -1 : 1) })),
+    ...ch.animals.map(a => ({ y: a.y, f: () => {
+      if (a.has) chItem(x, a, a.nx, a.ny - 6, 52);
+      const big = a.big ? 108 : 80, hop = a.state === 'chase' ? Math.abs(Math.sin(ch.t * 14)) * 8 : 0;
+      emoDraw(x, a.emo, a.x, a.y - big * .38 - hop, big, a.face < 0 ? 1 : -1);
+      if (a.state === 'home' && a.has) { x.font = '800 26px sans-serif'; x.fillStyle = 'rgba(58,36,20,.55)'; x.textAlign = 'center'; x.fillText('z', a.x + 30, a.y - big * .7 - Math.sin(ch.t * 2) * 6); }
+      if (a.state === 'alert') emoDraw(x, '❗', a.x, a.y - big - 8, 46);
+      const need = chNeed(a);
+      if (need > chSave.shoe && a.state === 'home') {   // plaquinha com o tênis que falta
+        x.fillStyle = '#fff8ea'; x.beginPath(); x.roundRect(a.nx - 34, a.ny - 122, 68, 52, 14); x.fill(); x.strokeStyle = INK; x.lineWidth = 3; x.stroke();
+        emoDraw(x, CH_SHOES[need][0], a.nx, a.ny - 96, 38);
+      }
+    } })),
+    { y: ch.kid.y, f: () => {
+      const k = ch.kid, s = .62, bob = Math.abs(Math.sin(k.walk * 12)) * 5;
+      x.save(); if (k.inv > 0 && Math.floor(ch.t * 12) % 2) x.globalAlpha = .45;
+      drawAvatar(x, k.x - 50 * s, k.y - 150 * s - bob, s, k.face, k.tx !== null ? k.walk * 14 : 0, false, k.carry ? 'cheer' : '');
+      x.restore(); if (k.carry) chItem(x, k.carry, k.x, k.y - 118 - bob, 54);
+    } }];
+  list.sort((p, q) => p.y - q.y).forEach(o => o.f());
+  for (const f of ch.flies) { const u = f.t; chItem(x, f.a, f.fx + (f.a.nx - f.fx) * u, f.fy + (f.a.ny - f.fy) * u - Math.sin(u * Math.PI) * 140, 52); }
+  for (const f of ch.fx) if (f.coin) { f.t -= dt; f.y += f.vy * dt; emoDraw(x, '🪙', f.x, f.y, 34); }
+  ch.fx = ch.fx.filter(f => !f.coin || f.t > 0);
+  confettiDraw(x, ch.fx.filter(f => !f.coin), dt); ch.fx = ch.fx.filter(f => f.coin || f.t > 0);
+  if (ch.kid.tx !== null && ch.down) { x.strokeStyle = 'rgba(255,255,255,.7)'; x.lineWidth = 5; x.beginPath(); x.arc(ch.kid.tx, ch.kid.ty, 22 + Math.sin(ch.t * 8) * 4, 0, TAU); x.stroke(); }
+  x.restore();
+  ch.raf = requestAnimationFrame(chaseLoop);
+}
+function chShop() {
+  ch.run = false; const list = $('#chShopList'); list.innerHTML = '';
+  CH_SHOES.slice(1).forEach(([e, name, price], i) => {
+    const lvl = i + 1, have = chSave.shoe >= lvl;
+    const b = btn(list, 'ch-item' + (have ? ' have' : chSave.coins < price ? ' cant' : ''), `<b>${e}</b><span>${name}</span>${have ? '✔️' : '🪙 ' + price}`, name, () => {
+      if (have) return;
+      if (chSave.shoe < lvl - 1) { say('Primeiro compre o tênis de antes!'); return; }
+      if (chSave.coins < price) { say(`Faltam ${price - chSave.coins} moedas. Pegue mais ovos!`); return; }
+      chSave.coins -= price; chSave.shoe = lvl; keep('oliver-corre', chSave); chHud(); chShop(); celebrate(false); say(`Comprou ${name}! Agora você corre mais rápido!`);
+    });
+  });
+  $('#chShopBox').hidden = false;
+}
+$('#chShopBtn').onclick = () => { blip(600); chShop(); };
+$('#chShopClose').onclick = () => { $('#chShopBox').hidden = true; ch.run = $('#chMap').hidden; };
+$('#chMapBtn').onclick = () => { blip(600); chMap(); };
+GAMES.chase = chaseStart;
+
+/* ================= construtor da obra: cava com a escavadeira, enche o alicerce com a betoneira, empilha os blocos com o guindaste,
+   pinta e põe o telhado. Cada obra pronta é uma construção diferente ================= */
+// [nome, linhas, colunas, telhado, cor do telhado]
+const BD_TYPES = [['casa', 3, 3, 'tri', '#d9483b'], ['prédio', 6, 3, 'flat', '#607d8b'], ['castelo', 4, 5, 'castle', '#8e7cc3'], ['escola', 3, 5, 'tri', '#1e88e5']];
+const BD_COLORS = [['#ffd23f', 'amarelo'], ['#ff8a65', 'laranja'], ['#81c784', 'verde'], ['#64b5f6', 'azul'], ['#f48fb1', 'rosa'], ['#b39ddb', 'roxo']];
+const BD_SAY = { dig: 'Vamos cavar! Passe o dedo na terra com a escavadeira.', pour: 'Agora a betoneira! Segure o dedo na tela para encher de concreto.',
+  blocks: 'Agora o guindaste! Toque na tela para colocar cada bloco.', paint: 'Escolha uma cor para pintar as paredes!', roof: 'Arraste o telhado para cima da construção!' };
+let bd = null;
+function buildStart() {
+  if (bd?.raf) cancelAnimationFrame(bd.raf);
+  bd = { raf: 0, type: bd ? bd.type : 0, last: 0, t: 0, fx: [] };
+  bdNew(); bd.raf = requestAnimationFrame(buildLoop);
+}
+function bdNew() {
+  Object.assign(bd, { stage: 'dig', dig: new Uint8Array(26 * 9), digLeft: 0, level: 0, placed: 0, falling: null, color: null, roof: null, drag: false, down: false, ptr: null, doneT: 0, painted: false });
+  setTimeout(() => alive('build') && say(BD_SAY.dig), 400);
+}
+function bdGeo(W, H) {
+  const gy = H * .86, pw = Math.min(W * .42, H * .72), px = W * .5, T = BD_TYPES[bd.type], R = T[1], C = T[2];
+  const fh = pw * .08, bw = pw / C, bh = Math.min(bw * .62, (gy - fh - H * .26) / R);
+  return { gy, pw, px, R, C, fh, bw, bh, top: gy - fh - bh * R, T };
+}
+function bdStage(s) { bd.stage = s; blip(700); blip(900, .12, .1); if (BD_SAY[s]) say(BD_SAY[s]); }
+const bdCv = () => $('#bdCv');
+$('#bdCv').addEventListener('pointerdown', e => {
+  if (!bd) return; const cv = bdCv(), [px, py] = ptIn(cv, e), G = bdGeo(cv.width, cv.height); bd.down = true; bd.ptr = [px, py];
+  if (bd.stage === 'blocks' && !bd.falling && bd.placed < G.R * G.C) { bd.falling = { i: bd.placed, t: 0 }; chirp(500, .08); }
+  else if (bd.stage === 'paint') {
+    const r = Math.min(cv.width, cv.height) * .055;
+    BD_COLORS.forEach(([c, n], i) => { if (Math.hypot(px - (r * 1.6 + i * r * 2.5), py - r * 1.8) < r * 1.1) { bd.color = c; bd.painted = true; say(n); noise(audioOn().currentTime, .25, 2000, 800, .08); } });
+    if (bd.painted && Math.hypot(px - (cv.width - r * 2), py - r * 1.8) < r * 1.2) bdStage('roof');
+  } else if (bd.stage === 'roof' && Math.hypot(px - bd.roof.x, py - bd.roof.y) < G.pw * .35) bd.drag = true;
+});
+$('#bdCv').addEventListener('pointermove', e => { if (bd?.down) bd.ptr = ptIn(bdCv(), e); });
+addEventListener('pointerup', () => {
+  if (!bd || !bd.down) return; bd.down = false;
+  if (bd.stage === 'roof' && bd.drag) {
+    bd.drag = false; const cv = bdCv(), G = bdGeo(cv.width, cv.height);
+    if (Math.hypot(bd.roof.x - G.px, bd.roof.y - G.top) < G.pw * .3) { bd.stage = 'done'; bd.doneT = 4.5; confettiAt(bd.fx, G.px, G.top, 50); celebrate(false); say(`Uau! A ${G.T[0]} ficou pronta! Você é um grande construtor!`); }
+    else { chirp(300, .1); }
+  }
+});
+function bdStep(dt, W, H) {
+  const G = bdGeo(W, H); bd.t += dt;
+  const mx0 = G.px - G.pw * .6, mw = G.pw * 1.2, mh = G.pw * .32, cw = mw / 26, chh = mh / 9;
+  const inMound = (i, j) => { const cx = (i + .5) / 26 * 2 - 1, cy = 1 - (j + .5) / 9; return cx * cx + cy * cy * .9 < 1; };
+  if (bd.stage === 'dig') {
+    let left = 0, total = 0;
+    for (let j = 0; j < 9; j++) for (let i = 0; i < 26; i++) {
+      if (!inMound(i, j)) continue; total++;
+      const k = j * 26 + i;
+      if (!bd.dig[k] && bd.down && bd.ptr && Math.hypot(mx0 + (i + .5) * cw - bd.ptr[0], G.gy - mh + (j + .5) * chh - bd.ptr[1]) < G.pw * .1) {
+        bd.dig[k] = 1; if (Math.random() < .3) bd.fx.push({ x: mx0 + i * cw, y: G.gy - mh + j * chh, vx: (Math.random() - .5) * 300, vy: -200 - Math.random() * 200, c: '#8d5a2b', t: .7 });
+        if (Math.random() < .05) noise(audioOn().currentTime, .12, 300, 120, .1);
+      }
+      if (!bd.dig[k]) left++;
+    }
+    if (total && left / total < .15) bdStage('pour');
+  } else if (bd.stage === 'pour') {
+    if (bd.down) { bd.level = Math.min(1, bd.level + dt / 2.4); if (Math.random() < .2) noise(audioOn().currentTime, .15, 500, 200, .06); }
+    if (bd.level >= 1) bdStage('blocks');
+  } else if (bd.stage === 'blocks' && bd.falling) {
+    bd.falling.t += dt / .45;
+    if (bd.falling.t >= 1) { bd.placed++; bd.falling = null; tone('square', 140, 90, audioOn().currentTime, .12, .1); if (bd.placed >= G.R * G.C) bdStage('paint'); }
+  } else if (bd.stage === 'roof') {
+    if (!bd.roof) bd.roof = { x: W * .15, y: H * .35 };
+    if (bd.drag && bd.ptr) { bd.roof.x = bd.ptr[0]; bd.roof.y = bd.ptr[1]; }
+  } else if (bd.stage === 'done' && (bd.doneT -= dt) <= 0) { bd.type = (bd.type + 1) % BD_TYPES.length; bdNew(); }
+  return { G, mx0, mh, cw, chh, inMound };
+}
+function bdRoof(x, T, cx, by, w, h) {   // telhado com a base no centro (cx, by)
+  x.fillStyle = T[4]; x.strokeStyle = INK; x.lineWidth = Math.max(2, w * .012); x.beginPath();
+  if (T[3] === 'tri') { x.moveTo(cx - w * .58, by); x.lineTo(cx, by - h); x.lineTo(cx + w * .58, by); x.closePath(); x.fill(); x.stroke(); }
+  else if (T[3] === 'flat') { x.rect(cx - w * .54, by - h * .25, w * 1.08, h * .25); x.fill(); x.stroke(); x.beginPath(); x.moveTo(cx + w * .2, by - h * .25); x.lineTo(cx + w * .2, by - h); x.stroke(); emoDraw(x, '📡', cx - w * .2, by - h * .55, h * .5); }
+  else { const n = 5; for (let i = 0; i < n; i++) { const bx = cx - w / 2 + i * w / n; if (i % 2 === 0) { x.rect(bx, by - h * .35, w / n, h * .35); } } x.fill(); x.stroke(); x.beginPath(); x.moveTo(cx, by - h * .35); x.lineTo(cx, by - h); x.stroke(); emoDraw(x, '🚩', cx + h * .12, by - h * .85, h * .45); }
+}
+function buildLoop(t) {
+  if (!alive('build')) { bd.raf = 0; return; }
+  const dt = Math.min(.05, (t - bd.last) / 1000 || 0); bd.last = t;
+  const cv = bdCv(); fitCanvas(cv); const W = cv.width, H = cv.height, x = cv.getContext('2d'), u = Math.min(W, H) / 100;
+  const { G, mx0, mh, cw, chh, inMound } = bdStep(dt, W, H);
+  // céu, sol, chão
+  const sky = x.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, '#8fd3ff'); sky.addColorStop(1, '#e6f6ff'); x.fillStyle = sky; x.fillRect(0, 0, W, H);
+  x.fillStyle = '#ffe066'; x.beginPath(); x.arc(W * .88, H * .16, u * 7, 0, TAU); x.fill();
+  x.fillStyle = '#7cc35a'; x.fillRect(0, G.gy, W, H - G.gy); x.fillStyle = '#b07a45'; x.fillRect(G.px - G.pw * .62, G.gy, G.pw * 1.24, u * 3);
+  // guindaste ao lado
+  const crX = G.px + G.pw * .85; x.strokeStyle = '#f9a825'; x.lineWidth = u * 1.6; x.beginPath(); x.moveTo(crX, G.gy); x.lineTo(crX, H * .1); x.lineTo(G.px - G.pw * .2, H * .1); x.stroke();
+  x.lineWidth = u * .5; x.strokeStyle = INK;
+  // alicerce
+  x.fillStyle = '#5d4030'; x.fillRect(G.px - G.pw / 2, G.gy - G.fh, G.pw, G.fh);
+  x.fillStyle = '#9e9e9e'; x.fillRect(G.px - G.pw / 2, G.gy - G.fh * Math.min(1, bd.level), G.pw, G.fh * Math.min(1, bd.level));
+  if (bd.stage === 'dig') {
+    x.fillStyle = '#8d5a2b';
+    for (let j = 0; j < 9; j++) for (let i = 0; i < 26; i++) if (inMound(i, j) && !bd.dig[j * 26 + i]) x.fillRect(mx0 + i * cw - .5, G.gy - mh + j * chh - .5, cw + 1, chh + 1);
+    const p = bd.ptr && bd.down ? bd.ptr : [G.px + G.pw * .7 + Math.sin(bd.t * 2) * u, G.gy - u * 6];
+    emoDraw(x, '🚜', p[0], p[1], u * 16, -1);
+  }
+  if (bd.stage === 'pour') {
+    const mxx = G.px - G.pw * .95, s = u * .28; drawMixer(x, mxx - 50 * s, G.gy - 62 * s, s, '#ffd23f', u * .5);
+    if (bd.down) { x.strokeStyle = '#9e9e9e'; x.lineWidth = u * 2; x.beginPath(); x.moveTo(mxx + 30 * s, G.gy - 50 * s); x.quadraticCurveTo(G.px - G.pw * .3, G.gy - G.fh * 4, G.px - G.pw * .1, G.gy - G.fh); x.stroke(); }
+    else { x.font = `800 ${u * 4}px "Baloo 2", sans-serif`; x.textAlign = 'center'; x.fillStyle = INK; x.fillText('👆 Segure', G.px, G.gy - G.fh * 3); }
+  }
+  // blocos (crus até pintar)
+  const nB = bd.placed, col = bd.color || '#d7ccc8';
+  const slot = i => [G.px - G.pw / 2 + (i % G.C) * G.bw, G.gy - G.fh - (Math.floor(i / G.C) + 1) * G.bh];
+  x.lineWidth = Math.max(2, u * .4); x.strokeStyle = INK;
+  for (let i = 0; i < nB; i++) {
+    const [bx, by] = slot(i); x.fillStyle = col; x.fillRect(bx, by, G.bw, G.bh); x.strokeRect(bx, by, G.bw, G.bh);
+    if (bd.painted && !(Math.floor(i / G.C) === 0 && i % G.C === Math.floor(G.C / 2))) { x.fillStyle = '#bfe6ff'; x.fillRect(bx + G.bw * .3, by + G.bh * .25, G.bw * .4, G.bh * .45); x.strokeRect(bx + G.bw * .3, by + G.bh * .25, G.bw * .4, G.bh * .45); }
+  }
+  if (bd.falling) {   // bloco descendo no gancho
+    const [bx, by] = slot(bd.falling.i), u2 = bd.falling.t, yy = H * .14 + (by - H * .14) * u2 * u2;
+    x.strokeStyle = INK; x.beginPath(); x.moveTo(bx + G.bw / 2, H * .1); x.lineTo(bx + G.bw / 2, yy); x.stroke();
+    x.fillStyle = col; x.fillRect(bx, yy, G.bw, G.bh); x.strokeRect(bx, yy, G.bw, G.bh);
+  } else if (bd.stage === 'blocks') { x.font = `800 ${u * 4}px "Baloo 2", sans-serif`; x.textAlign = 'center'; x.fillStyle = INK; x.fillText(`👆 Toque! ${nB} de ${G.R * G.C}`, G.px, H * .2); }
+  if (bd.stage === 'paint') {
+    const r = Math.min(W, H) * .055;
+    BD_COLORS.forEach(([c], i) => { x.fillStyle = c; x.beginPath(); x.arc(r * 1.6 + i * r * 2.5, r * 1.8, r, 0, TAU); x.fill(); x.stroke(); if (c === bd.color) { x.lineWidth = u; x.stroke(); x.lineWidth = Math.max(2, u * .4); } });
+    if (bd.painted) { x.fillStyle = '#43a047'; x.beginPath(); x.arc(W - r * 2, r * 1.8, r * 1.2, 0, TAU); x.fill(); x.stroke(); emoDraw(x, '✔️', W - r * 2, r * 1.9, r * 1.4); }
+  }
+  if (bd.stage === 'roof' && bd.roof) {
+    x.setLineDash([u, u]); x.strokeStyle = 'rgba(0,0,0,.35)'; x.strokeRect(G.px - G.pw * .55, G.top - G.pw * .35, G.pw * 1.1, G.pw * .35); x.setLineDash([]);
+    bdRoof(x, G.T, bd.roof.x, bd.roof.y, G.pw, G.pw * .35);
+  }
+  if (bd.stage === 'done') {
+    bdRoof(x, G.T, G.px, G.top, G.pw, G.pw * .35);
+    const s = G.bh * 1.6 / 150; x.fillStyle = '#6d4c41'; x.fillRect(G.px - G.bw * .25, G.gy - G.fh - G.bh * .9, G.bw * .5, G.bh * .9);
+    drawAvatar(x, G.px + G.pw * .62 - 50 * s * 2, G.gy - 150 * s * 2, s * 2, 1, bd.t * 7, false, 'wave');
+  }
+  confettiDraw(x, bd.fx, dt, u / 6);
+  bd.raf = requestAnimationFrame(buildLoop);
+}
+GAMES.build = buildStart;
+
+/* ================= ovos de dinossauro: choca o ovo com toquinhos, dá comida até o dino crescer e leva para o Vale dos Dinos ================= */
+// [nome, emoji, cor (giro de matiz), comida favorita, cor do ovo]
+const DN_KINDS = [['Rex', '🦖', 0, '🍖', '#c5e1a5'], ['Pescoçudo', '🦕', 0, '🥬', '#b2dfdb'], ['Dino azul', '🦖', 170, '🍓', '#bbdefb'],
+  ['Dino rosa', '🦕', 280, '🍓', '#f8bbd0'], ['Dino dourado', '🦖', 45, '🥬', '#ffe082'], ['Dino coral', '🦕', 220, '🍖', '#ffccbc']];
+const DN_FOOD = [['🥬', 'folhinhas'], ['🍖', 'carne'], ['🍓', 'frutinhas']];
+const dnSave = load('oliver-dinos', { vale: [], cur: null });
+const dnTint = new Map();
+// emoji do dino pintado com a cor da espécie (guardado como imagem)
+function dnImg(k) {
+  const key = k[1] + k[2]; let c = dnTint.get(key);
+  if (!c) { c = document.createElement('canvas'); c.width = c.height = 96; const g = c.getContext('2d'); g.filter = `hue-rotate(${k[2]}deg) saturate(1.3)`; g.drawImage(kEmo(k[1]), 0, 0); dnTint.set(key, c); }
+  return c;
+}
+let dn = null;
+function dinoStart() {
+  if (dn?.raf) cancelAnimationFrame(dn.raf);
+  dn = { raf: 0, last: 0, t: 0, fx: [], food: null, jump: 0, wob: 0, vale: false };
+  if (!dnSave.cur) dnNewEgg();
+  dnButtons(); dn.raf = requestAnimationFrame(dinoLoop);
+  say(dnSave.cur.xp < 0 ? 'Toque no ovo para ajudar o dinossauro a nascer!' : 'O seu dinossauro está com fome!');
+}
+function dnNewEgg() { dnSave.cur = { kind: Math.random() * DN_KINDS.length | 0, xp: -1, taps: 0 }; keep('oliver-dinos', dnSave); }
+const dnStage = c => c.xp < 0 ? 'egg' : c.xp < 4 ? 'baby' : c.xp < 10 ? 'kid' : 'adult';
+function dnButtons() {
+  const box = $('#dnBtns'), c = dnSave.cur, s = dnStage(c); box.innerHTML = '';
+  if (dn.vale) { btn(box, 'dn-btn', '🥚 Voltar ao ninho', 'Voltar ao ninho', () => { dn.vale = false; dnButtons(); }); return; }
+  if (s !== 'egg' && s !== 'adult') for (const [e, n] of DN_FOOD) btn(box, 'dn-btn', e, 'Dar ' + n, () => dnFeed(e));
+  if (s === 'adult') btn(box, 'dn-btn big', '🌋 Levar para o vale', 'Levar para o vale', () => {
+    dnSave.vale.push(c.kind); dnNewEgg(); dn.vale = true; dnButtons(); celebrate(false); say('Agora ele mora no Vale dos Dinos! Olha quanta gente!');
+  });
+  btn(box, 'dn-btn', `🌋 ${dnSave.vale.length}`, 'Ver o vale', () => { dn.vale = !dn.vale; dnButtons(); });
+}
+function dnFeed(e) {
+  if (dn.food) return; const c = dnSave.cur, k = DN_KINDS[c.kind];
+  dn.food = { e, t: 0, fav: e === k[3] }; chirp(600, .08);
+}
+$('#dnCv').addEventListener('pointerdown', e => {
+  if (!dn || dn.vale) return; const c = dnSave.cur;
+  if (dnStage(c) === 'egg') {
+    c.taps++; dn.wob = 1; tone('triangle', 300 + c.taps * 60, 400 + c.taps * 60, audioOn().currentTime, .1, .12);
+    if (c.taps >= 6) { c.xp = 0; keep('oliver-dinos', dnSave); const cv = $('#dnCv'); confettiAt(dn.fx, cv.width / 2, cv.height * .6, 40); celebrate(false); say(`Nasceu um ${DN_KINDS[c.kind][0]}! Ele gosta de ${DN_FOOD.find(f => f[0] === DN_KINDS[c.kind][3])[1]}.`); dnButtons(); }
+  } else { dn.jump = 1; tone('square', 500, 900, audioOn().currentTime, .15, .06); if (Math.random() < .4) say(pick(['Hihihi!', 'Rawr!', 'Faz cócegas!'])); }
+});
+function dinoLoop(t) {
+  if (!alive('dino')) { dn.raf = 0; return; }
+  const dt = Math.min(.05, (t - dn.last) / 1000 || 0); dn.last = t; dn.t += dt;
+  const cv = $('#dnCv'); fitCanvas(cv); const W = cv.width, H = cv.height, x = cv.getContext('2d'), u = Math.min(W, H) / 100, c = dnSave.cur, k = DN_KINDS[c.kind];
+  const sky = x.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, dn.vale ? '#ffcc80' : '#a5e3ff'); sky.addColorStop(1, '#fff6d8'); x.fillStyle = sky; x.fillRect(0, 0, W, H);
+  x.fillStyle = '#8d6e63'; x.beginPath(); x.moveTo(W * .62, H * .7); x.lineTo(W * .78, H * .2); x.lineTo(W * .86, H * .2); x.lineTo(W * 1.02, H * .7); x.fill();   // vulcão
+  x.fillStyle = '#ff7043'; x.beginPath(); x.ellipse(W * .82, H * .2, W * .04, u * 1.5, 0, 0, TAU); x.fill();
+  for (let i = 0; i < 3; i++) { x.fillStyle = 'rgba(120,120,120,.35)'; x.beginPath(); x.arc(W * .82 + Math.sin(dn.t + i) * u * 3, H * .16 - ((dn.t * 20 + i * 30) % 60) * u * .2, u * (2 + i), 0, TAU); x.fill(); }
+  x.fillStyle = '#7cc35a'; x.fillRect(0, H * .7, W, H * .3);
+  if (dn.vale) {   // todos os dinos que já cresceram passeando
+    dnSave.vale.forEach((ki, i) => {
+      const kk = DN_KINDS[ki], sp = 30 + (i * 17) % 40, px = (i * 173 + dn.t * sp) % (W + 200) - 100, py = H * .74 + (i % 4) * H * .06, sz = u * (14 + (i % 3) * 3);
+      x.save(); x.translate(px, py - Math.abs(Math.sin(dn.t * 4 + i)) * u); x.scale(-1, 1); x.drawImage(dnImg(kk), -sz / 2, -sz, sz, sz); x.restore();
+    });
+    x.font = `800 ${u * 6}px "Baloo 2", sans-serif`; x.textAlign = 'center'; x.fillStyle = INK; x.fillText(dnSave.vale.length ? `Vale dos Dinos: ${dnSave.vale.length}` : 'O vale está esperando o primeiro dino!', W / 2, H * .18);
+  } else {
+    const cx = W * .4, by = H * .78, st2 = dnStage(c);
+    x.fillStyle = '#d9b36a'; x.beginPath(); x.ellipse(cx, by, u * 16, u * 5, 0, 0, TAU); x.fill();   // ninho
+    if (st2 === 'egg') {
+      dn.wob = Math.max(0, dn.wob - dt * 3); const r = u * 12;
+      x.save(); x.translate(cx, by - r * .9); x.rotate(Math.sin(dn.t * 25) * .2 * dn.wob); x.fillStyle = k[4]; x.strokeStyle = INK; x.lineWidth = u * .6;
+      x.beginPath(); x.ellipse(0, 0, r * .78, r, 0, 0, TAU); x.fill(); x.stroke();
+      x.fillStyle = 'rgba(0,0,0,.12)'; for (const [a, b] of [[-.3, -.4], [.35, 0], [-.1, .45]]) { x.beginPath(); x.arc(a * r, b * r, r * .15, 0, TAU); x.fill(); }
+      x.beginPath(); for (let i = 0; i < c.taps; i++) { const yy = -r * .2 + (i % 2 ? -1 : 1) * r * .12; x.moveTo(-r * .7 + i * r * .25, yy); x.lineTo(-r * .58 + i * r * .25, -yy * .6); } x.stroke();
+      x.restore();
+      x.font = `800 ${u * 5}px "Baloo 2", sans-serif`; x.textAlign = 'center'; x.fillStyle = INK; x.fillText('👆 Toque no ovo!', cx, H * .2);
+    } else {
+      dn.jump = Math.max(0, dn.jump - dt * 2.5);
+      const sz = u * { baby: 22, kid: 32, adult: 44 }[st2], hop = Math.sin(dn.jump * Math.PI) * u * 8 + Math.abs(Math.sin(dn.t * 2)) * u;
+      x.save(); x.translate(cx, by - hop); x.scale(-1 * (1 + Math.sin(dn.t * 3) * .02), 1); x.drawImage(dnImg(k), -sz / 2, -sz * .95, sz, sz); x.restore();
+      x.font = `800 ${u * 4.5}px "Baloo 2", sans-serif`; x.textAlign = 'center'; x.fillStyle = INK;
+      x.fillText(st2 === 'adult' ? `O ${k[0]} cresceu! 🎉` : `${k[0]} · gosta de ${k[3]}`, cx, H * .14);
+      const need = st2 === 'baby' ? 4 : 10, from = st2 === 'baby' ? 0 : 4;   // barrinha de crescer
+      if (st2 !== 'adult') { const bw = u * 30; x.fillStyle = 'rgba(0,0,0,.12)'; x.fillRect(cx - bw / 2, H * .18, bw, u * 2.5); x.fillStyle = '#43a047'; x.fillRect(cx - bw / 2, H * .18, bw * (c.xp - from) / (need - from), u * 2.5); }
+      if (dn.food) {   // comida voando até a boca
+        const f = dn.food; f.t += dt * 2.2; const fx = W * .85 + (cx - sz * .3 - W * .85) * Math.min(1, f.t), fy = H * .85 + (by - sz * .7 - H * .85) * Math.min(1, f.t) - Math.sin(Math.min(1, f.t) * Math.PI) * u * 15;
+        if (f.t < 1) emoDraw(x, f.e, fx, fy, u * 9);
+        else {
+          const before = dnStage(c); c.xp += f.fav ? 2 : 1; dn.food = null; dn.jump = 1; keep('oliver-dinos', dnSave);
+          tone('triangle', 400, 200, audioOn().currentTime, .15, .1); say(f.fav ? pick(['Hmm, adoro!', 'Delícia!', 'Que gostoso!']) : 'Hmm, obrigado!');
+          if (dnStage(c) !== before) { confettiAt(dn.fx, cx, by - sz, 30); if (dnStage(c) === 'adult') { celebrate(false); setTimeout(() => say('Ele ficou grandão! Leve para o Vale dos Dinos!'), 1200); } else say('Ele cresceu!'); dnButtons(); }
+        }
+      }
+    }
+  }
+  confettiDraw(x, dn.fx, dt, u / 6);
+  dn.raf = requestAnimationFrame(dinoLoop);
+}
+GAMES.dino = dinoStart;
+
+/* ================= bombeiro mirim: arrasta o dedo para jogar água no fogo; depois salva o gatinho no telhado ================= */
+let fi = null;
+function fireStart() {
+  if (fi?.raf) cancelAnimationFrame(fi.raf);
+  fi = { raf: 0, last: 0, t: 0, lvl: fi ? fi.lvl : 0, saved: load('oliver-bombeiro', { n: 0 }).n, drops: [], smoke: [], fx: [], down: false, ptr: null, sprayT: 0 };
+  frRound(); fi.raf = requestAnimationFrame(fireLoop);
+}
+function frRound() {
+  // fogo em algumas janelas dos três prédios (posições em fração da tela)
+  const spots = shuffle([[.3, .42], [.3, .58], [.38, .5], [.5, .3], [.5, .46], [.58, .38], [.58, .58], [.72, .44], [.8, .52], [.72, .6]]);
+  fi.fires = spots.slice(0, Math.min(3 + fi.lvl, 8)).map(([fx, fy]) => ({ fx, fy, hp: 1, grow: 0 }));
+  fi.cat = null; fi.ladder = 0; fi.state = 'fire';
+  setTimeout(() => alive('fire') && say('Fogo! Arraste o dedo para jogar água!'), 400);
+}
+$('#frCv').addEventListener('pointerdown', e => {
+  if (!fi) return; fi.down = true; fi.ptr = ptIn($('#frCv'), e);
+  if (fi.state === 'cat' && fi.cat && Math.hypot(fi.ptr[0] - fi.cat.x, fi.ptr[1] - fi.cat.y) < fi.cat.r * 1.6 && !fi.ladder) { fi.ladder = .001; tone('triangle', 400, 800, audioOn().currentTime, .4, .1); say('Lá vai a escada!'); }
+});
+$('#frCv').addEventListener('pointermove', e => { if (fi?.down) fi.ptr = ptIn($('#frCv'), e); });
+addEventListener('pointerup', () => { if (fi) fi.down = false; });
+function fireLoop(t) {
+  if (!alive('fire')) { fi.raf = 0; return; }
+  const dt = Math.min(.05, (t - fi.last) / 1000 || 0); fi.last = t; fi.t += dt;
+  const cv = $('#frCv'); fitCanvas(cv); const W = cv.width, H = cv.height, x = cv.getContext('2d'), u = Math.min(W, H) / 100, gy = H * .86;
+  const sky = x.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, '#9fd8ff'); sky.addColorStop(1, '#fdf3e0'); x.fillStyle = sky; x.fillRect(0, 0, W, H);
+  // três prédios
+  const B = [[.24, .44, .2, '#ef9a9a'], [.44, .62, .16, '#ffcc80'], [.66, .88, .26, '#90caf9']];
+  x.lineWidth = u * .5; x.strokeStyle = INK;
+  for (const [a, b, top, c] of B) {
+    x.fillStyle = c; x.fillRect(W * a, H * top, W * (b - a), gy - H * top); x.strokeRect(W * a, H * top, W * (b - a), gy - H * top);
+    x.fillStyle = '#e3f2fd'; for (let yy = H * top + u * 4; yy < gy - u * 10; yy += u * 9) for (let xx = W * a + u * 3; xx < W * b - u * 6; xx += u * 8) { x.fillRect(xx, yy, u * 5, u * 5); x.strokeRect(xx, yy, u * 5, u * 5); }
+  }
+  x.fillStyle = '#8d8d8d'; x.fillRect(0, gy, W, H - gy);
+  // caminhão e mangueira
+  const tx = W * .1, ty = gy - u * 2; emoDraw(x, '🚒', tx, ty - u * 7, u * 20, -1);
+  const nz = [tx + u * 6, ty - u * 12];
+  if (fi.state === 'fire' && fi.down && fi.ptr) {
+    fi.sprayT -= dt; if (fi.sprayT <= 0) { fi.sprayT = .12; noise(audioOn().currentTime, .16, 1800, 900, .05); }
+    for (let i = 0; i < 4; i++) fi.drops.push({ t: 0, sx: nz[0], sy: nz[1], ex: fi.ptr[0] + (Math.random() - .5) * u * 4, ey: fi.ptr[1] + (Math.random() - .5) * u * 4 });
+    for (const f of fi.fires) if (f.hp > 0 && Math.hypot(W * f.fx - fi.ptr[0], H * f.fy - fi.ptr[1]) < u * 11) {
+      f.hp -= dt * 1.3;
+      if (f.hp <= 0) { for (let i = 0; i < 6; i++) fi.smoke.push({ x: W * f.fx, y: H * f.fy, r: u * 2, t: 1.4, vx: (Math.random() - .5) * u * 8 }); chirp(900, .1); chirp(1200, .1); }
+    }
+  }
+  x.fillStyle = 'rgba(66,165,245,.8)';
+  for (const d of fi.drops) { d.t += dt * 2.4; const p = Math.min(1, d.t), dx = d.sx + (d.ex - d.sx) * p, dy = d.sy + (d.ey - d.sy) * p - Math.sin(p * Math.PI) * u * 12; x.beginPath(); x.arc(dx, dy, u * .9, 0, TAU); x.fill(); }
+  fi.drops = fi.drops.filter(d => d.t < 1);
+  for (const f of fi.fires) if (f.hp > 0) { f.grow = Math.min(1, f.grow + dt * .3); const s = u * (10 + 5 * f.grow) * (.5 + f.hp * .5); emoDraw(x, '🔥', W * f.fx + Math.sin(fi.t * 9 + f.fx * 9) * u * .4, H * f.fy, s * (1 + Math.sin(fi.t * 12 + f.fy * 7) * .06)); }
+  for (const s of fi.smoke) { s.t -= dt; s.y -= u * 10 * dt; s.x += s.vx * dt; s.r += u * 3 * dt; x.fillStyle = `rgba(150,150,150,${Math.max(0, s.t * .4)})`; x.beginPath(); x.arc(s.x, s.y, s.r, 0, TAU); x.fill(); }
+  fi.smoke = fi.smoke.filter(s => s.t > 0);
+  if (fi.state === 'fire' && fi.fires.every(f => f.hp <= 0)) {   // apagou tudo: agora o gatinho
+    fi.state = 'cat'; const b = pick(B); fi.cat = { x: W * (b[0] + b[1]) / 2, y: H * b[2] - u * 4, r: u * 6 };
+    celebrate(false); setTimeout(() => say('Muito bem! Ih, tem um gatinho no telhado! Toque nele!'), 900);
+  }
+  if (fi.cat) {
+    const c = fi.cat;
+    if (fi.ladder > 0) {   // escada sobe do caminhão até o gato, e o gato desce
+      fi.ladder = Math.min(2, fi.ladder + dt * .8); const p = Math.min(1, fi.ladder), ex = nz[0] + (c.x - nz[0]) * p, ey = nz[1] + (c.y - nz[1]) * p;
+      x.strokeStyle = '#bdbdbd'; x.lineWidth = u * 1.2; x.beginPath(); x.moveTo(nz[0], nz[1]); x.lineTo(ex, ey); x.stroke();
+      if (fi.ladder > 1) { const q = fi.ladder - 1; c.dx = c.x + (nz[0] - c.x) * q; c.dy = c.y + (nz[1] - c.y) * q; }
+      if (fi.ladder >= 2) {
+        fi.saved++; keep('oliver-bombeiro', { n: fi.saved }); confettiAt(fi.fx, nz[0], nz[1], 40); celebrate(false);
+        say(`Salvou o gatinho! Você já salvou ${fi.saved}!`); fi.cat = null; fi.lvl++; fi.state = 'wait'; setTimeout(() => alive('fire') && frRound(), 3000);
+      }
+    }
+    if (fi.cat) { emoDraw(x, '🐱', c.dx ?? c.x, (c.dy ?? c.y) + Math.sin(fi.t * 6) * u * .5, c.r * 2); if (!fi.ladder && Math.sin(fi.t * 2) > .95) chirp(1100, .15, 'sine', .05); }
+  }
+  emoDraw(x, '🐱', W - u * 14, u * 7, u * 6); x.font = `800 ${u * 5}px "Baloo 2", sans-serif`; x.textAlign = 'left'; x.fillStyle = INK; x.fillText(String(fi.saved), W - u * 9, u * 9);
+  if (fi.state === 'fire' && !fi.down) { x.textAlign = 'center'; x.fillText('👆 Arraste o dedo no fogo', W / 2, H * .12); }
+  confettiDraw(x, fi.fx, dt, u / 6);
+  fi.raf = requestAnimationFrame(fireLoop);
+}
+GAMES.fire = fireStart;
+
+/* ================= esconde-esconde: os bichos se escondem atrás das coisas da cena; a criança toca para achar quem foi pedido ================= */
+// [nome, céu, chão, esconderijos]
+const HD_SCENES = [['parque', '#a5e3ff', '#8ccf5c', ['🌳', '🪨', '📦', '🛝', '🌻', '🗑️']], ['casa', '#ffe0b2', '#bcaaa4', ['🛋️', '🚪', '🧺', '📦', '🪴', '🛏️']],
+  ['praia', '#81d4fa', '#ffe082', ['⛱️', '🏰', '🪣', '🌴', '🛟', '🐚']], ['neve', '#cfe8f7', '#f5fbff', ['⛄', '🌲', '🧊', '🛷', '🏔️', '🎿']]];
+const HD_ANIMALS = [['🐱', 'o gatinho', 'Miau!'], ['🐶', 'o cachorrinho', 'Au au!'], ['🐰', 'o coelhinho', 'Hihi!'], ['🐸', 'o sapinho', 'Croac!'], ['🐥', 'o pintinho', 'Piu piu!'],
+  ['🐼', 'o panda', 'Oi!'], ['🦊', 'a raposinha', 'Hihi!'], ['🐵', 'o macaquinho', 'Uh uh!'], ['🐷', 'o porquinho', 'Oinc!'], ['🐨', 'o coala', 'Oi!']];
+let hd = null;
+function hideStart() { if (hd?.raf) cancelAnimationFrame(hd.raf); hd = { raf: 0, last: 0, t: 0, scene: hd ? hd.scene : 0, fx: [] }; hdRound(); hd.raf = requestAnimationFrame(hideLoop); }
+function hdRound() {
+  const S = HD_SCENES[hd.scene % HD_SCENES.length], who = shuffle(HD_ANIMALS.slice()).slice(0, 3);
+  // 6 esconderijos espalhados; 3 têm bicho atrás
+  const pos = [[.18, .5], [.42, .42], [.68, .5], [.86, .66], [.3, .76], [.58, .78]];
+  const slots = shuffle([0, 1, 2, 3, 4, 5]);
+  hd.spots = S[3].map((e, i) => ({ e, fx: pos[i][0], fy: pos[i][1], who: null, open: 0, opening: false }));
+  who.forEach((a, i) => hd.spots[slots[i]].who = a);
+  Object.assign(hd, { S, who, ask: 0, idle: 0, found: 0, lock: false });
+  setTimeout(() => alive('hide') && hdAsk(), 500);
+}
+function hdAsk() { const a = hd.who[hd.ask]; hd.idle = 0; say(`Cadê ${a[1]}?`); }
+$('#hdCv').addEventListener('pointerdown', e => {
+  if (!hd || hd.lock || hd.ask >= 3) return;
+  const cv = $('#hdCv'), [px, py] = ptIn(cv, e), u = Math.min(cv.width, cv.height) / 100;
+  const s = hd.spots.find(s => !s.done && Math.hypot(px - cv.width * s.fx, py - cv.height * s.fy) < u * 13); if (!s) return;
+  const want = hd.who[hd.ask]; s.opening = true; hd.idle = 0;
+  if (s.who === want) {
+    s.done = true; hd.lock = true; chirp(700, .1); chirp(1000, .15); say(`Achou ${want[1]}! ${want[2]}`); confettiAt(hd.fx, cv.width * s.fx, cv.height * s.fy, 30);
+    setTimeout(() => {
+      hd.lock = false; hd.ask++;
+      if (hd.ask < 3) hdAsk(); else { celebrate(false); say('Você achou todo mundo!'); setTimeout(() => { if (alive('hide')) { hd.scene++; hdRound(); } }, 3200); }
+    }, 1600);
+  } else {
+    tone('triangle', 300, 220, audioOn().currentTime, .18, .1);
+    say(s.who ? `Esse é ${s.who[1]}! Cadê ${want[1]}?` : `Aqui não tem ninguém! Cadê ${want[1]}?`);
+    if (!s.who) s.fly = 1; setTimeout(() => { s.opening = false; }, 1300);
+  }
+});
+function hideLoop(t) {
+  if (!alive('hide')) { hd.raf = 0; return; }
+  const dt = Math.min(.05, (t - hd.last) / 1000 || 0); hd.last = t; hd.t += dt; hd.idle += dt;
+  const cv = $('#hdCv'); fitCanvas(cv); const W = cv.width, H = cv.height, x = cv.getContext('2d'), u = Math.min(W, H) / 100;
+  x.fillStyle = hd.S[1]; x.fillRect(0, 0, W, H); x.fillStyle = hd.S[2]; x.fillRect(0, H * .45, W, H * .55);
+  const want = hd.who[Math.min(hd.ask, 2)];
+  // quem procurar, no alto
+  if (hd.ask < 3) {
+    x.fillStyle = '#fff8ea'; x.beginPath(); x.roundRect(W / 2 - u * 22, u * 2, u * 44, u * 13, u * 6); x.fill();
+    x.font = `800 ${u * 6}px "Baloo 2", sans-serif`; x.textAlign = 'right'; x.fillStyle = INK; x.fillText('Cadê?', W / 2 + u * 2, u * 10.5); emoDraw(x, want[0], W / 2 + u * 11, u * 8.5, u * 11);
+  }
+  for (const s of hd.spots) {
+    const cx = W * s.fx, cy = H * s.fy, size = u * 24;
+    s.open = Math.max(0, Math.min(1, s.open + (s.opening ? dt * 4 : -dt * 3)));
+    const hint = !s.done && hd.ask < 3 && s.who === want && hd.idle > 6;   // demorou: o esconderijo certo balança e o rabinho aparece
+    if (s.who && !s.done && (s.open > 0 || hint)) emoDraw(x, s.who[0], cx + (hint && !s.open ? u * 9 : 0), cy - s.open * u * 10, u * 15, 1, hint && !s.open ? .5 : 0);
+    if (s.fly) { s.fly -= dt * .6; emoDraw(x, '🦋', cx + (1 - s.fly) * u * 30, cy - (1 - s.fly) * u * 30, u * 8); if (s.fly <= 0) s.fly = 0; }
+    const wig = hint ? Math.sin(hd.t * 16) * .08 : 0;
+    x.save(); x.globalAlpha = 1 - s.open * .25; emoDraw(x, s.e, cx + s.open * u * 14, cy + u * 3, size, 1, wig + s.open * .3); x.restore();
+    if (s.done) emoDraw(x, s.who[0], cx, cy - u * 2 + Math.abs(Math.sin(hd.t * 5)) * -u * 2, u * 15);
+  }
+  confettiDraw(x, hd.fx, dt, u / 6);
+  hd.raf = requestAnimationFrame(hideLoop);
+}
+GAMES.hide = hideStart;
+
+/* ================= parquinho: bolas, caixas e balões que caem, quicam e voam; arrasta e solta para arremessar ================= */
+// [emoji, nome, raio (em % da tela), quique, peso, flutua]
+const PK_ITEMS = [['⚽', 'bola', 5, .75, 1, 0], ['🏀', 'basquete', 5.5, .8, 1.1, 0], ['🎾', 'bolinha', 3, .9, .5, 0], ['📦', 'caixa', 6, .2, 2, 0],
+  ['🍉', 'melancia', 6.5, .3, 2.5, 0], ['🪨', 'pedra', 5, .1, 4, 0], ['🎈', 'balão', 5.5, .5, .3, 1], ['🧸', 'ursinho', 5.5, .3, 1, 0]];
+let pk = null;
+function parkStart() {
+  if (pk?.raf) cancelAnimationFrame(pk.raf);
+  pk = { raf: 0, last: 0, t: 0, b: [], sel: 0, grab: null, hist: [], bonk: 0 };
+  const box = $('#pkTray'); box.innerHTML = '';
+  PK_ITEMS.forEach(([e, n], i) => btn(box, 'pk-btn', e, n, () => { pk.sel = i; press([...box.children], box.children[i]); pkAdd(i); }));
+  btn(box, 'pk-btn', '🌧️', 'Chuva de bolas', () => { for (let i = 0; i < 10; i++) setTimeout(() => pkAdd(Math.random() * 3 | 0), i * 90); say('Chuva de bolas!'); });
+  btn(box, 'pk-btn', '🧹', 'Limpar', () => { pk.b = []; blip(300); });
+  press([...box.children].slice(0, PK_ITEMS.length), box.children[0]);
+  pk.raf = requestAnimationFrame(parkLoop);
+}
+function pkAdd(i, px, py) {
+  const cv = $('#pkCv'), u = Math.min(cv.width, cv.height) / 100, [e, , r, bounce, m, fl] = PK_ITEMS[i];
+  if (pk.b.length > 40) pk.b.shift();
+  pk.b.push({ e, r: r * u, bounce, m, fl, x: px ?? cv.width * (.2 + Math.random() * .6), y: py ?? -r * u, vx: (Math.random() - .5) * u * 30, vy: 0, rot: 0 });
+  chirp(500 + Math.random() * 300, .06);
+}
+$('#pkCv').addEventListener('pointerdown', e => {
+  if (!pk) return; const [px, py] = ptIn($('#pkCv'), e);
+  const b = pk.b.slice().reverse().find(b => Math.hypot(b.x - px, b.y - py) < b.r * 1.2);
+  if (b) { pk.grab = b; pk.hist = [[px, py, performance.now()]]; } else pkAdd(pk.sel, px, py);
+});
+$('#pkCv').addEventListener('pointermove', e => {
+  if (!pk?.grab) return; const [px, py] = ptIn($('#pkCv'), e); pk.grab.x = px; pk.grab.y = py; pk.grab.vx = pk.grab.vy = 0;
+  pk.hist.push([px, py, performance.now()]); if (pk.hist.length > 5) pk.hist.shift();
+});
+addEventListener('pointerup', () => {
+  if (!pk?.grab) return; const h = pk.hist, a = h[0], z = h[h.length - 1], dt = Math.max(16, z[2] - a[2]) / 1000;
+  pk.grab.vx = (z[0] - a[0]) / dt; pk.grab.vy = (z[1] - a[1]) / dt; pk.grab = null;   // arremesso com a velocidade do dedo
+});
+function parkLoop(t) {
+  if (!alive('park')) { pk.raf = 0; return; }
+  const dt = Math.min(.033, (t - pk.last) / 1000 || 0); pk.last = t; pk.t += dt; pk.bonk -= dt;
+  const cv = $('#pkCv'); fitCanvas(cv); const W = cv.width, H = cv.height, x = cv.getContext('2d'), u = Math.min(W, H) / 100, gy = H * .9, g = u * 260;
+  // física simples: tudo é círculo; gravidade, chão, paredes e batidas entre eles
+  for (let step = 0; step < 2; step++) {
+    const h = dt / 2;
+    for (const b of pk.b) {
+      if (b === pk.grab) continue;
+      b.vy += (b.fl ? -g * .12 : g) * h; b.vx *= 1 - .3 * h; b.x += b.vx * h; b.y += b.vy * h; b.rot += b.vx * h / b.r;
+      if (b.y > gy - b.r) { b.y = gy - b.r; if (Math.abs(b.vy) > u * 20 && pk.bonk <= 0) { pk.bonk = .06; chirp(180 + 400 / b.m, .06, 'sine', Math.min(.12, Math.abs(b.vy) / (u * 3000))); } b.vy *= -b.bounce; b.vx *= .985; }
+      if (b.x < b.r) { b.x = b.r; b.vx = Math.abs(b.vx) * b.bounce; } if (b.x > W - b.r) { b.x = W - b.r; b.vx = -Math.abs(b.vx) * b.bounce; }
+    }
+    for (let i = 0; i < pk.b.length; i++) for (let j = i + 1; j < pk.b.length; j++) {
+      const a = pk.b[i], c = pk.b[j], dx = c.x - a.x, dy = c.y - a.y, d = Math.hypot(dx, dy), md = a.r + c.r;
+      if (d >= md || d === 0) continue;
+      const nx = dx / d, ny = dy / d, over = md - d, ia = a === pk.grab ? 0 : 1 / a.m, ic = c === pk.grab ? 0 : 1 / c.m, s = ia + ic || 1;
+      a.x -= nx * over * ia / s; a.y -= ny * over * ia / s; c.x += nx * over * ic / s; c.y += ny * over * ic / s;
+      const rv = (c.vx - a.vx) * nx + (c.vy - a.vy) * ny; if (rv > 0) continue;
+      const jj = -(1 + Math.min(a.bounce, c.bounce)) * rv / s; a.vx -= jj * ia * nx; a.vy -= jj * ia * ny; c.vx += jj * ic * nx; c.vy += jj * ic * ny;
+    }
+  }
+  for (let i = pk.b.length - 1; i >= 0; i--) { const b = pk.b[i]; if (b.fl && b.y < -b.r) { pk.b.splice(i, 1); tone('square', 900, 200, audioOn().currentTime, .1, .08); } }   // balão estoura lá em cima
+  const sky = x.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, '#b3e5fc'); sky.addColorStop(1, '#fff8e1'); x.fillStyle = sky; x.fillRect(0, 0, W, H);
+  for (const [cx, cy] of [[.2, .15], [.6, .1], [.85, .22]]) { x.fillStyle = 'rgba(255,255,255,.8)'; x.beginPath(); x.arc(W * cx, H * cy, u * 5, 0, TAU); x.arc(W * cx + u * 5, H * cy + u, u * 4, 0, TAU); x.arc(W * cx - u * 5, H * cy + u, u * 4, 0, TAU); x.fill(); }
+  x.fillStyle = '#7cc35a'; x.fillRect(0, gy, W, H - gy); x.fillStyle = '#6aad4a'; for (let i = 0; i < W; i += u * 4) x.fillRect(i, gy, u * 2, u);
+  for (const b of pk.b) { x.save(); x.translate(b.x, b.y); x.rotate(b.fl ? Math.sin(pk.t * 2 + b.x) * .15 : b.rot); x.drawImage(kEmo(b.e), -b.r * 1.25, -b.r * 1.4, b.r * 2.5, b.r * 2.5); x.restore(); if (b.fl) { x.strokeStyle = 'rgba(0,0,0,.4)'; x.lineWidth = 1.5; x.beginPath(); x.moveTo(b.x, b.y + b.r); x.lineTo(b.x + Math.sin(pk.t * 3) * u, b.y + b.r * 2.4); x.stroke(); } }
+  if (!pk.b.length) { x.font = `800 ${u * 5}px "Baloo 2", sans-serif`; x.textAlign = 'center'; x.fillStyle = INK; x.fillText('👆 Toque na tela para jogar coisas!', W / 2, H * .45); }
+  pk.raf = requestAnimationFrame(parkLoop);
+}
+GAMES.park = parkStart;
 GAME_INTRO.studio = 'Toque nos quadradinhos para criar a sua música, e aperte o play para ouvir!';
 
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 45, name: '6.10' };
+const APP_VERSION = { code: 46, name: '6.11' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)

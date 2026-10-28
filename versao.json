@@ -1,8 +1,8 @@
 {
-  "code": 45,
-  "name": "6.10",
+  "code": 46,
+  "name": "6.11",
   "minApk": 41,
-  "notes": "Versão 6.10: na tela inicial, o Mundo do Oliver e o personagem subiram até o topo, o Oi fica na frente do personagem, ao lado do rosto, e as portas ganharam mais espaço para caber inteiras.",
+  "notes": "Versão 6.11: seis jogos novos! Corre-Corre dos Bichos (pegue o ovo ou o filhote e corra para casa antes da mamãe alcançar, em 7 lugares: fazenda, selva, floresta, montanha, gelo, safári e dinossauros, com moedas e tênis para correr mais), Construtor da obra, Ovos de dinossauro, Bombeiro mirim, Esconde-esconde e Parquinho.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/MundoDoOliver.apk"
 }
