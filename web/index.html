@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 51, name: '6.16' }; -->
+<!-- const APP_VERSION = { code: 52, name: '6.17' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -413,6 +413,11 @@ button:active { transform: scale(.92); }
 .ch-wcard { display: grid; place-items: center; gap: 2px; padding: 10px; border-radius: 24px; box-shadow: 0 5px 0 rgba(0,0,0,.18); font-size: 21px; font-weight: 800; color: var(--ink); }
 .ch-wcard span { font-size: 58px; line-height: 1.1; }
 .ch-wcard small { font-size: 15px; }
+.ch-album { display: grid; gap: 10px; width: 100%; max-height: 62vh; overflow-y: auto; }
+.ch-arow { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 18px; }
+.ch-arow b { width: 130px; text-align: left; font-size: 18px; }
+.ch-arow i { font-style: normal; font-size: 40px; width: 56px; height: 56px; display: grid; place-items: center; border-radius: 14px; background: rgba(255,255,255,.7); }
+.ch-arow i.no { filter: brightness(0) opacity(.25); }
 .ch-wcard.locked { filter: grayscale(.85); opacity: .7; }
 .ch-shop { display: grid; gap: 10px; width: 100%; }
 .ch-item { display: flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 800; padding: 8px 16px; border-radius: 22px; background: #fff; box-shadow: 0 4px 0 var(--shadow); text-align: left; }
@@ -1062,8 +1067,9 @@ button:active { transform: scale(.92); }
 </section>
 <section id="g-chase" class="screen game" hidden>
   <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2 id="chTitle">Corre-Corre dos Bichos</h2><span class="score" id="chCoins">🪙 0</span><span class="score" id="chShoe">👣</span>
-    <button class="round" id="chMapBtn" aria-label="Escolher o lugar">🗺️</button><button class="round" id="chShopBtn" aria-label="Loja de tênis">🛒</button></div>
+    <button class="round" id="chAlbumBtn" aria-label="Álbum de filhotes">📒</button><button class="round" id="chMapBtn" aria-label="Escolher o lugar">🗺️</button><button class="round" id="chShopBtn" aria-label="Loja de tênis">🛒</button></div>
   <div class="play cv-play"><canvas id="chCv"></canvas></div>
+  <div class="over" id="chAlbum" hidden><div class="tray ch-tray"><h2>📒 Álbum de filhotes</h2><div class="ch-album" id="chAlbumList"></div><button class="pbtn ok" id="chAlbumClose">Voltar</button></div></div>
   <div class="over" id="chMap" hidden><div class="tray ch-tray"><h2>Onde vamos brincar?</h2><div class="ch-worlds" id="chWorlds"></div></div></div>
   <div class="over" id="chShopBox" hidden><div class="tray ch-tray"><h2>🛒 Loja de tênis</h2><div class="ch-shop" id="chShopList"></div><button class="pbtn ok" id="chShopClose">Voltar</button></div></div>
 </section>
@@ -1280,13 +1286,6 @@ button:active { transform: scale(.92); }
         <option value="small">Pequena · baixa 550 MB</option><option value="medium">Média · baixa 1,6 GB</option></select></label>
       <p class="pused" id="pAiInfo"></p>
       <div class="pbtns"><button class="pbtn ok" id="pAiGet" hidden>⬇️ Baixar a IA</button><button class="pbtn" id="pAiDel" hidden>🗑️ Apagar a IA</button></div>
-      <h3>🌐 IA pela internet (opcional)</h3>
-      <p class="pused">Com internet, o amigo usa o Claude, uma IA bem mais esperta, sem baixar nada; sem internet, volta para a IA do tablet ou para as falas prontas. O que a criança fala no Conversar é enviado para o servidor. Precisa do endereço e do código do servidor (veja app/ia-online/LEIAME.md).</p>
-      <label class="prow" for="pAiOnline">Usar a IA pela internet <input id="pAiOnline" type="checkbox"></label>
-      <label class="prow" for="pAiUrl">Endereço <input id="pAiUrl" type="url" autocomplete="off" placeholder="https://mundo-do-oliver-ia....workers.dev"></label>
-      <label class="prow" for="pAiKey">Código do app <input id="pAiKey" type="password" autocomplete="off"></label>
-      <div class="pbtns"><button class="pbtn" id="pAiTest">🧪 Testar</button></div>
-      <p class="pused" id="pAiOnInfo"></p>
     </div>
     <p class="pused" id="pVer"></p>
     <p class="pused" id="pUpdLog"></p>
@@ -4584,7 +4583,7 @@ function openParents() {
   $('#pFaceRow').hidden = !prefs.photo; $('#pFace').value = avatar.face === 'draw' ? 'draw' : 'photo';
   $('#pName').value = prefs.name; $('#pSound').checked = prefs.sound; $('#pColorsEn').checked = prefs.colorsEn; $('#pLimit').value = prefs.limit;
   $('#pUsed').textContent = `Usado hoje: ${minutes(usage.ms)} min` + (prefs.limit ? ` de ${prefs.limit} min` : '');
-  renderUpdate(); aiRender(); aiOnlineRender(); renderHideList();
+  renderUpdate(); aiRender(); renderHideList();
   $('#parents').hidden = false;
 }
 function savePrefs() { keep('oliver-prefs', prefs); }
@@ -5011,7 +5010,7 @@ const LEVELS = [
     L.stars(5, 9, 3); L.gift(10, 7); L.bricks(14, 7, 2); L.gift(16, 7); L.bricks(17, 7, 2); L.stars(14, 5, 5); L.gem(16, 3); L.enemy(22); L.stars(27, 8, 5);
     L.step(36, 1, 2); L.spring(40); L.stars(40, 5, 1); L.gem(40, 2); L.enemy(42); L.plat(44, 8, 4); L.stars(44, 7, 4); L.step(50, 1); L.step(51, 2); L.step(52, 3, 2); L.stars(52, 6, 2);
     L.check(56); L.enemy(65); L.gift(68, 7); L.enemy(72); L.bricks(76, 7, 5); L.stars(76, 5, 5); L.power(82, 9); L.plat(84, 8, 3); L.plat(89, 6, 3);
-    L.stars(89, 5, 3); L.gem(90, 3); L.enemy(93); L.step(103, 1); L.step(104, 2); L.step(105, 3); L.stars(108, 8, 3); L.pipe(32, 2, true); L.qblock(12, 7); L.flag(114);
+    L.stars(89, 5, 3); L.gem(90, 3); L.enemy(93); L.step(103, 1); L.step(104, 2); L.step(105, 3); L.stars(108, 8, 3); L.pipe(32, 2, true); L.qblock(12, 7); L.secret(62); L.flag(114);
   } },
   { name: 'Praia', emoji: '🏖️', sky: ['#ffb36b', '#ffeccd'], hill: '#ffd59a', ground: '#d9a45c', top: '#f5d38a', sun: '#fff3b0', len: 130, build(L) {
     L.ground(0, 21); L.ground(24, 40); L.mover(40, 8, 3, 3); L.ground(46, 71); L.ground(74, 101); L.ground(104, 130);
@@ -5092,6 +5091,25 @@ const LEVELS = [
     L.stars(4, 9, 3); L.wings(10, 8); L.bat(16, 6); L.stars(21, 7, 4); L.gem(23, 4); L.bat(30, 5); L.bricks(32, 7, 3); L.gift(33, 7); L.stars(36, 8, 3); L.stars(44, 5, 4);
     L.check(52); L.bat(56, 6); L.hedge(60); L.spring(64); L.stars(64, 3, 1); L.gem(64, 1); L.wings(74, 8); L.magnet(76, 8); L.stars(78, 6, 5); L.bat(82, 4); L.stars(90, 4, 4);
     L.power(100, 9); L.hedge(104); L.bat(108, 6); L.stars(110, 8, 3); L.gem(120, 4); L.stars(127, 8, 3); L.boss(130, 'dragon'); L.deco(137, 'q'); L.flag(144);
+  } },
+  { name: 'Selva', emoji: '🐒', sky: ['#7fd6a8', '#e8fff1'], hill: '#4f9f5d', ground: '#6b4a2f', top: '#2e8b3d', sun: '#fff1a8', len: 130, build(L) {
+    L.ground(0, 22); L.ground(25, 48); L.mover(48, 8, 3, 4); L.ground(55, 80); L.ground(84, 104); L.ground(108, 130);
+    for (const x of [5, 28, 58, 88, 112]) L.deco(x, 'T');
+    L.stars(4, 9, 3); L.bee(12, 7); L.spring(16); L.stars(16, 5, 1); L.gem(16, 2); L.frog(20); L.bricks(27, 7, 4); L.gift(28, 7); L.stars(27, 5, 4); L.bee(36, 6);
+    L.secret(40); L.stars(50, 6, 3); L.frog(60); L.check(63); L.plat(66, 8, 3); L.plat(71, 6, 3); L.stars(71, 5, 3); L.gem(72, 4); L.bee(76, 5);
+    L.power(86, 9); L.frog(90); L.hedge(96); L.gift(99, 7); L.step(110, 1); L.step(111, 2); L.step(112, 3); L.gem(112, 3); L.stars(115, 8, 3); L.flag(124);
+  } },
+  { name: 'Polo Norte', emoji: '🐧', ice: true, sky: ['#b8d4ff', '#f3f8ff'], hill: '#e3eef8', ground: '#7d93ad', top: '#ffffff', sun: '#fff9d6', len: 130, build(L) {
+    L.ground(0, 24); L.ground(27, 46); L.ground(50, 78); L.ground(82, 104); L.ground(107, 130);
+    L.stars(4, 9, 4); L.penguin(12); L.bricks(15, 7, 3); L.gift(16, 7); L.gem(16, 3); L.penguin(21); L.spring(30); L.stars(30, 4, 1); L.penguin(36);
+    L.plat(40, 8, 3); L.stars(40, 7, 3); L.check(53); L.secret(56); L.penguin(64); L.gift(68, 7); L.gift(70, 7); L.power(74, 9);
+    L.plat(84, 8, 3); L.plat(89, 6, 3); L.stars(89, 5, 3); L.gem(90, 3); L.penguin(96); L.enemy(100); L.step(112, 1); L.step(113, 2); L.step(114, 3, 2); L.gem(115, 2); L.stars(118, 8, 3); L.flag(124);
+  } },
+  { name: 'Deserto', emoji: '🌵', sky: ['#ffcf7a', '#fff3d6'], hill: '#f0c26b', ground: '#b9783f', top: '#e8b96a', sun: '#ffe066', len: 130, build(L) {
+    L.ground(0, 26); L.ground(29, 52); L.ground(56, 82); L.ground(85, 108); L.ground(111, 130);
+    L.stars(5, 9, 3); L.crab(12); L.hedge(18); L.gift(21, 7); L.bricks(22, 7, 2); L.gem(22, 3); L.stars(26, 8, 3); L.spring(33); L.stars(33, 4, 1);
+    L.crab(38); L.step(43, 1, 2); L.step(45, 2, 2); L.stars(45, 7, 2); L.hedge(49); L.check(59); L.secret(62, 3); L.crab(70); L.mover(82, 8, 3, 3);
+    L.gift(88, 7); L.gem(89, 3); L.power(92, 9); L.hedge(97); L.crab(102); L.step(114, 1); L.step(115, 2); L.step(116, 3); L.gem(116, 3); L.stars(118, 8, 3); L.flag(124);
   } }
 ];
 function buildLevel(spec) {
@@ -5111,6 +5129,12 @@ function buildLevel(spec) {
     // cano verde de 2 colunas; com plantinha, ela sobe e desce de dentro dele
     pipe: (x, h, plant) => { for (let i = 0; i < 2; i++) for (let y = 11 - h; y < 11; y++) set(x + i, y, 'p'); if (plant) plants.push({ x: x + .55, top: 11 - h }); },
     qblock: (x, y) => set(x, y, '!'),
+    secret: (x, h = 2) => {
+      for (let i = 0; i < 2; i++) for (let y = 11 - h; y < 11; y++) set(x + i, y, 'p');
+      spec.secretAt = x; spec.secretH = h;
+      for (let i = 0; i < 16; i++) { set(x + 3 + i, 3, '='); set(x + 3 + i, 2, 'o'); }
+      set(x + 19, 2, 'R');
+    },
     crab: x => set(x, 10, 'Z'), frog: x => set(x, 10, 'N'), hedge: x => set(x, 10, 'H'), penguin: x => set(x, 10, 'I'),
     bat: (x, y) => set(x, y, 'V'), jelly: (x, y) => set(x, y, 'O'), wings: (x, y) => set(x, y, 'A'), magnet: (x, y) => set(x, y, 'm'),
     check: x => set(x, 10, 'C'), flag: x => set(x, 10, 'F'), deco: (x, ch) => set(x, 10, ch)
@@ -5187,7 +5211,14 @@ function sfxAdv(kind) {
     else if (kind === 'woof') { tone('square', 420, 260, t, .09, .05, 1500); tone('square', 420, 260, t + .14, .09, .05, 1500); }
   } catch (e) {}
 }
-function updateAdvScore() { $('#advScore').textContent = adv ? `⭐ ${adv.stars}   💎 ${adv.gems.filter(Boolean).length}/3` : ''; }
+function updateAdvScore() {
+  if (adv && adv.stars >= (adv.nextShield || 50)) { adv.nextShield = (adv.nextShield || 50) + 50; if ((adv.p.shield || 0) < 3) { adv.p.shield = (adv.p.shield || 0) + 1; sfxAdv('power'); say('Ganhou um escudo! Ele protege de uma batida.'); } }
+  $('#advScore').textContent = adv ? `⭐ ${adv.stars}   💎 ${adv.gems.filter(Boolean).length}/3${adv.p.shield ? '   ' + '🛡️'.repeat(adv.p.shield) : ''}` : '';
+}
+function advShield() {
+  const p = adv.p; if (!p.shield) return false;
+  p.shield--; p.inv = 1.3; sfxAdv('power'); updateAdvScore(); say('O escudo protegeu!'); return true;
+}
 function resizeAdv() {
   const cv = $('#advCv'), r = cv.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2);
   cv.width = Math.max(1, Math.round(r.width * d)); cv.height = Math.max(1, Math.round(r.height * d));
@@ -5195,7 +5226,8 @@ function resizeAdv() {
 addEventListener('resize', () => { if (shown('g-adventure')) resizeAdv(); });
 
 /* mapa das fases: as fases abrem em sequência; cada uma guarda as estrelas e os diamantes achados */
-const MAP_POS = [[12, 82], [37, 82], [62, 82], [87, 82], [87, 52], [62, 52], [37, 52], [12, 52], [12, 22], [37, 22], [62, 22], [87, 22]];
+// caminho em zigue-zague: 5 fases por linha, de baixo para cima
+const MAP_POS = Array.from({ length: 15 }, (_, i) => { const r = Math.floor(i / 5), c = i % 5; return [10 + (r % 2 ? 4 - c : c) * 20, 82 - r * 30]; });
 function openAdvMap() {
   show('advMap'); stopMusic();
   const box = $('#mapNodes'); box.innerHTML = '';
@@ -5344,6 +5376,7 @@ function advStep(dt) {
       e.y += (target - e.y) * Math.min(1, dt * 4);
       if (e.y > e.top - .45 || !overlaps(p, e) || A.won) continue;
       if (p.power > 0) { e.dead = .5; A.stars++; updateAdvScore(); sfxAdv('stomp'); }
+      else if (p.inv <= 0 && advShield()) { /* o escudo segurou a batida */ }
       else if (p.inv <= 0) { p.vx = (p.x < e.x ? -1 : 1) * 7; p.vy = -8; p.inv = 1.3; sfxAdv('hurt'); if (!A.told.plant) { A.told.plant = true; say('A plantinha não gosta que pisem nela! Use a flor de fogo.'); } }
       continue;
     }
@@ -5366,7 +5399,7 @@ function advStep(dt) {
     if (!overlaps(p, e) || A.won) continue;
     if (p.power > 0 || (!e.spiky && (p.big > 0 || (p.vy > 0 && p.y + p.h - e.y < .55)))) {
       e.dead = .5; if (p.power <= 0) p.vy = spec.swim ? -6 : -11; A.stars++; updateAdvScore(); sfxAdv('stomp');
-    } else if (p.inv <= 0) { p.vx = (p.x < e.x ? -1 : 1) * 7; p.vy = -7; p.inv = 1.3; sfxAdv('hurt'); say('Ops!'); }
+    } else if (p.inv <= 0 && !advShield()) { p.vx = (p.x < e.x ? -1 : 1) * 7; p.vy = -7; p.inv = 1.3; sfxAdv('hurt'); say('Ops!'); }
   }
   A.enemies = A.enemies.filter(e => !e.gone);
   for (const c of A.checks) if (p.x >= c && A.spawn.x < c) { A.spawn = { x: c, y: 11 - 1.45 }; blip(880, .2); }
@@ -5382,6 +5415,10 @@ function advStep(dt) {
     if (boss) { p.x = A.flag.x - .4 - p.w; p.vx = -4; if (A.t - (A.told.flag || -9) > 4) { A.told.flag = A.t; say(`Primeiro faça cócegas ${BOSS_ART[boss.kind] === 'a' ? 'na' : 'no'} ${BOSS_NAME[boss.kind]}!`); } }
     else winLevel();
   }
+  const sx = spec.secretAt;
+  if (sx != null && !A.secretDone && p.ground && Math.abs(p.x + p.w / 2 - (sx + 1)) < .9 && Math.abs(p.y + p.h - (11 - spec.secretH)) < .25) {
+    if ((A.secretT = (A.secretT || 0) + dt) > .6) { A.secretDone = true; Object.assign(p, { x: sx + 3.5, y: 0, vx: 0, vy: 0 }); sfxAdv('power'); say('Uau! Uma nuvem secreta cheia de estrelas!'); }
+  } else A.secretT = 0;
   if (p.y > ROWS + 2) { Object.assign(p, { ...A.spawn, vx: 0, vy: 0, inv: 1 }); sfxAdv('hurt'); say('Ops! De novo!'); }
 }
 const BOSS_NAME = { mixer: 'Betoneirona', rex: 'Rex gigante', dragon: 'Dragão' }, BOSS_ART = { mixer: 'a', rex: 'o', dragon: 'o' };
@@ -5574,6 +5611,7 @@ function advDraw() {
   advBackground(x, W2, H2, T, camX, spec, A.t);
   x.lineJoin = x.lineCap = 'round'; x.strokeStyle = '#2a1d12'; x.lineWidth = Math.max(2, T * .06);
   const x0 = Math.max(0, Math.floor(camX) - 3), x1 = Math.min(spec.len - 1, Math.ceil(camX + view));
+  if (spec.secretAt != null && !A.secretDone) { const sx = (spec.secretAt + 1 - camX) * T, sy = (11 - spec.secretH - .9 + Math.sin(A.t * 4) * .15) * T; x.font = `${T * .8}px ${EMOJI}`; x.textAlign = 'center'; x.fillText('✨', sx, sy); }
   // enfeites atrás de tudo
   for (let tx = x0; tx <= x1; tx++) {
     const c = A.g[10][tx], sx = (tx - camX) * T, gy = 11 * T;
@@ -10104,24 +10142,13 @@ const AI_MODELS = {
 };
 const CHAT_BAD = / (mort|matar|mata |sangu|arma|tiro|faca|sexo|pelad|drog|cervej|vinho|cigarr|alcool|endereco|telefone|senha|idiota|burr|odio|diabo|inferno|suicid|beijo na boca|namor)/;
 const chatAiOn = () => !!(prefs.aiModel && prefs.aiReady === prefs.aiModel && plug('LocalAI'));
-const chatOnlineOn = () => !!(prefs.aiOnline && prefs.aiUrl && prefs.aiKey && navigator.onLine !== false);
-// IA pela internet: o servidor (app/ia-online) guarda a chave e chama o Claude; sem resposta em 12 s, segue sem ela
-async function chatOnline(text) {
-  const f = chatF(), ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 12000);
-  try {
-    const r = await fetch(prefs.aiUrl, { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', 'x-app-key': prefs.aiKey },
-      body: JSON.stringify({ name: prefs.name, friend: [f[1], f[3], f[2]], history: chat.hist.slice(-6), text }) });
-    const j = await r.json().catch(() => ({}));
-    return chatClean(j.text, 3);
-  } catch (e) { return ''; } finally { clearTimeout(tm); }
-}
 // tira o que não é para criança e corta em duas frases curtas
-function chatClean(t, n = 2) {
+function chatClean(t) {
   t = String(t || '').split('<|')[0].replace(/[*#_`]/g, '').replace(/\s+/g, ' ').trim();
   if (!t || /[Ѐ-ӿ　-鿿가-힯]/.test(t) || CHAT_BAD.test(chatNorm(t))) return '';
   // resposta em inglês ou espanhol costuma vir sem sentido: melhor a resposta pronta
   if ((chatNorm(t).match(/ (the|you|and|is|are|what|hola|eres|muy|que tal) /g) || []).length >= 2) return '';
-  return (t.match(/[^.!?]+[.!?]*/g) || [t]).slice(0, n).map(x => x.trim()).join(' ').slice(0, 300).trim();
+  return (t.match(/[^.!?]+[.!?]*/g) || [t]).slice(0, 2).join(' ').slice(0, 220).trim();
 }
 async function chatAi(text) {
   const m = AI_MODELS[prefs.aiModel], f = chatF();
@@ -10164,10 +10191,10 @@ async function chatSend(text) {
   if (!text) { chatSay({ t: pick(['Não ouvi direitinho. Fala de novo, bem pertinho do tablet?', 'Hmm? Pode falar mais alto?']) }); return; }
   chat.busy = true; $('#chatMic').disabled = true;
   let r = chatScript(text);
-  if (r.fallback && (chatOnlineOn() || chatAiOn())) {
+  if (r.fallback && chatAiOn()) {
     const dots = chatMsg('friend dots', '...'); $('#chatFriend').classList.add('think');
     const slow = setTimeout(() => say(pick(['Hmm, deixa eu pensar...', 'Hmm... pensando!'])), 2500);
-    const t = (chatOnlineOn() ? await chatOnline(text) : '') || (chatAiOn() ? await chatAi(text) : ''); clearTimeout(slow); dots.remove(); $('#chatFriend').classList.remove('think');
+    const t = await chatAi(text); clearTimeout(slow); dots.remove(); $('#chatFriend').classList.remove('think');
     if (t) r = { t, chips: CHAT_DEFAULT };
   }
   chat.hist.push(['user', text], ['assistant', r.t]); if (chat.hist.length > 12) chat.hist.splice(0, 2);
@@ -10248,23 +10275,6 @@ async function aiRender() {
     : `Para usar a IA ${m.label}, baixe uma vez (${m.mb >= 1000 ? (m.mb / 1000).toLocaleString('pt-BR') + ' GB' : m.mb + ' MB'}; use o Wi-Fi). Precisa de um tablet com ${m.ram} GB de memória ou mais. ${ram}${free}${weak}`;
   get.hidden = ready || aiPct >= 0; del.hidden = !(st0.exists || prefs.aiReady) || aiPct >= 0;
 }
-function aiOnlineRender() {
-  $('#pAiOnline').checked = !!prefs.aiOnline; $('#pAiUrl').value = prefs.aiUrl || ''; $('#pAiKey').value = prefs.aiKey || '';
-  $('#pAiOnInfo').textContent = prefs.aiOnline ? (prefs.aiUrl && prefs.aiKey ? 'Ligada: com internet, o amigo responde com o Claude.' : 'Falta o endereço ou o código do servidor.') : '';
-}
-$('#pAiOnline').onchange = e => { prefs.aiOnline = e.target.checked; savePrefs(); aiOnlineRender(); blip(600); };
-$('#pAiUrl').onchange = e => { prefs.aiUrl = e.target.value.trim(); savePrefs(); aiOnlineRender(); };
-$('#pAiKey').onchange = e => { prefs.aiKey = e.target.value.trim(); savePrefs(); aiOnlineRender(); };
-$('#pAiTest').onclick = async () => {
-  prefs.aiUrl = $('#pAiUrl').value.trim(); prefs.aiKey = $('#pAiKey').value.trim(); savePrefs();
-  const info = $('#pAiOnInfo'); if (!prefs.aiUrl || !prefs.aiKey) { info.textContent = 'Preencha o endereço e o código.'; return; }
-  info.textContent = 'Testando...';
-  try {
-    const r = await fetch(prefs.aiUrl, { method: 'POST', headers: { 'content-type': 'application/json', 'x-app-key': prefs.aiKey }, body: JSON.stringify({ name: prefs.name, friend: ['Lulu', 'corujinha', 'a'], history: [], text: 'Oi! Qual é o seu bicho favorito?' }) });
-    const j = await r.json().catch(() => ({}));
-    info.textContent = j.text ? `Funcionou ✔️ Resposta: "${j.text}"` : r.status === 401 ? 'O código do app está errado.' : j.limit ? 'Chegou no limite de mensagens de hoje.' : `Não funcionou (${j.error || 'erro ' + r.status}).`;
-  } catch (e) { info.textContent = 'Não consegui falar com o servidor. Confira o endereço e a internet.'; }
-};
 $('#pAiModel').onchange = e => { prefs.aiModel = e.target.value; savePrefs(); blip(600); aiRender(); };
 $('#pAiGet').onclick = async () => {
   const U = plug('Updater'), A = plug('LocalAI'), key = prefs.aiModel, m = AI_MODELS[key];
@@ -11032,6 +11042,11 @@ const CH_W = 1600, CH_H = 1000, CH_FARM = { x: 40, y: 290, w: 380, h: 420 };
 const CH_NESTS = [[700, 210, 95, 5], [760, 800, 130, 10], [1200, 840, 160, 15], [1150, 470, 178, 20], [1440, 250, 228, 40]];
 const CH_SHOES = [['👣', 'Pé no chão', 0, 150], ['👟', 'Tênis', 20, 190], ['⚡', 'Tênis relâmpago', 60, 235], ['🛼', 'Patins', 150, 290]];
 const CH_CARRY = .92;
+const CH_BUSHES = [[560, 560], [980, 330], [1000, 690]];
+const CH_BUSH_E = { gelo: '⛄', selva: '🌿', safari: '🌳', montanha: '🌲', floresta: '🌲', dinos: '🌿' };
+const chHidden = k => CH_BUSHES.some(([bx, by]) => Math.hypot(k.x - bx, k.y - by) < 58);
+const CH_DOG = 30;   // preço do cachorrinho ajudante
+const chAlbum = id => (chSave.album || (chSave.album = {}))[id] || (chSave.album[id] = []);
 const chSave = load('oliver-corre', { world: '', w: {}, open: ['fazenda'] });
 const chW = id => chSave.w[id] || (chSave.w[id] = { coins: 0, shoe: 0, babies: [], done: false });
 const cw = () => chW(ch.world);
@@ -11054,7 +11069,7 @@ function chMap() {
   const ids = Object.keys(CH_WORLDS);
   ids.forEach((id, i) => {
     const w = CH_WORLDS[id], open = chSave.open.includes(id), my = chSave.w[id], n = my ? my.babies.length : 0;
-    const info = open ? `${my ? CH_SHOES[my.shoe][0] : ''} ${n ? '🐣 ' + n : ''}` : '🔒';
+    const info = open ? `${my ? CH_SHOES[my.shoe][0] : ''} 📒 ${chAlbum(id).length}/5` : '🔒';
     const b = btn(box, 'ch-wcard' + (open ? '' : ' locked'), `<span>${w.icon}</span><b>${w.name}</b><small>${info.trim() || '&nbsp;'}</small>`, w.name, () => {
       if (!open) { const prev = CH_WORLDS[ids[i - 1]]; blip(200, .2); say(`Para abrir, leve para casa ${prev.animals[4][2]}, lá na ${prev.name}!`); return; }
       blip(620); $('#chMap').hidden = true;
@@ -11067,7 +11082,7 @@ function chMap() {
 }
 function chWorld(id) {
   const W = CH_WORLDS[id]; chSave.world = id; keep('oliver-corre', chSave);
-  Object.assign(ch, { world: id, bg: null, fx: [], flies: [], eggs: [], run: true,
+  Object.assign(ch, { world: id, bg: null, dog: null, fx: [], flies: [], eggs: [], run: true,
     kid: { x: CH_FARM.x + CH_FARM.w / 2, y: CH_FARM.y + CH_FARM.h / 2 + 60, tx: null, ty: null, carry: null, inv: 0, face: 1, walk: 0 },
     animals: W.animals.map(([emo, name, item, baby, egg], i) => { const [nx, ny, speed, reward] = CH_NESTS[i]; return { emo, name, item, baby, egg, nx, ny, speed, reward, x: nx - 56, y: ny + 6, has: true, state: 'home', t: 0, face: -1, refill: 0, big: i >= 3 }; }),
     babies: chW(id).babies.map(([emo, x, y]) => ({ emo, x, y, vx: 0, vy: 0, coinT: 3 + Math.random() * 5, turn: 0 })) });
@@ -11091,29 +11106,38 @@ function chStep(dt) {
   }
   k.x = Math.max(30, Math.min(CH_W - 30, k.x)); k.y = Math.max(110, Math.min(CH_H - 20, k.y));
   for (const a of ch.animals) {
-    if (!a.has && a.state === 'home') { a.refill -= dt; if (a.refill <= 0) { a.has = true; chirp(900, .08); } }
+    if (!a.has && a.state === 'home') { a.refill -= dt; if (a.refill <= 0) { a.has = true; a.gold = Math.random() < .15; chirp(a.gold ? 1300 : 900, .08); } }
     if (a.has && !k.carry && k.inv <= 0 && Math.hypot(k.x - a.nx, k.y - a.ny) < 70) {   // pegou!
-      a.has = false; k.carry = a; a.state = 'alert'; a.t = .7; chirp(700, .12); chirp(1000, .15);
-      say(`Pegou ${a.item}! Corre para casa!`);
+      a.has = false; k.carry = a; k.gold = a.gold; a.gold = false; a.state = 'alert'; a.t = .7; chirp(700, .12); chirp(1000, .15);
+      say(k.gold ? `Uau, brilhante! Vale muitas moedas! Corre para casa!` : `Pegou ${a.item}! Corre para casa!`);
     }
     if (a.state === 'alert') { a.t -= dt; if (a.t <= 0) a.state = 'chase'; }
     else if (a.state === 'chase') {
       if (k.carry !== a || chInHome(k.x, k.y)) { a.state = 'back'; continue; }
+      if (chHidden(k)) { a.state = 'lost'; a.t = 2.2; chirp(500, .1, 'sine'); continue; }   // escondeu na moita
+      if (ch.dog && ch.dog.cd <= 0 && Math.hypot(k.x - a.x, k.y - a.y) < 170) {   // o cachorrinho late e a mamãe para
+        a.state = 'stun'; a.t = 2; ch.dog.cd = 7; ch.dog.bark = .6; tone('square', 520, 380, audioOn().currentTime, .12, .08); tone('square', 560, 400, audioOn().currentTime + .18, .12, .08); continue;
+      }
       const dx = k.x - a.x, dy = k.y - a.y, d = Math.hypot(dx, dy);
       a.x += dx / d * a.speed * dt; a.y += dy / d * a.speed * dt; a.face = dx > 0 ? 1 : -1;
       if (chInHome(a.x, a.y, 20)) { a.state = 'back'; continue; }   // bicho não entra na casa
       if (d < 44) {
-        k.carry = null; k.inv = 1.4; a.state = 'back'; ch.flies.push({ a, fx: k.x, fy: k.y - 110, t: 0 }); chirp(220, .3, 'sawtooth', .07);
+        k.carry = null; k.inv = 1.4; a.state = 'back'; ch.flies.push({ a, fx: k.x, fy: k.y - 110, t: 0, gold: k.gold }); k.gold = false; chirp(220, .3, 'sawtooth', .07);
         const N = a.name[0].toUpperCase() + a.name.slice(1);
         say(chNeed(a) > cw().shoe ? `Ops! ${N} pegou de volta! Esse bicho corre mais que você. Compre um tênis na loja!` : `Ops! ${N} pegou de volta! Tenta de novo!`);
       }
+    } else if (a.state === 'stun' || a.state === 'lost') {   // parada pelo latido, ou procurando a criança escondida
+      a.t -= dt;
+      if (a.t <= 0) a.state = k.carry === a && !chInHome(k.x, k.y) && !chHidden(k) ? 'chase' : 'back';
     } else if (a.state === 'back') {
       const hx = a.nx - 56, hy = a.ny + 6, dx = hx - a.x, dy = hy - a.y, d = Math.hypot(dx, dy);
       if (d < 4) { a.state = 'home'; a.face = -1; } else { const v = Math.min(d, a.speed * .6 * dt); a.x += dx / d * v; a.y += dy / d * v; a.face = dx > 0 ? 1 : -1; }
     }
   }
   if (k.carry && chInHome(k.x, k.y)) {   // chegou em casa
-    const a = k.carry; k.carry = null; a.refill = 4; cw().coins += a.reward; chHud();
+    const a = k.carry, gold = k.gold, got = a.reward * (gold ? 5 : 1); k.carry = null; k.gold = false; a.refill = 4; cw().coins += got; chHud();
+    const alb = chAlbum(ch.world), fresh = !alb.includes(a.baby);
+    if (fresh) { alb.push(a.baby); keep('oliver-corre', chSave); setTimeout(() => { say(alb.length >= 5 ? `Você completou o álbum ${CH_WORLDS[ch.world].name === 'Gelo' ? 'do' : 'da'} ${CH_WORLDS[ch.world].name}!` : 'Figurinha nova no álbum!'); if (alb.length >= 5) celebrate(false); }, 3200); }
     const ids = Object.keys(CH_WORLDS), nx = ids[ids.indexOf(ch.world) + 1];
     if (a === ch.animals[4] && nx && !chSave.open.includes(nx)) {   // pegou o bicho mais rápido: abre o próximo lugar
       chSave.open.push(nx); cw().done = true; keep('oliver-corre', chSave);
@@ -11122,9 +11146,9 @@ function chStep(dt) {
     const ex = CH_FARM.x + 60 + Math.random() * (CH_FARM.w - 120), ey = CH_FARM.y + 190 + Math.random() * (CH_FARM.h - 230);
     if (a.egg) ch.eggs.push({ a, x: ex, y: ey, t: 7 }); else ch.babies.push({ emo: a.baby, x: ex, y: ey, vx: 0, vy: 0, coinT: 4, turn: 0 });
     confettiAt(ch.fx, k.x, k.y - 60); [523, 659, 784, 1047].forEach((f, i) => blip(f, .18, i * .11));
-    say(`Eba! Agora ${a.item} mora com você! Ganhou ${a.reward} moedas!`); chKeep();
+    say(`Eba! Agora ${a.item} mora com você! Ganhou ${got} moedas!`); chKeep();
   }
-  for (const f of ch.flies) { f.t += dt * 1.6; if (f.t >= 1) { f.a.has = true; f.done = true; } }
+  for (const f of ch.flies) { f.t += dt * 1.6; if (f.t >= 1) { f.a.has = true; f.a.gold = !!f.gold; f.done = true; } }
   ch.flies = ch.flies.filter(f => !f.done);
   for (const e of ch.eggs) if ((e.t -= dt) <= 0) { ch.babies.push({ emo: e.a.baby, x: e.x, y: e.y, vx: 0, vy: 0, coinT: 4, turn: 0 }); confettiAt(ch.fx, e.x, e.y, 14); chirp(1200, .1); say('Nasceu! Que fofo!'); e.done = true; chKeep(); }
   ch.eggs = ch.eggs.filter(e => !e.done);
@@ -11133,6 +11157,11 @@ function chStep(dt) {
     b.x = Math.max(CH_FARM.x + 30, Math.min(CH_FARM.x + CH_FARM.w - 30, b.x + b.vx * dt)); b.y = Math.max(CH_FARM.y + 170, Math.min(CH_FARM.y + CH_FARM.h - 30, b.y + b.vy * dt));
     if ((b.coinT -= dt) <= 0) { b.coinT = 6 + Math.random() * 3; ch.fx.push({ coin: true, x: b.x, y: b.y - 30, t: 1.1, vx: 0, vy: -50 }); }
   }
+  if (cw().dog) {
+    const d = ch.dog || (ch.dog = { x: k.x - 60, y: k.y, cd: 0, bark: 0 }), tx = k.x - k.face * 60, ty = k.y + 10, dd = Math.hypot(tx - d.x, ty - d.y);
+    if (dd > 5) { const v = Math.min(dd, (CH_SHOES[cw().shoe][3] + 40) * dt); d.x += (tx - d.x) / dd * v; d.y += (ty - d.y) / dd * v; }
+    d.cd -= dt; d.bark -= dt;
+  } else ch.dog = null;
   for (const f of ch.fx) if (f.coin && f.t - dt <= 0 && !f.paid) { f.paid = true; cw().coins++; chHud(); chirp(1400, .05, 'square', .04); }
 }
 // cenário parado: desenhado uma vez por mundo e por tamanho de tela
@@ -11170,7 +11199,10 @@ function chEgg(x, px, py, r, color, wob = 0) {
   if (color !== '#fffdf6' && color !== '#ffffff') { x.fillStyle = 'rgba(80,50,20,.28)'; for (const [a, b] of [[-.3, -.3], [.3, .1], [-.1, .45]]) { x.beginPath(); x.arc(a * r, b * r, r * .14, 0, TAU); x.fill(); } }
   x.restore();
 }
-const chItem = (x, a, px, py, size) => a.egg ? chEgg(x, px, py, size * .45, a.egg) : emoDraw(x, a.baby, px, py, size * .85, -1);
+function chItem(x, a, px, py, size, gold) {
+  if (a.egg) chEgg(x, px, py, size * .45, gold ? '#ffd54f' : a.egg); else emoDraw(x, a.baby, px, py, size * .85, -1);
+  if (gold) for (let i = 0; i < 3; i++) { const an = ch.t * 3 + i * 2.1; emoDraw(x, '✨', px + Math.cos(an) * size * .6, py + Math.sin(an) * size * .5, size * .4); }
+}
 function chaseLoop(t) {
   if (!alive('chase')) { ch.raf = 0; return; }
   const dt = Math.min(.05, (t - ch.last) / 1000 || 0); ch.last = t;
@@ -11183,11 +11215,13 @@ function chaseLoop(t) {
   for (const e of ch.eggs) chEgg(x, e.x, e.y, 22, e.a.egg, e.t < 2 ? Math.sin(ch.t * 30) * .25 : 0);
   const list = [...ch.babies.map(b => ({ y: b.y, f: () => emoDraw(x, b.emo, b.x, b.y - 18, 44, b.vx > 0 ? -1 : 1) })),
     ...ch.animals.map(a => ({ y: a.y, f: () => {
-      if (a.has) chItem(x, a, a.nx, a.ny - 6, 52);
+      if (a.has) chItem(x, a, a.nx, a.ny - 6, 52, a.gold);
       const big = a.big ? 108 : 80, hop = a.state === 'chase' ? Math.abs(Math.sin(ch.t * 14)) * 8 : 0;
       emoDraw(x, a.emo, a.x, a.y - big * .38 - hop, big, a.face < 0 ? 1 : -1);
       if (a.state === 'home' && a.has) { x.font = '800 26px sans-serif'; x.fillStyle = 'rgba(58,36,20,.55)'; x.textAlign = 'center'; x.fillText('z', a.x + 30, a.y - big * .7 - Math.sin(ch.t * 2) * 6); }
       if (a.state === 'alert') emoDraw(x, '❗', a.x, a.y - big - 8, 46);
+      if (a.state === 'stun') emoDraw(x, '💫', a.x, a.y - big - 8 + Math.sin(ch.t * 8) * 4, 46);
+      if (a.state === 'lost') emoDraw(x, '❓', a.x, a.y - big - 8, 46, Math.sin(ch.t * 6) > 0 ? 1 : -1);
       const need = chNeed(a);
       if (need > cw().shoe && a.state === 'home') {   // plaquinha com o tênis que falta
         x.fillStyle = '#fff8ea'; x.beginPath(); x.roundRect(a.nx - 34, a.ny - 122, 68, 52, 14); x.fill(); x.strokeStyle = INK; x.lineWidth = 3; x.stroke();
@@ -11196,12 +11230,14 @@ function chaseLoop(t) {
     } })),
     { y: ch.kid.y, f: () => {
       const k = ch.kid, s = .62, bob = Math.abs(Math.sin(k.walk * 12)) * 5;
-      x.save(); if (k.inv > 0 && Math.floor(ch.t * 12) % 2) x.globalAlpha = .45;
+      x.save(); if ((k.inv > 0 && Math.floor(ch.t * 12) % 2) || chHidden(k)) x.globalAlpha = .45;
       drawAvatar(x, k.x - 50 * s, k.y - 150 * s - bob, s, k.face, k.tx !== null ? k.walk * 14 : 0, false, k.carry ? 'cheer' : '');
-      x.restore(); if (k.carry) chItem(x, k.carry, k.x, k.y - 118 - bob, 54);
-    } }];
+      x.restore(); if (k.carry) chItem(x, k.carry, k.x, k.y - 118 - bob, 54, k.gold);
+    } },
+    ...CH_BUSHES.map(([bx, by]) => ({ y: by + 34, f: () => emoDraw(x, CH_BUSH_E[ch.world] || '🌳', bx, by - 10, 120) })),
+    ...(ch.dog ? [{ y: ch.dog.y, f: () => { const d = ch.dog; emoDraw(x, '🐶', d.x, d.y - 26 - (d.bark > 0 ? Math.abs(Math.sin(ch.t * 20)) * 10 : 0), 58, ch.kid.face > 0 ? -1 : 1); if (d.bark > 0) { x.font = '800 30px sans-serif'; x.fillStyle = INK; x.textAlign = 'center'; x.fillText('Au au!', d.x, d.y - 70); } } }] : [])];
   list.sort((p, q) => p.y - q.y).forEach(o => o.f());
-  for (const f of ch.flies) { const u = f.t; chItem(x, f.a, f.fx + (f.a.nx - f.fx) * u, f.fy + (f.a.ny - f.fy) * u - Math.sin(u * Math.PI) * 140, 52); }
+  for (const f of ch.flies) { const u = f.t; chItem(x, f.a, f.fx + (f.a.nx - f.fx) * u, f.fy + (f.a.ny - f.fy) * u - Math.sin(u * Math.PI) * 140, 52, f.gold); }
   for (const f of ch.fx) if (f.coin) { f.t -= dt; f.y += f.vy * dt; emoDraw(x, '🪙', f.x, f.y, 34); }
   ch.fx = ch.fx.filter(f => !f.coin || f.t > 0);
   confettiDraw(x, ch.fx.filter(f => !f.coin), dt); ch.fx = ch.fx.filter(f => f.coin || f.t > 0);
@@ -11220,11 +11256,26 @@ function chShop() {
       my.coins -= price; my.shoe = lvl; keep('oliver-corre', chSave); chHud(); chShop(); celebrate(false); say(`Comprou ${name}! Agora você corre mais rápido!`);
     });
   });
+  const my = cw();
+  btn(list, 'ch-item' + (my.dog ? ' have' : my.coins < CH_DOG ? ' cant' : ''), `<b>🐶</b><span>Cachorrinho ajudante</span>${my.dog ? '✔️' : '🪙 ' + CH_DOG}`, 'Cachorrinho ajudante', () => {
+    if (my.dog) return;
+    if (my.coins < CH_DOG) { say(`Faltam ${CH_DOG - my.coins} moedas para o cachorrinho.`); return; }
+    my.coins -= CH_DOG; my.dog = true; keep('oliver-corre', chSave); chHud(); chShop(); celebrate(false); say('Au au! O cachorrinho vai latir para a mamãe bicho parar!');
+  });
   $('#chShopBox').hidden = false;
 }
 $('#chShopBtn').onclick = () => { blip(600); chShop(); };
 $('#chShopClose').onclick = () => { $('#chShopBox').hidden = true; ch.run = $('#chMap').hidden; };
 $('#chMapBtn').onclick = () => { blip(600); chMap(); };
+$('#chAlbumBtn').onclick = () => {
+  blip(600); const wasRun = ch.run; ch.run = false; const box = $('#chAlbumList'); box.innerHTML = '';
+  for (const [id, w] of Object.entries(CH_WORLDS)) {
+    const got = chAlbum(id), row = document.createElement('div'); row.className = 'ch-arow'; row.style.background = w.ground;
+    row.innerHTML = `<b>${w.icon} ${w.name}</b>` + w.animals.map(a => `<i class="${got.includes(a[3]) ? '' : 'no'}">${a[3]}</i>`).join('') + (got.length >= 5 ? ' ⭐' : '');
+    box.appendChild(row);
+  }
+  $('#chAlbum').hidden = false; $('#chAlbumClose').onclick = () => { $('#chAlbum').hidden = true; ch.run = wasRun && $('#chMap').hidden; };
+};
 GAMES.chase = chaseStart;
 
 /* ================= construtor da obra: cava com a escavadeira, enche o alicerce com a betoneira, empilha os blocos com o guindaste,
@@ -11701,7 +11752,7 @@ GAME_INTRO.studio = 'Toque nos quadradinhos para criar a sua música, e aperte o
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 51, name: '6.16' };
+const APP_VERSION = { code: 52, name: '6.17' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)

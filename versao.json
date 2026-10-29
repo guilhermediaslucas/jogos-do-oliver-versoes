@@ -1,8 +1,8 @@
 {
-  "code": 51,
-  "name": "6.16",
+  "code": 52,
+  "name": "6.17",
   "minApk": 41,
-  "notes": "Versão 6.16: opção de IA pela internet no Conversar (área dos pais). Com internet, o amigo responde com o Claude, sem baixar nada; sem internet, volta para a IA do tablet ou para as falas prontas. Precisa configurar o servidor (veja app/ia-online/LEIAME.md).",
+  "notes": "Versão 6.17: a IA pela internet saiu (fica só a IA do tablet). Corre-Corre dos Bichos: ovos dourados que valem 5 vezes mais, cachorrinho ajudante na loja que late e faz a mamãe parar, álbum de filhotes de cada lugar e moitas para se esconder da mamãe. Aventura: 3 fases novas (Selva, Polo Norte e Deserto), canos secretos que levam a uma nuvem cheia de estrelas e um escudo a cada 50 estrelas.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/MundoDoOliver.apk"
 }
