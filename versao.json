@@ -1,8 +1,8 @@
 {
-  "code": 58,
-  "name": "6.23",
+  "code": 59,
+  "name": "6.24",
   "minApk": 54,
-  "notes": "Versão 6.23: botão de pausa ⏸️ em todos os jogos (para tudo, até o som, e continua de onde parou). Halloween 🎃: lugar novo no Corre-Corre (aranha, morcego, gata preta, coruja e fantasminha), fase Noite de Halloween na Aventura, Casa assombrada no Estilingue (fantasmas e morcegos), casa assombrada no Construtor e cenário de Halloween no Esconde-esconde. As fases de Halloween ficam sempre abertas.",
+  "notes": "Versão 6.24: todos os lugares do Corre-Corre dos Bichos ficam abertos desde o começo.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/MundoDoOliver.apk"
 }
