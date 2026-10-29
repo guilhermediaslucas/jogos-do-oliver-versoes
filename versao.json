@@ -1,8 +1,8 @@
 {
-  "code": 54,
-  "name": "6.19",
+  "code": 55,
+  "name": "6.20",
   "minApk": 54,
-  "notes": "Versão 6.19 (precisa instalar o APK): a IA do Conversar agora é baixada pelo próprio Android, só no Wi-Fi, e continua de onde parou se a internet cair, o app fechar ou atualizar. Corre-Corre dos Bichos: lugares bem maiores (a tela acompanha a criança), filhotes de 5 cores diferentes para colecionar (25 figurinhas por lugar no álbum), missões com moedas extras, mais moitas e uma setinha mostrando o caminho de casa.",
+  "notes": "Versão 6.20: jogo novo Estilingue dos Passarinhos (porta Diversão). Puxe o passarinho no estilingue e derrube as casinhas dos ratinhos: 8 fases, 5 passarinhos com poderes (Trio vira 3, Flecha acelera, Pesadão derruba pedra, Bombinha explode), gelo, madeira e pedra, e estrelas em cada fase.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/MundoDoOliver.apk"
 }
