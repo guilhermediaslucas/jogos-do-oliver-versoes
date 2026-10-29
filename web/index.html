@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 50, name: '6.15' }; -->
+<!-- const APP_VERSION = { code: 51, name: '6.16' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -1280,6 +1280,13 @@ button:active { transform: scale(.92); }
         <option value="small">Pequena · baixa 550 MB</option><option value="medium">Média · baixa 1,6 GB</option></select></label>
       <p class="pused" id="pAiInfo"></p>
       <div class="pbtns"><button class="pbtn ok" id="pAiGet" hidden>⬇️ Baixar a IA</button><button class="pbtn" id="pAiDel" hidden>🗑️ Apagar a IA</button></div>
+      <h3>🌐 IA pela internet (opcional)</h3>
+      <p class="pused">Com internet, o amigo usa o Claude, uma IA bem mais esperta, sem baixar nada; sem internet, volta para a IA do tablet ou para as falas prontas. O que a criança fala no Conversar é enviado para o servidor. Precisa do endereço e do código do servidor (veja app/ia-online/LEIAME.md).</p>
+      <label class="prow" for="pAiOnline">Usar a IA pela internet <input id="pAiOnline" type="checkbox"></label>
+      <label class="prow" for="pAiUrl">Endereço <input id="pAiUrl" type="url" autocomplete="off" placeholder="https://mundo-do-oliver-ia....workers.dev"></label>
+      <label class="prow" for="pAiKey">Código do app <input id="pAiKey" type="password" autocomplete="off"></label>
+      <div class="pbtns"><button class="pbtn" id="pAiTest">🧪 Testar</button></div>
+      <p class="pused" id="pAiOnInfo"></p>
     </div>
     <p class="pused" id="pVer"></p>
     <p class="pused" id="pUpdLog"></p>
@@ -4577,7 +4584,7 @@ function openParents() {
   $('#pFaceRow').hidden = !prefs.photo; $('#pFace').value = avatar.face === 'draw' ? 'draw' : 'photo';
   $('#pName').value = prefs.name; $('#pSound').checked = prefs.sound; $('#pColorsEn').checked = prefs.colorsEn; $('#pLimit').value = prefs.limit;
   $('#pUsed').textContent = `Usado hoje: ${minutes(usage.ms)} min` + (prefs.limit ? ` de ${prefs.limit} min` : '');
-  renderUpdate(); aiRender(); renderHideList();
+  renderUpdate(); aiRender(); aiOnlineRender(); renderHideList();
   $('#parents').hidden = false;
 }
 function savePrefs() { keep('oliver-prefs', prefs); }
@@ -10097,13 +10104,24 @@ const AI_MODELS = {
 };
 const CHAT_BAD = / (mort|matar|mata |sangu|arma|tiro|faca|sexo|pelad|drog|cervej|vinho|cigarr|alcool|endereco|telefone|senha|idiota|burr|odio|diabo|inferno|suicid|beijo na boca|namor)/;
 const chatAiOn = () => !!(prefs.aiModel && prefs.aiReady === prefs.aiModel && plug('LocalAI'));
+const chatOnlineOn = () => !!(prefs.aiOnline && prefs.aiUrl && prefs.aiKey && navigator.onLine !== false);
+// IA pela internet: o servidor (app/ia-online) guarda a chave e chama o Claude; sem resposta em 12 s, segue sem ela
+async function chatOnline(text) {
+  const f = chatF(), ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 12000);
+  try {
+    const r = await fetch(prefs.aiUrl, { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', 'x-app-key': prefs.aiKey },
+      body: JSON.stringify({ name: prefs.name, friend: [f[1], f[3], f[2]], history: chat.hist.slice(-6), text }) });
+    const j = await r.json().catch(() => ({}));
+    return chatClean(j.text, 3);
+  } catch (e) { return ''; } finally { clearTimeout(tm); }
+}
 // tira o que não é para criança e corta em duas frases curtas
-function chatClean(t) {
+function chatClean(t, n = 2) {
   t = String(t || '').split('<|')[0].replace(/[*#_`]/g, '').replace(/\s+/g, ' ').trim();
   if (!t || /[Ѐ-ӿ　-鿿가-힯]/.test(t) || CHAT_BAD.test(chatNorm(t))) return '';
   // resposta em inglês ou espanhol costuma vir sem sentido: melhor a resposta pronta
   if ((chatNorm(t).match(/ (the|you|and|is|are|what|hola|eres|muy|que tal) /g) || []).length >= 2) return '';
-  return (t.match(/[^.!?]+[.!?]*/g) || [t]).slice(0, 2).join(' ').slice(0, 220).trim();
+  return (t.match(/[^.!?]+[.!?]*/g) || [t]).slice(0, n).map(x => x.trim()).join(' ').slice(0, 300).trim();
 }
 async function chatAi(text) {
   const m = AI_MODELS[prefs.aiModel], f = chatF();
@@ -10146,10 +10164,10 @@ async function chatSend(text) {
   if (!text) { chatSay({ t: pick(['Não ouvi direitinho. Fala de novo, bem pertinho do tablet?', 'Hmm? Pode falar mais alto?']) }); return; }
   chat.busy = true; $('#chatMic').disabled = true;
   let r = chatScript(text);
-  if (r.fallback && chatAiOn()) {
+  if (r.fallback && (chatOnlineOn() || chatAiOn())) {
     const dots = chatMsg('friend dots', '...'); $('#chatFriend').classList.add('think');
     const slow = setTimeout(() => say(pick(['Hmm, deixa eu pensar...', 'Hmm... pensando!'])), 2500);
-    const t = await chatAi(text); clearTimeout(slow); dots.remove(); $('#chatFriend').classList.remove('think');
+    const t = (chatOnlineOn() ? await chatOnline(text) : '') || (chatAiOn() ? await chatAi(text) : ''); clearTimeout(slow); dots.remove(); $('#chatFriend').classList.remove('think');
     if (t) r = { t, chips: CHAT_DEFAULT };
   }
   chat.hist.push(['user', text], ['assistant', r.t]); if (chat.hist.length > 12) chat.hist.splice(0, 2);
@@ -10230,6 +10248,23 @@ async function aiRender() {
     : `Para usar a IA ${m.label}, baixe uma vez (${m.mb >= 1000 ? (m.mb / 1000).toLocaleString('pt-BR') + ' GB' : m.mb + ' MB'}; use o Wi-Fi). Precisa de um tablet com ${m.ram} GB de memória ou mais. ${ram}${free}${weak}`;
   get.hidden = ready || aiPct >= 0; del.hidden = !(st0.exists || prefs.aiReady) || aiPct >= 0;
 }
+function aiOnlineRender() {
+  $('#pAiOnline').checked = !!prefs.aiOnline; $('#pAiUrl').value = prefs.aiUrl || ''; $('#pAiKey').value = prefs.aiKey || '';
+  $('#pAiOnInfo').textContent = prefs.aiOnline ? (prefs.aiUrl && prefs.aiKey ? 'Ligada: com internet, o amigo responde com o Claude.' : 'Falta o endereço ou o código do servidor.') : '';
+}
+$('#pAiOnline').onchange = e => { prefs.aiOnline = e.target.checked; savePrefs(); aiOnlineRender(); blip(600); };
+$('#pAiUrl').onchange = e => { prefs.aiUrl = e.target.value.trim(); savePrefs(); aiOnlineRender(); };
+$('#pAiKey').onchange = e => { prefs.aiKey = e.target.value.trim(); savePrefs(); aiOnlineRender(); };
+$('#pAiTest').onclick = async () => {
+  prefs.aiUrl = $('#pAiUrl').value.trim(); prefs.aiKey = $('#pAiKey').value.trim(); savePrefs();
+  const info = $('#pAiOnInfo'); if (!prefs.aiUrl || !prefs.aiKey) { info.textContent = 'Preencha o endereço e o código.'; return; }
+  info.textContent = 'Testando...';
+  try {
+    const r = await fetch(prefs.aiUrl, { method: 'POST', headers: { 'content-type': 'application/json', 'x-app-key': prefs.aiKey }, body: JSON.stringify({ name: prefs.name, friend: ['Lulu', 'corujinha', 'a'], history: [], text: 'Oi! Qual é o seu bicho favorito?' }) });
+    const j = await r.json().catch(() => ({}));
+    info.textContent = j.text ? `Funcionou ✔️ Resposta: "${j.text}"` : r.status === 401 ? 'O código do app está errado.' : j.limit ? 'Chegou no limite de mensagens de hoje.' : `Não funcionou (${j.error || 'erro ' + r.status}).`;
+  } catch (e) { info.textContent = 'Não consegui falar com o servidor. Confira o endereço e a internet.'; }
+};
 $('#pAiModel').onchange = e => { prefs.aiModel = e.target.value; savePrefs(); blip(600); aiRender(); };
 $('#pAiGet').onclick = async () => {
   const U = plug('Updater'), A = plug('LocalAI'), key = prefs.aiModel, m = AI_MODELS[key];
@@ -11666,7 +11701,7 @@ GAME_INTRO.studio = 'Toque nos quadradinhos para criar a sua música, e aperte o
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 50, name: '6.15' };
+const APP_VERSION = { code: 51, name: '6.16' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)

@@ -1,8 +1,8 @@
 {
-  "code": 50,
-  "name": "6.15",
+  "code": 51,
+  "name": "6.16",
   "minApk": 41,
-  "notes": "Versão 6.15: a IA do Conversar não pede mais para baixar de novo quando chega uma versão nova. Se o arquivo da IA já está inteiro no tablet, o app reconhece sozinho; e o app não troca de versão enquanto a IA está baixando.",
+  "notes": "Versão 6.16: opção de IA pela internet no Conversar (área dos pais). Com internet, o amigo responde com o Claude, sem baixar nada; sem internet, volta para a IA do tablet ou para as falas prontas. Precisa configurar o servidor (veja app/ia-online/LEIAME.md).",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/MundoDoOliver.apk"
 }
