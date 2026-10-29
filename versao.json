@@ -1,8 +1,8 @@
 {
-  "code": 57,
-  "name": "6.22",
+  "code": 58,
+  "name": "6.23",
   "minApk": 54,
-  "notes": "Versão 6.22: Corre-Corre dos Bichos com 5 lugares novos (12 no total): Fundo do mar (peixinha, tartaruga-marinha, caranguejo, polvo e golfinho), Lago (sapa, pata, castora, lontra e hipopótamo), Deserto (lagartixa, coruja, raposa-do-deserto, camelo e dromedário), Reino mágico (borboleta, cisne, unicórnio, pégaso e dragoa) e Espaço (ET, monstrinho, robô, disco voador e dragão das estrelas).",
+  "notes": "Versão 6.23: botão de pausa ⏸️ em todos os jogos (para tudo, até o som, e continua de onde parou). Halloween 🎃: lugar novo no Corre-Corre (aranha, morcego, gata preta, coruja e fantasminha), fase Noite de Halloween na Aventura, Casa assombrada no Estilingue (fantasmas e morcegos), casa assombrada no Construtor e cenário de Halloween no Esconde-esconde. As fases de Halloween ficam sempre abertas.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/MundoDoOliver.apk"
 }

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 57, name: '6.22' }; -->
+<!-- const APP_VERSION = { code: 58, name: '6.23' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -443,6 +443,8 @@ button:active { transform: scale(.92); }
 .againBtns button { display: grid; place-items: center; gap: 4px; width: 180px; padding: 14px 10px; border-radius: 28px; font-size: 56px; color: #fff; box-shadow: 0 6px 0 rgba(0,0,0,.18); }
 .againBtns small { font-size: 20px; font-weight: 800; }
 .againGo { background: #43a047; } .againNew { background: #ff7043; }
+#pauseOv { z-index: 60; }
+.pauseBtn { flex: none; }
 .statue-btn:active { transform: translateX(-50%) scale(.94); }
 .aiBox { display: grid; gap: 8px; padding: 10px 12px; border-radius: 16px; background: var(--paper); box-shadow: 0 2px 0 var(--shadow); }
 .aiBox h3 { margin: 0; font-size: 20px; }
@@ -1348,6 +1350,10 @@ button:active { transform: scale(.92); }
 <div id="again" class="over" hidden>
   <div class="tray again"><h2 id="againT"></h2><p class="pused" id="againInfo"></p>
     <div class="againBtns"><button class="againGo" id="againGo">▶️<small>Continuar</small></button><button class="againNew" id="againNew">🔄<small>Começar de novo</small></button></div></div>
+</div>
+<div id="pauseOv" class="over" hidden>
+  <div class="tray again"><h2>⏸️ Pausado</h2><p class="pused">Tudo parado, esperando você.</p>
+    <div class="againBtns"><button class="againGo" id="pauseGo">▶️<small>Continuar</small></button><button class="againNew" id="pauseHome">🏠<small>Sair do jogo</small></button></div></div>
 </div>
 <div id="ask" class="over" hidden>
   <div class="tray"><p id="askText">Apagar tudo?</p>
@@ -5129,6 +5135,14 @@ const LEVELS = [
     L.stars(5, 9, 3); L.crab(12); L.hedge(18); L.gift(21, 7); L.bricks(22, 7, 2); L.gem(22, 3); L.stars(26, 8, 3); L.spring(33); L.stars(33, 4, 1);
     L.crab(38); L.step(43, 1, 2); L.step(45, 2, 2); L.stars(45, 7, 2); L.hedge(49); L.check(59); L.secret(62, 3); L.crab(70); L.mover(82, 8, 3, 3);
     L.gift(88, 7); L.gem(89, 3); L.power(92, 9); L.hedge(97); L.crab(102); L.step(114, 1); L.step(115, 2); L.step(116, 3); L.gem(116, 3); L.stars(118, 8, 3); L.flag(124);
+  } },
+  { name: 'Noite de Halloween', emoji: '🎃', special: true, bg: 'night', sky: ['#2a1440', '#c45a2a'], hill: '#3b2350', ground: '#3d2a1f', top: '#6b3fa0', sun: '#fff3c4', len: 140, build(L) {
+    L.ground(0, 24); L.ground(27, 50); L.ground(54, 80); L.mover(80, 8, 3, 3); L.ground(86, 108); L.ground(111, 140);
+    for (const x of [6, 21, 44, 66, 92, 117, 130]) L.deco(x, 'k');
+    for (const x of [12, 58, 100]) L.deco(x, 'h');
+    L.stars(4, 9, 3); L.bat(10, 6); L.bricks(14, 7, 3); L.gift(15, 7); L.gem(15, 3); L.bat(26, 5); L.stars(30, 8, 4); L.hedge(36); L.secret(40);
+    L.bat(52, 6); L.check(57); L.frog(63); L.gift(68, 7); L.bricks(69, 7, 2); L.stars(72, 5, 3); L.bat(76, 4); L.power(90, 9); L.bat(95, 6); L.hedge(99);
+    L.gem(104, 3); L.stars(104, 8, 3); L.bat(112, 5); L.step(118, 1); L.step(119, 2); L.step(120, 3, 2); L.gem(121, 2); L.stars(124, 8, 3); L.flag(134);
   } }
 ];
 function buildLevel(spec) {
@@ -5246,7 +5260,7 @@ addEventListener('resize', () => { if (shown('g-adventure')) resizeAdv(); });
 
 /* mapa das fases: as fases abrem em sequência; cada uma guarda as estrelas e os diamantes achados */
 // caminho em zigue-zague: 5 fases por linha, de baixo para cima
-const MAP_POS = Array.from({ length: 15 }, (_, i) => { const r = Math.floor(i / 5), c = i % 5; return [10 + (r % 2 ? 4 - c : c) * 20, 82 - r * 30]; });
+const MAP_POS = Array.from({ length: LEVELS.length }, (_, i) => { const r = Math.floor(i / 5), c = i % 5; return [10 + (r % 2 ? 4 - c : c) * 20, 86 - r * 23.5]; });
 function openAdvMap() {
   show('advMap'); stopMusic();
   const box = $('#mapNodes'); box.innerHTML = '';
@@ -5254,7 +5268,7 @@ function openAdvMap() {
   $('#mapScore').textContent = `💎 ${total}/${LEVELS.length * 3}`;
   $('#mapPath').setAttribute('points', MAP_POS.map(([x, y]) => `${x},${y}`).join(' '));
   LEVELS.forEach((lv, i) => {
-    const open = i <= advMax || prefs.allLevels, best = advBest[i], gems = best ? best.gems.map(g => g ? '💎' : '◇').join('') : '◇◇◇';
+    const open = i <= advMax || prefs.allLevels || lv.special, best = advBest[i], gems = best ? best.gems.map(g => g ? '💎' : '◇').join('') : '◇◇◇';
     const b = btn(box, 'mapNode' + (open ? '' : ' locked') + (i === advMax ? ' cur' : ''),
       `<span class="mn">${open ? lv.emoji : '🔒'}</span><b>${i + 1}. ${lv.name}</b><small>${gems}</small>`, `Fase ${i + 1}: ${lv.name}`,
       () => { if (Date.now() - tapT > 600) go(); });
@@ -5634,6 +5648,7 @@ function advDraw() {
   // enfeites atrás de tudo
   for (let tx = x0; tx <= x1; tx++) {
     const c = A.g[10][tx], sx = (tx - camX) * T, gy = 11 * T;
+    if (c === 'k') { x.drawImage(kEmo('🎃'), sx - T * .2, gy - 1.35 * T, T * 1.4, T * 1.4); continue; }   // abóbora (Halloween)
     if (c === 'T') {
       x.fillStyle = '#7a5230'; x.beginPath(); x.roundRect(sx + T * .3, gy - 2.2 * T, T * .4, 2.2 * T, T * .1); x.fill(); x.stroke();
       x.fillStyle = '#4caf50'; x.beginPath(); x.arc(sx + T * .5, gy - 3 * T, T * 1.1, 0, TAU); x.arc(sx - T * .3, gy - 2.4 * T, T * .7, 0, TAU); x.arc(sx + T * 1.3, gy - 2.4 * T, T * .7, 0, TAU); x.fill();
@@ -11043,8 +11058,8 @@ const SL_W = 1600, SL_H = 900, SL_GROUND = 860, SL_SLING = { x: 230, y: 690 }, S
 const SL_BIRDS = { piu: ['🐦', 'Piu', 26, .002, ''], trio: ['🐤', 'Trio', 22, .002, 'split'], flecha: ['🦜', 'Flecha', 24, .002, 'dash'], pesado: ['🦉', 'Pesadão', 34, .006, ''], bomba: ['🐧', 'Bombinha', 27, .0025, 'boom'] };
 // materiais: [cor, borda, vida por área, densidade]
 const SL_MAT = { gelo: ['rgba(170,225,255,.85)', '#5aa9d6', .02, .0008], madeira: ['#c98b4a', '#7a4e22', .05, .001], pedra: ['#9e9e9e', '#5d5d5d', .14, .0024],
-  vidro: ['rgba(225,248,255,.55)', '#8fc9e8', .008, .0007], pneu: ['#37474f', '#151a1d', .06, .0015], tnt: ['#e53935', '#8e1b1b', .02, .0012] };   // tnt = caixa surpresa: explode quando quebra
-const SL_FOES = { rato: ['🐭', 26, 40], ratao: ['🐀', 30, 90], chefe: ['🦝', 40, 200] };
+  vidro: ['rgba(225,248,255,.55)', '#8fc9e8', .008, .0007], abobora: ['#ff9800', '#e65100', .03, .001], pneu: ['#37474f', '#151a1d', .06, .0015], tnt: ['#e53935', '#8e1b1b', .02, .0012] };   // tnt = caixa surpresa: explode quando quebra
+const SL_FOES = { rato: ['🐭', 26, 40], ratao: ['🐀', 30, 90], chefe: ['🦝', 40, 200], fantasma: ['👻', 26, 40], morcego: ['🦇', 24, 30] };
 const slPost = (x, base, h, m) => [x, base - h / 2, 24, h, m], slPlank = (x, y, w, m) => [x, y - 12, w, 24, m];
 const slBarrel = (x, base, d, m) => [x, base - d / 2, d, d, m, 'circle'], slRoof = (x, base, w, m) => [x, base - w / Math.sqrt(3) / 2, w, w, m, 'tri'], slCrate = (x, base, s, m) => [x, base - s / 2, s, s, m];
 function slFrame(out, x, base, w, h, m) { out.push(slPost(x - w / 2 + 12, base, h, m), slPost(x + w / 2 - 12, base, h, m), slPlank(x, base - h, w + 20, m)); return base - h - 24; }
@@ -11090,6 +11105,10 @@ const SL_LEVELS = [
     y = slFrame(B, 1150, y, 240, 120, 'madeira'); F.push([1110, G0 - 204, 'rato'], [1190, G0 - 204, 'rato']);
     y = slFrame(B, 1150, y, 160, 100, 'vidro'); F.push([1150, G0 - 348, 'ratao']); B.push(slRoof(1150, y, 180, 'gelo'));
     B.push(slCrate(880, G0, 60, 'tnt'), slCrate(1460, G0, 60, 'tnt')); F.push([820, G0 - 30, 'rato'], [1535, G0 - 32, 'ratao'], [1395, G0 - 30, 'rato']);
+  } },
+  { name: 'Casa assombrada', icon: '🎃', night: true, birds: ['piu', 'trio', 'bomba', 'pesado'], build(B, F) {
+    let y = slFrame(B, 1100, G0, 220, 150, 'madeira'); F.push([1100, G0 - 30, 'fantasma']); y = slFrame(B, 1100, y, 180, 120, 'vidro'); F.push([1100, G0 - 202, 'morcego']); B.push(slRoof(1100, y, 200, 'madeira'));
+    B.push(slBarrel(900, G0, 70, 'abobora'), slBarrel(1330, G0, 70, 'abobora')); F.push([970, G0 - 30, 'fantasma'], [1400, G0 - 30, 'morcego'], [1500, G0 - 30, 'fantasma']);
   } }
 ];
 const slSave = load('oliver-estilingue', { stars: [], cur: 0 });
@@ -11211,6 +11230,7 @@ function slBlock(x, o) {
   x.save(); x.translate(o.position.x, o.position.y); x.rotate(o.angle);
   if (o.shape === 'circle') {   // barril ou pneu
     const r = o.w / 2; x.fillStyle = fill; x.strokeStyle = edge; x.lineWidth = 4; x.beginPath(); x.arc(0, 0, r, 0, TAU); x.fill(); x.stroke();
+    if (o.mat === 'abobora') { x.rotate(-o.angle); x.drawImage(kEmo('🎃'), -r * 1.15, -r * 1.25, r * 2.3, r * 2.3); x.restore(); return; }
     x.strokeStyle = o.mat === 'pneu' ? '#90a4ae' : 'rgba(90,50,20,.5)'; x.lineWidth = 3; x.beginPath(); x.arc(0, 0, r * .55, 0, TAU); x.moveTo(-r * .55, 0); x.lineTo(r * .55, 0); x.stroke(); x.restore(); return;
   }
   x.fillStyle = fill; x.strokeStyle = edge; x.lineWidth = 4; x.beginPath(); x.roundRect(-o.w / 2, -o.h / 2, o.w, o.h, 5); x.fill(); x.stroke();
@@ -11227,9 +11247,10 @@ function slingLoop(t) {
   const cv = $('#slCv'); fitCanvas(cv); const W = cv.width, H = cv.height, x = cv.getContext('2d');
   sl.sc = Math.min(W / SL_W, H / SL_H); sl.ox = (W - SL_W * sl.sc) / 2; sl.oy = (H - SL_H * sl.sc) / 2;
   if (sl.engine) { Matter.Engine.update(sl.engine, 1000 / 60); slStep(dt); for (const f of sl.fx) { f.t -= dt; f.x += f.vx; f.y += f.vy; if (!f.txt) f.vy += .4; } sl.fx = sl.fx.filter(f => f.t > 0); }
-  const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#8fd3ff'); g.addColorStop(1, '#e8f7ff'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+  const night = sl.L && sl.L.night, g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, night ? '#2a1440' : '#8fd3ff'); g.addColorStop(1, night ? '#c45a2a' : '#e8f7ff'); x.fillStyle = g; x.fillRect(0, 0, W, H);
   x.save(); x.translate(sl.ox, sl.oy); x.scale(sl.sc, sl.sc);
-  x.fillStyle = '#ffe066'; x.beginPath(); x.arc(1450, 120, 60, 0, TAU); x.fill();
+  x.fillStyle = night ? '#fff3c4' : '#ffe066'; x.beginPath(); x.arc(1450, 120, 60, 0, TAU); x.fill();
+  if (night) for (let i = 0; i < 4; i++) x.drawImage(kEmo('🦇'), 300 + i * 260 + Math.sin(sl.t * 2 + i) * 40, 120 + (i % 2) * 70 + Math.cos(sl.t * 3 + i) * 15, 60, 60);
   x.fillStyle = 'rgba(255,255,255,.85)'; for (const [cx, cy] of [[300, 140], [800, 90], [1150, 170]]) { x.beginPath(); x.arc(cx, cy, 40, 0, TAU); x.arc(cx + 45, cy + 8, 32, 0, TAU); x.arc(cx - 45, cy + 8, 32, 0, TAU); x.fill(); }
   x.fillStyle = '#8fd47e'; x.beginPath(); x.ellipse(500, SL_GROUND + 30, 600, 140, 0, Math.PI, 0); x.ellipse(1300, SL_GROUND + 30, 500, 110, 0, Math.PI, 0); x.fill();
   x.fillStyle = '#6cbf4a'; x.fillRect(-SL_W, SL_GROUND, SL_W * 3, 14); x.fillStyle = '#9a6340'; x.fillRect(-SL_W, SL_GROUND + 14, SL_W * 3, 400);
@@ -11263,6 +11284,27 @@ $('#slLevels').onclick = () => {
 };
 $('#slPickClose').onclick = () => { $('#slPick').hidden = true; };
 GAMES.sling = slingStart;
+
+/* ================= pausa: botão ⏸️ em todos os jogos. Congela as animações (requestAnimationFrame) e o som até continuar ================= */
+const rafReal = window.requestAnimationFrame.bind(window);
+let paused = false, pauseQ = [];
+window.requestAnimationFrame = cb => { if (!paused) return rafReal(cb); pauseQ.push(cb); return 0; };
+function pauseGame() {
+  if (paused) return; paused = true; blip(500);
+  try { ac && ac.suspend(); } catch (e) {} try { kAc && kAc !== ac && kAc.suspend(); } catch (e) {}
+  try { speechSynthesis.cancel(); } catch (e) {} try { plug('TextToSpeech')?.stop(); } catch (e) {}
+  $('#pauseOv').hidden = false;
+}
+function resumeGame() {
+  if (!paused) return; paused = false; $('#pauseOv').hidden = true;
+  try { ac && ac.resume(); } catch (e) {} try { kAc && kAc.resume(); } catch (e) {}
+  const q = pauseQ; pauseQ = []; for (const cb of q) rafReal(cb);
+}
+document.querySelectorAll('.screen.game').forEach(sc => { const bar = sc.querySelector('.bar, .k-hud'); if (bar) btn(bar, 'round pauseBtn', '⏸️', 'Pausar', pauseGame); });
+$('#pauseGo').onclick = () => { resumeGame(); blip(700); };
+$('#pauseHome').onclick = () => { resumeGame(); show('home'); blip(440); };
+const showBeforePause = show;
+show = id => { if (paused) resumeGame(); showBeforePause(id); };   // sair da tela (ex.: botão voltar do Android) também despausa
 
 /* ================= ajudantes dos jogos de canvas novos ================= */
 // deixa o canvas do tamanho da tela (resolução limitada a ~1400 px de largura, para o tablet não travar); devolve a escala usada
@@ -11310,7 +11352,9 @@ const CH_WORLDS = {
   fantasia: { name: 'Reino mágico', icon: '🦄', ground: '#f6c6dc', spot: '#f1b0cd', path: '#fff3a8', base: '#ead2f2', fence: '#ab47bc', deco: ['🌈', '🍄', '✨'], home: '🏰', homeName: 'Castelo mágico',
     animals: [['🦋', 'a borboleta mágica', 'o ovinho de borboleta', '🐛', '#c5e1a5'], ['🦢', 'a cisne', 'o ovo de cisne', '🦢', '#ffffff'], ['🦄', 'a unicórnio', 'o unicorninho', '🦄', null], ['🐎+asa', 'a pégaso', 'o pegasinho', '🐎+asa', null], ['🐉', 'a dragoa mágica', 'o ovo de dragão mágico', '🐉', '#f8bbd0']] },
   espaco: { name: 'Espaço', icon: '👽', dark: true, ground: '#34377a', spot: '#41449a', path: '#6c6fb8', base: '#4c509a', fence: '#c5cae9', deco: ['⭐', '🪐', '☄️'], home: '🚀', homeName: 'Minha nave',
-    animals: [['👽', 'a ET verde', 'o ovo de ET', '👽', '#b2ff59'], ['👾', 'o monstrinho espacial', 'o monstrinho bebê', '👾', null], ['🤖', 'a robô', 'o robozinho', '🤖', null], ['🛸', 'o disco voador', 'o disquinho', '🛸', null], ['🐲', 'a dragoa das estrelas', 'o ovo estrelado', '🐲', '#b39ddb']] }
+    animals: [['👽', 'a ET verde', 'o ovo de ET', '👽', '#b2ff59'], ['👾', 'o monstrinho espacial', 'o monstrinho bebê', '👾', null], ['🤖', 'a robô', 'o robozinho', '🤖', null], ['🛸', 'o disco voador', 'o disquinho', '🛸', null], ['🐲', 'a dragoa das estrelas', 'o ovo estrelado', '🐲', '#b39ddb']] },
+  halloween: { name: 'Halloween', icon: '🎃', special: true, dark: true, ground: '#3b2a4f', spot: '#4a3462', path: '#e8892e', base: '#5a4270', fence: '#ff9800', deco: ['🎃', '🕸️', '🍬'], home: '🏚️', homeName: 'Casa assombrada',
+    animals: [['🕷️', 'a aranha', 'o ovo de aranha', '🕷️', '#d1c4e9'], ['🦇', 'a morcega', 'o morceguinho', '🦇', null], ['🐈‍⬛', 'a gata preta', 'o gatinho preto', '🐈‍⬛', null], ['🦉', 'a coruja da noite', 'o ovo de coruja', '🦉', '#ffcc80'], ['👻', 'a mamãe fantasma', 'o fantasminha', '👻', null]] }
 };
 const CH_W = 2400, CH_H = 1000, CH_FARM = { x: 40, y: 290, w: 380, h: 420 };
 // ninhos: quanto mais longe, mais rápida a mamãe e mais moedas
@@ -11318,7 +11362,7 @@ const CH_NESTS = [[700, 210, 95, 5], [900, 820, 130, 10], [1350, 480, 160, 15], 
 const CH_SHOES = [['👣', 'Pé no chão', 0, 150], ['👟', 'Tênis', 20, 190], ['⚡', 'Tênis relâmpago', 60, 235], ['🛼', 'Patins', 150, 290]];
 const CH_CARRY = .92;
 const CH_BUSHES = [[560, 560], [1080, 330], [1120, 690], [1600, 600], [1980, 470]];
-const CH_BUSH_E = { gelo: '⛄', selva: '🌿', safari: '🌳', montanha: '🌲', floresta: '🌲', dinos: '🌿', mar: '🪸', lago: '🌾', deserto: '🌵', fantasia: '🍄', espaco: '🪐' };
+const CH_BUSH_E = { halloween: '🎃', gelo: '⛄', selva: '🌿', safari: '🌳', montanha: '🌲', floresta: '🌲', dinos: '🌿', mar: '🪸', lago: '🌾', deserto: '🌵', fantasia: '🍄', espaco: '🪐' };
 const chHidden = k => CH_BUSHES.some(([bx, by]) => Math.hypot(k.x - bx, k.y - by) < 58);
 const CH_DOG = 30;   // preço do cachorrinho ajudante
 const chAlbum = id => {
@@ -11359,7 +11403,7 @@ function chMap() {
   ch.run = false; const box = $('#chWorlds'); box.innerHTML = '';
   const ids = Object.keys(CH_WORLDS);
   ids.forEach((id, i) => {
-    const w = CH_WORLDS[id], open = chSave.open.includes(id), my = chSave.w[id], n = my ? my.babies.length : 0;
+    const w = CH_WORLDS[id], open = w.special || chSave.open.includes(id), my = chSave.w[id], n = my ? my.babies.length : 0;
     const info = open ? `${my ? CH_SHOES[my.shoe][0] : ''} 📒 ${chAlbum(id).length}/25` : '🔒';
     const b = btn(box, 'ch-wcard' + (open ? '' : ' locked'), `<span>${w.icon}</span><b>${w.name}</b><small>${info.trim() || '&nbsp;'}</small>`, w.name, () => {
       if (!open) { const prev = CH_WORLDS[ids[i - 1]]; blip(200, .2); say(`Para abrir, leve para casa ${prev.animals[4][2]}, lá na ${prev.name}!`); return; }
@@ -11440,7 +11484,7 @@ function chStep(dt) {
       const bonus = 10 * (ch.mis.i + 1) + 10; cw().coins += bonus; chHud(); setTimeout(() => { celebrate(false); say(`Missão cumprida! Ganhou mais ${bonus} moedas!`); }, 1800);
       ch.mis = null; setTimeout(() => { if (alive('chase') && ch.animals) chMission(); }, 6000);
     }
-    const ids = Object.keys(CH_WORLDS), nx = ids[ids.indexOf(ch.world) + 1];
+    const ids = Object.keys(CH_WORLDS).filter(k => !CH_WORLDS[k].special), nx = ids[ids.indexOf(ch.world) + 1];
     if (a === ch.animals[4] && nx && !chSave.open.includes(nx)) {   // pegou o bicho mais rápido: abre o próximo lugar
       chSave.open.push(nx); cw().done = true; keep('oliver-corre', chSave);
       setTimeout(() => { celebrate(false); say(`Uau! Você abriu um lugar novo: ${CH_WORLDS[nx].name}! Toque no mapa para ir até lá.`); }, 2500);
@@ -11600,7 +11644,7 @@ GAMES.chase = chaseStart;
 // [nome, linhas, colunas, telhado, cor do telhado, artigo]
 const BD_TYPES = [['casa', 3, 3, 'tri', '#d9483b', 'a', '🏠'], ['prédio', 6, 3, 'flat', '#607d8b', 'o', '🏢'], ['castelo', 4, 5, 'castle', '#8e7cc3', 'o', '🏰'], ['escola', 3, 5, 'tri', '#1e88e5', 'a', '🏫'],
   ['farol', 6, 2, 'dome', '#e53935', 'o', '🗼'], ['hospital', 4, 4, 'cross', '#eceff1', 'o', '🏥'], ['mercado', 2, 5, 'awning', '#43a047', 'o', '🏪'], ['celeiro', 3, 4, 'barn', '#c62828', 'o', '🐄'],
-  ['torre do mago', 7, 2, 'cone', '#5e35b1', 'a', '🧙'], ['quartel dos bombeiros', 3, 4, 'siren', '#b71c1c', 'o', '🚒'], ['casa na árvore', 2, 3, 'tree', '#6d4c41', 'a', '🌳'], ['foguete', 6, 2, 'rocket', '#eceff1', 'o', '🚀']];
+  ['torre do mago', 7, 2, 'cone', '#5e35b1', 'a', '🧙'], ['quartel dos bombeiros', 3, 4, 'siren', '#b71c1c', 'o', '🚒'], ['casa na árvore', 2, 3, 'tree', '#6d4c41', 'a', '🌳'], ['foguete', 6, 2, 'rocket', '#eceff1', 'o', '🚀'], ['casa assombrada', 3, 3, 'tri', '#4a148c', 'a', '🎃']];
 const bdSave = load('oliver-obra', { feitas: [] });
 // menu de obras: as que já ficaram prontas ganham ✔️
 function bdMenu() {
@@ -12035,12 +12079,12 @@ GAMES.fire = fireStart;
 /* ================= esconde-esconde: os bichos se escondem atrás das coisas da cena; a criança toca para achar quem foi pedido ================= */
 // [nome, céu, chão, esconderijos]
 const HD_SCENES = [['parque', '#a5e3ff', '#8ccf5c', ['🌳', '🪨', '📦', '🛝', '🌻', '🗑️']], ['casa', '#ffe0b2', '#bcaaa4', ['🛋️', '🚪', '🧺', '📦', '🪴', '🛏️']],
-  ['praia', '#81d4fa', '#ffe082', ['⛱️', '🏰', '🪣', '🌴', '🛟', '🐚']], ['neve', '#cfe8f7', '#f5fbff', ['⛄', '🌲', '🧊', '🛷', '🏔️', '🎿']]];
+  ['praia', '#81d4fa', '#ffe082', ['⛱️', '🏰', '🪣', '🌴', '🛟', '🐚']], ['neve', '#cfe8f7', '#f5fbff', ['⛄', '🌲', '🧊', '🛷', '🏔️', '🎿']], ['halloween', '#2a1440', '#4a3462', ['🎃', '🪦', '🧹', '🏚️', '🍬', '🕸️']]];
 const HD_ANIMALS = [['🐱', 'o gatinho', 'Miau!'], ['🐶', 'o cachorrinho', 'Au au!'], ['🐰', 'o coelhinho', 'Hihi!'], ['🐸', 'o sapinho', 'Croac!'], ['🐥', 'o pintinho', 'Piu piu!'],
   ['🐼', 'o panda', 'Oi!'], ['🦊', 'a raposinha', 'Hihi!'], ['🐵', 'o macaquinho', 'Uh uh!'], ['🐷', 'o porquinho', 'Oinc!'], ['🐨', 'o coala', 'Oi!']];
 let hd = null;
 function hideStart() { if (hd?.raf) cancelAnimationFrame(hd.raf); hd = { raf: 0, last: 0, t: 0, scene: 0, fx: [] }; hdRound(true); hdMenu(); hd.raf = requestAnimationFrame(hideLoop); }
-const HD_ICONS = ['🌳', '🏠', '🏖️', '⛄'];
+const HD_ICONS = ['🌳', '🏠', '🏖️', '⛄', '🎃'];
 function hdMenu() {
   hd.lock = true; const m = $('#hdMenu'); m.innerHTML = '';
   HD_SCENES.forEach((S, i) => btn(m, 'bd-card', `<span>${HD_ICONS[i]}</span>${S[0][0].toUpperCase() + S[0].slice(1)}`, S[0], () => { m.hidden = true; blip(620); hd.scene = i; hdRound(); }));
@@ -12170,7 +12214,7 @@ GAME_INTRO.studio = 'Toque nos quadradinhos para criar a sua música, e aperte o
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 57, name: '6.22' };
+const APP_VERSION = { code: 58, name: '6.23' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)
