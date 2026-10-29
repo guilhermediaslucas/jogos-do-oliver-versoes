@@ -1,8 +1,8 @@
 {
-  "code": 48,
-  "name": "6.13",
+  "code": 49,
+  "name": "6.14",
   "minApk": 41,
-  "notes": "Versão 6.13: os jogos com progresso perguntam se a criança quer continuar ou começar de novo. No Corre-Corre dos Bichos, cada lugar tem as suas moedas e tênis, e o próximo lugar abre quando ela leva para casa o bicho mais rápido. Na Cozinha há 8 receitas (cupcake, biscoito, panqueca, milk-shake e salada de frutas, além de pizza, bolo e sorvete). No Construtor dá para escolher o que construir entre 12 obras, e no Esconde-esconde dá para escolher o lugar.",
+  "notes": "Versão 6.14: no Colorir, o desenho abre com o primeiro pincel (lápis) em vez do balde de tinta. O balde continua nas ferramentas.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/MundoDoOliver.apk"
 }
