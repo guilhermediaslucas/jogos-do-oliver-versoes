@@ -1,8 +1,8 @@
 {
-  "code": 61,
-  "name": "6.26",
+  "code": 62,
+  "name": "6.27",
   "minApk": 54,
-  "notes": "Versão 6.26: Fábrica de Squish maior! Pop It, pelúcia (pelinho que deita com o dedo), cubo de gelo que derrete, 5 moldes novos para abrir (sorvete, polvo, pinguim, abacate e dino), Loja de squish com pedidos dos bichinhos, Balde de slime para puxar e estourar bolhas, squish que ri com cócegas, dorme e pula quando joga para cima, foto do squish em Meus desenhos e esteira da fábrica.",
+  "notes": "Versão 6.27: Estilingue com voo mais devagar e poder especial para todos os passarinhos ao bater no alvo (Piu grita, Trio vira três, Flecha faz zum, Pesadão faz terremoto e Bombinha explode). Música de fundo com 🎵 liga/desliga e 🔀 trocar em todos os jogos.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/MundoDoOliver.apk"
 }

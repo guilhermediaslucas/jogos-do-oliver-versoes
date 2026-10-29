@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 61, name: '6.26' }; -->
+<!-- const APP_VERSION = { code: 62, name: '6.27' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -6137,7 +6137,7 @@ function startMusic(screen = 'g-adventure') {
 function stopMusic() { clearInterval(musicWatch); if (music) music.stop(); music = null; }
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) stopMusic();
-  else if (shown(musicScreen) && ['g-adventure', 'g-fruit'].includes(musicScreen)) startMusic(musicScreen);
+  else if (shown(musicScreen) && musicScreen.startsWith('g-') && !MUSIC_SKIP.includes(musicScreen)) startMusic(musicScreen);
 });
 function updateMusicBtn() { document.querySelectorAll('.musicBtn').forEach(b => { b.textContent = prefs.music === false ? '🔇' : '🎵'; }); }
 document.querySelectorAll('.musicBtn').forEach(b => b.onclick = () => {
@@ -11092,8 +11092,11 @@ GAMES.studio = studioStart;
 /* ================= estilingue dos passarinhos: puxa o passarinho no estilingue e derruba as casinhas dos ratinhos.
    Física do Matter.js (embutido no começo do arquivo, para funcionar sem internet) ================= */
 const SL_W = 1600, SL_H = 900, SL_GROUND = 860, SL_SLING = { x: 230, y: 690 }, SL_PULL = 150, SL_POWER = .21;
+const SL_SLOW = .6;   // o mundo do estilingue anda a 60% da velocidade: o voo fica mais devagar e dá para acompanhar
 // passarinhos: [emoji, nome, raio, densidade, poder]
-const SL_BIRDS = { piu: ['🐦', 'Piu', 26, .002, ''], trio: ['🐤', 'Trio', 22, .002, 'split'], flecha: ['🦜', 'Flecha', 24, .002, 'dash'], pesado: ['🦉', 'Pesadão', 34, .006, ''], bomba: ['🐧', 'Bombinha', 27, .0025, 'boom'] };
+// poderes: grito (empurra tudo em volta), trio (vira três), zum (fura em linha reta), terremoto (sacode o chão) e bomba
+const SL_BIRDS = { piu: ['🐦', 'Piu', 26, .002, 'shout'], trio: ['🐤', 'Trio', 22, .002, 'split'], flecha: ['🦜', 'Flecha', 24, .002, 'dash'], pesado: ['🦉', 'Pesadão', 34, .006, 'quake'], bomba: ['🐧', 'Bombinha', 27, .0025, 'boom'] };
+const SL_POWER_TXT = { shout: 'Piiiu!', split: 'Viramos três!', dash: 'Zuuum!', quake: 'Terremoto!', boom: 'Bum!' };
 // materiais: [cor, borda, vida por área, densidade]
 const SL_MAT = { gelo: ['rgba(170,225,255,.85)', '#5aa9d6', .02, .0008], madeira: ['#c98b4a', '#7a4e22', .05, .001], pedra: ['#9e9e9e', '#5d5d5d', .14, .0024],
   vidro: ['rgba(225,248,255,.55)', '#8fc9e8', .008, .0007], abobora: ['#ff9800', '#e65100', .03, .001], pneu: ['#37474f', '#151a1d', .06, .0015], tnt: ['#e53935', '#8e1b1b', .02, .0012] };   // tnt = caixa surpresa: explode quando quebra
@@ -11169,7 +11172,7 @@ function slLevel(i) {
   });
   const foes = F.map(([x, y, t]) => Object.assign(Bodies.circle(x, y, SL_FOES[t][1], { friction: .6, restitution: .2, density: .0012 }), { kind: 'foe', foe: t, hp: SL_FOES[t][2] }));
   Composite.add(engine.world, [ground, ...blocks, ...foes]);
-  Object.assign(sl, { engine, i, L, queue: L.birds.slice(), bird: null, flying: [], fx: [], t: 0, drag: null, done: false, settle: 1, quiet: 0, used: 0 });
+  Object.assign(sl, { engine, i, L, queue: L.birds.slice(), bird: null, flying: [], fx: [], pending: [], shake: 0, t: 0, drag: null, done: false, settle: 1, quiet: 0, used: 0 });
   Events.on(engine, 'collisionStart', slHit);
   slNext(); $('#slTitle').textContent = `Fase ${i + 1}: ${L.name}`; $('#slEnd').hidden = true;
   say(i === 0 && !slSave.stars[0] ? 'Puxe o passarinho para trás e solte para derrubar as casinhas dos ratinhos!' : L.name + '!');
@@ -11191,10 +11194,12 @@ function slHit(ev) {
     if (rv < 2) continue;
     const heavy = Math.max(a.kind === 'bird' ? a.mass : 0, b.kind === 'bird' ? b.mass : 0), dmg = rv * rv * (heavy ? 1 + heavy * .25 : .6);
     for (const o of [a, b]) if (o.hp != null) { o.hp -= dmg; if (o.kind === 'block' && rv > 5) chirp(o.mat === 'gelo' ? 1200 : o.mat === 'pedra' ? 180 : 320, .08, 'square', .04); }
-    for (const o of [a, b]) if (o.kind === 'bird' && o.power === 'boom' && !o.used) slBoom(o);
+    for (const [o, other] of [[a, b], [b, a]]) if (o.kind === 'bird' && o.power && !o.used && (other.kind === 'block' || other.kind === 'foe')) {
+      if (o.power === 'boom') slBoom(o); else { o.used = true; sl.pending.push(o); }   // o poder sai no próximo passo (não dá para mexer no mundo no meio da batida)
+    }
   }
 }
-function slBoom(b) { b.used = true; slBoomAt(b.position.x, b.position.y, b); Matter.Composite.remove(sl.engine.world, b); sl.flying = sl.flying.filter(f => f !== b); }
+function slBoom(b) { b.used = true; sl.fx.push({ txt: SL_POWER_TXT.boom, x: b.position.x, y: b.position.y - 50, vx: 0, vy: -1.5, t: 1.2 }); slBoomAt(b.position.x, b.position.y, b); Matter.Composite.remove(sl.engine.world, b); sl.flying = sl.flying.filter(f => f !== b); }
 function slBoomAt(bx, by, skip) {
   const { Body, Composite, Sleeping } = Matter;
   noise(audioOn().currentTime, .5, 900, 100, .3); tone('sawtooth', 120, 40, ac.currentTime, .5, .15);
@@ -11204,15 +11209,35 @@ function slBoomAt(bx, by, skip) {
   }
   for (let i = 0; i < 30; i++) sl.fx.push({ x: bx, y: by, vx: (Math.random() - .5) * 18, vy: (Math.random() - .5) * 18, c: ['#ff7043', '#ffd23f', '#fff'][i % 3], t: .7 });
 }
-function slPower() {
-  const { Bodies, Body, Composite } = Matter;
-  const b = sl.flying.find(f => !f.used && SL_BIRDS[f.bird][4]); if (!b) return;
-  const pw = SL_BIRDS[b.bird][4]; b.used = true;
-  if (pw === 'split') {
-    chirp(900, .15); const sp = Math.hypot(b.velocity.x, b.velocity.y), an = Math.atan2(b.velocity.y, b.velocity.x);
-    for (const da of [-.28, .28]) { const n = Object.assign(Bodies.circle(b.position.x, b.position.y, SL_BIRDS.trio[2], { density: .002, restitution: .35 }), { kind: 'bird', bird: 'trio', used: true }); Body.setVelocity(n, { x: Math.cos(an + da) * sp, y: Math.sin(an + da) * sp }); Composite.add(sl.engine.world, n); sl.flying.push(n); }
-  } else if (pw === 'dash') { tone('sawtooth', 500, 1600, audioOn().currentTime, .25, .07); const sp = Math.hypot(b.velocity.x, b.velocity.y) || 1; Body.setVelocity(b, { x: b.velocity.x / sp * 38, y: b.velocity.y / sp * 38 }); }
-  else if (pw === 'boom') slBoom(b);
+// tocar na tela com o passarinho voando solta o poder antes da hora
+function slPower() { const b = sl.flying.find(f => !f.used && SL_BIRDS[f.bird][4]); if (!b) return; b.used = true; slUsePower(b); }
+// empurrão em roda: usado pelo grito do Piu e pelo terremoto do Pesadão
+function slPush(bx, by, R, force, dmg, up = 0) {
+  const { Body, Composite, Sleeping } = Matter;
+  for (const o of Composite.allBodies(sl.engine.world)) {
+    if (o.isStatic || o.kind === 'bird') continue; const dx = o.position.x - bx, dy = o.position.y - by, d = Math.hypot(dx, dy) || 1;
+    if (d < R) { const k = 1 - d / R; Sleeping.set(o, false); Body.setVelocity(o, { x: o.velocity.x + dx / d * force * k, y: o.velocity.y + dy / d * force * k - up * k }); if (o.hp != null) o.hp -= dmg * k; }
+  }
+}
+function slUsePower(b) {
+  const { Bodies, Body, Composite } = Matter, pw = SL_BIRDS[b.bird][4], x = b.position.x, y = b.position.y, lv = b.lv || b.velocity;
+  if (!pw || !Composite.get(sl.engine.world, b.id, 'body')) return;
+  sl.fx.push({ txt: SL_POWER_TXT[pw], x, y: y - 50, vx: 0, vy: -1.5, t: 1.2 });
+  if (pw === 'shout') {   // grito: ondas que empurram e assustam os ratinhos por perto
+    tone('square', 1400, 2200, audioOn().currentTime, .35, .06); tone('square', 1800, 2600, ac.currentTime + .12, .3, .05);
+    for (let k = 0; k < 3; k++) sl.fx.push({ ring: true, x, y, r: 20 + k * 30, vr: 9, c: '#4fc3f7', t: .7 });
+    slPush(x, y, 230, 14, 70);
+  } else if (pw === 'split') {   // vira três passarinhos que se espalham para a frente
+    chirp(900, .15); const sp = Math.max(9, Math.hypot(lv.x, lv.y)), an = Math.atan2(lv.y, lv.x) || -.3;
+    for (const da of [-.45, .45]) { const n = Object.assign(Bodies.circle(x, y - 30, SL_BIRDS.trio[2], { density: .002, restitution: .35 }), { kind: 'bird', bird: 'trio', used: true }); Body.setVelocity(n, { x: Math.cos(an + da) * sp, y: Math.sin(an + da) * sp - 3 }); Composite.add(sl.engine.world, n); sl.flying.push(n); }
+  } else if (pw === 'dash') {   // zum: sai rasgando em linha reta e atravessa as peças
+    tone('sawtooth', 500, 1600, audioOn().currentTime, .25, .07); const sp = Math.hypot(lv.x, lv.y) || 1; Body.setVelocity(b, { x: lv.x / sp * 34, y: lv.y / sp * 34 });
+    for (let k = 0; k < 10; k++) sl.fx.push({ x: x - lv.x * k, y: y - lv.y * k, vx: 0, vy: 0, c: '#81c784', t: .4 });
+  } else if (pw === 'quake') {   // terremoto: o chão treme e tudo pula
+    tone('sawtooth', 90, 30, audioOn().currentTime, .9, .2); noise(ac.currentTime, .8, 300, 60, .3); sl.shake = .8;
+    for (let k = 0; k < 4; k++) sl.fx.push({ ring: true, x, y, r: 30 + k * 40, vr: 12, c: '#a1887f', t: .8 });
+    slPush(x, y, 360, 10, 90, 9);
+  } else if (pw === 'boom') slBoom(b);
 }
 // toque: puxar o estilingue ou usar o poder no ar
 function slWorld(e) { const [px, py] = ptIn($('#slCv'), e); return [(px - sl.ox) / sl.sc, (py - sl.oy) / sl.sc]; }
@@ -11227,11 +11252,13 @@ addEventListener('pointerup', () => {
   if (Math.hypot(dx, dy) < 25) { Body.setPosition(sl.bird, SL_SLING); return; }   // puxou pouquinho: volta para o lugar
   const b = sl.bird; Body.setStatic(b, false); Sleeping.set(b, false); Body.setPosition(b, { x: SL_SLING.x + dx, y: SL_SLING.y + dy }); Body.setVelocity(b, { x: -dx * SL_POWER, y: -dy * SL_POWER });
   b.power = SL_BIRDS[b.bird][4]; sl.flying.push(b); sl.bird = null; sl.used++; sl.quiet = 0;
-  tone('triangle', 300, 900, audioOn().currentTime, .25, .14); if (b.power) say('Toque na tela para usar o poder!');
-  const me = sl; setTimeout(() => { if (sl === me && !sl.done && alive('sling')) slNext(); }, 1600);
+  tone('triangle', 300, 900, audioOn().currentTime, .25, .14); if (!sl.told) { sl.told = true; say('Quando ele bater na casinha, usa o poder especial!'); }
+  const me = sl; setTimeout(() => { if (sl === me && !sl.done && alive('sling')) slNext(); }, 2600);
 });
 function slStep(dt) {
-  const { Composite, Sleeping } = Matter, W = sl.engine.world; sl.t += dt; sl.settle -= dt;
+  const { Composite, Sleeping } = Matter, W = sl.engine.world; sl.t += dt; sl.settle -= dt; sl.shake = Math.max(0, sl.shake - dt);
+  for (const b of sl.pending.splice(0)) slUsePower(b);
+  for (const b of sl.flying) b.lv = { x: b.velocity.x, y: b.velocity.y };   // velocidade de antes da batida (o poder segue na mesma direção)
   let broke = false, booms = [];
   for (const o of Composite.allBodies(W)) {
     if (o.hp != null && o.hp <= 0) {
@@ -11284,9 +11311,10 @@ function slingLoop(t) {
   const dt = Math.min(.05, (t - sl.last) / 1000 || 0); sl.last = t;
   const cv = $('#slCv'); fitCanvas(cv); const W = cv.width, H = cv.height, x = cv.getContext('2d');
   sl.sc = Math.min(W / SL_W, H / SL_H); sl.ox = (W - SL_W * sl.sc) / 2; sl.oy = (H - SL_H * sl.sc) / 2;
-  if (sl.engine) { Matter.Engine.update(sl.engine, 1000 / 60); slStep(dt); for (const f of sl.fx) { f.t -= dt; f.x += f.vx; f.y += f.vy; if (!f.txt) f.vy += .4; } sl.fx = sl.fx.filter(f => f.t > 0); }
+  if (sl.engine) { Matter.Engine.update(sl.engine, 1000 / 60 * SL_SLOW); slStep(dt); for (const f of sl.fx) { f.t -= dt; f.x += f.vx || 0; f.y += f.vy || 0; if (!f.txt && !f.ring) f.vy += .4; } sl.fx = sl.fx.filter(f => f.t > 0); }
   const night = sl.L && sl.L.night, g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, night ? '#2a1440' : '#8fd3ff'); g.addColorStop(1, night ? '#c45a2a' : '#e8f7ff'); x.fillStyle = g; x.fillRect(0, 0, W, H);
-  x.save(); x.translate(sl.ox, sl.oy); x.scale(sl.sc, sl.sc);
+  const sk = sl.shake ? 18 * sl.shake : 0;   // terremoto: a tela treme
+  x.save(); x.translate(sl.ox + (Math.random() - .5) * sk, sl.oy + (Math.random() - .5) * sk); x.scale(sl.sc, sl.sc);
   x.fillStyle = night ? '#fff3c4' : '#ffe066'; x.beginPath(); x.arc(1450, 120, 60, 0, TAU); x.fill();
   if (night) for (let i = 0; i < 4; i++) x.drawImage(kEmo('🦇'), 300 + i * 260 + Math.sin(sl.t * 2 + i) * 40, 120 + (i % 2) * 70 + Math.cos(sl.t * 3 + i) * 15, 60, 60);
   x.fillStyle = 'rgba(255,255,255,.85)'; for (const [cx, cy] of [[300, 140], [800, 90], [1150, 170]]) { x.beginPath(); x.arc(cx, cy, 40, 0, TAU); x.arc(cx + 45, cy + 8, 32, 0, TAU); x.arc(cx - 45, cy + 8, 32, 0, TAU); x.fill(); }
@@ -11307,7 +11335,8 @@ function slingLoop(t) {
     if (bp) { x.strokeStyle = '#4e2a12'; x.lineWidth = 8; x.beginPath(); x.moveTo(S.x + 30, S.y - 30); x.lineTo(bp.x, bp.y); x.stroke(); }
     x.strokeStyle = '#7a4a24'; x.lineWidth = 22; x.beginPath(); x.moveTo(S.x, S.y + 40); x.lineTo(S.x + 30, S.y - 30); x.stroke();
     if (sl.bird && !sl.drag && sl.used === 0 && !sl.done) { const k = (sl.t % 1.6) / 1.6; x.globalAlpha = 1 - k; x.drawImage(kEmo('👆'), S.x - 30 - k * 110, S.y + 10 + k * 40, 70, 70); x.globalAlpha = 1; }
-    for (const f of sl.fx) { if (f.txt) { x.font = '800 40px "Baloo 2", sans-serif'; x.textAlign = 'center'; x.fillStyle = '#ffd23f'; x.strokeStyle = INK; x.lineWidth = 6; x.strokeText(f.txt, f.x, f.y); x.fillText(f.txt, f.x, f.y); } else { x.fillStyle = f.c; x.fillRect(f.x - 6, f.y - 6, 12, 12); } }
+    for (const f of sl.fx) if (f.ring) { f.r += f.vr; x.globalAlpha = Math.max(0, f.t / .8); x.strokeStyle = f.c; x.lineWidth = 8; x.beginPath(); x.arc(f.x, f.y, f.r, 0, TAU); x.stroke(); x.globalAlpha = 1; }
+    for (const f of sl.fx) { if (f.ring) continue; if (f.txt) { x.font = '800 40px "Baloo 2", sans-serif'; x.textAlign = 'center'; x.fillStyle = '#ffd23f'; x.strokeStyle = INK; x.lineWidth = 6; x.strokeText(f.txt, f.x, f.y); x.fillText(f.txt, f.x, f.y); } else { x.fillStyle = f.c; x.fillRect(f.x - 6, f.y - 6, 12, 12); } }
   }
   x.restore();
   sl.raf = requestAnimationFrame(slingLoop);
@@ -11343,6 +11372,19 @@ $('#pauseGo').onclick = () => { resumeGame(); blip(700); };
 $('#pauseHome').onclick = () => { resumeGame(); show('home'); blip(440); };
 const showBeforePause = show;
 show = id => { if (paused) resumeGame(); showBeforePause(id); };   // sair da tela (ex.: botão voltar do Android) também despausa
+/* música em todos os jogos: 🎵 liga e desliga, 🔀 troca. Ficam de fora os jogos que já têm som próprio ou usam a voz e o microfone */
+const MUSIC_SKIP = ['g-piano', 'g-sounds', 'g-rhythm', 'g-story', 'g-chat', 'g-statue', 'g-voices', 'g-studio', 'g-kart'];
+const MUSIC_SELF = ['g-adventure', 'g-fruit', 'g-blocks', 'g-snake'];   // estes já começam a música sozinhos
+function musicToggle() { prefs.music = prefs.music === false; savePrefs(); updateMusicBtn(); if (prefs.music) startMusic(musicScreen); else stopMusic(); }
+function musicNext() { prefs.track = (curTrack() + 1) % TRACKS.length; prefs.music = true; savePrefs(); updateMusicBtn(); toast(`🎶 Música: ${TRACKS[prefs.track].name}`); startMusic(musicScreen); }
+document.querySelectorAll('.screen.game').forEach(sc => {
+  const bar = sc.querySelector('.bar'); if (MUSIC_SKIP.includes(sc.id) || !bar || bar.querySelector('.musicBtn')) return;
+  const pb = bar.querySelector('.pauseBtn'), m = btn(bar, 'round musicBtn', '🎵', 'Música de fundo', musicToggle), t = btn(bar, 'round trackBtn', '🔀', 'Trocar a música', musicNext);
+  if (pb) { bar.insertBefore(m, pb); bar.insertBefore(t, pb); }   // o ⏸️ continua por último
+});
+updateMusicBtn();
+const showBeforeMusic = show;
+show = id => { showBeforeMusic(id); if (id.startsWith('g-') && !MUSIC_SKIP.includes(id) && !MUSIC_SELF.includes(id) && $('#' + id)) startMusic(id); };
 
 /* ================= ajudantes dos jogos de canvas novos ================= */
 // deixa o canvas do tamanho da tela (resolução limitada a ~1400 px de largura, para o tablet não travar); devolve a escala usada
@@ -12685,7 +12727,7 @@ GAMES.squish = squishStart; GAME_INTRO.squish = 'Crie seu squish e aperte bastan
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 61, name: '6.26' };
+const APP_VERSION = { code: 62, name: '6.27' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)
