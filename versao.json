@@ -1,8 +1,8 @@
 {
-  "code": 60,
-  "name": "6.25",
+  "code": 61,
+  "name": "6.26",
   "minApk": 54,
-  "notes": "Versão 6.25: jogo novo Fábrica de Squish! Crie seu squish (10 formas, cores, desenhos, carinha, enfeites e 5 recheios), guarde na coleção e aperte, estique e veja voltar devagarinho, com sons de apertar. Tem também a máquina Surpresa.",
+  "notes": "Versão 6.26: Fábrica de Squish maior! Pop It, pelúcia (pelinho que deita com o dedo), cubo de gelo que derrete, 5 moldes novos para abrir (sorvete, polvo, pinguim, abacate e dino), Loja de squish com pedidos dos bichinhos, Balde de slime para puxar e estourar bolhas, squish que ri com cócegas, dorme e pula quando joga para cima, foto do squish em Meus desenhos e esteira da fábrica.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/MundoDoOliver.apk"
 }
