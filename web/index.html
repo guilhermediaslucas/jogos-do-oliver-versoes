@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 56, name: '6.21' }; -->
+<!-- const APP_VERSION = { code: 57, name: '6.22' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -9503,7 +9503,13 @@ function kEmo(e) {
   let c = kEmoCache.get(e);
   if (!c) {
     c = document.createElement('canvas'); c.width = c.height = 96; const x = c.getContext('2d');
-    x.font = `80px ${K_EMOJI}`; x.textAlign = 'center'; x.textBaseline = 'bottom'; x.fillText(e, 48, 92); kEmoCache.set(e, c);
+    const [base, extra] = e.split('+');
+    x.font = `80px ${K_EMOJI}`; x.textAlign = 'center'; x.textBaseline = 'bottom'; x.fillText(base, 48, 92); kEmoCache.set(e, c);
+    if (extra === 'asa') {   // asa de penas brancas nas costas
+      x.save(); x.translate(56, 40); x.rotate(-.5); x.fillStyle = '#fff'; x.strokeStyle = '#90a4ae'; x.lineWidth = 2;
+      for (let i = 0; i < 4; i++) { x.beginPath(); x.ellipse(i * 6, -i * 7, 20 - i * 3, 7, -.4, 0, TAU); x.fill(); x.stroke(); }
+      x.restore();
+    }
   }
   return c;
 }
@@ -11294,7 +11300,17 @@ const CH_WORLDS = {
   safari: { name: 'Safári', icon: '🦒', ground: '#e3c06a', spot: '#d4ae54', path: '#c79a55', base: '#f4e0a8', fence: '#7a5526', deco: ['🌳', '🌾', '🪨'], home: '🚙', homeName: 'Base do safári',
     animals: [['🦩', 'o flamingo', 'o ovo de flamingo', '🦩', '#ffc4dc'], ['🦓', 'a zebra', 'a zebrinha', '🦓', null], ['🦒', 'a girafa', 'a girafinha', '🦒', null], ['🐘', 'a elefanta', 'o elefantinho', '🐘', null], ['🦁', 'a leoa', 'o leãozinho', '🦁', null]] },
   dinos: { name: 'Dinossauros', icon: '🦖', ground: '#9cc46b', spot: '#89b35a', path: '#b98f5f', base: '#d8c79a', fence: '#5a4632', deco: ['🌋', '🌿', '🪨'], home: '🛖', homeName: 'Caverna',
-    animals: [['🦎', 'o lagarto', 'o ovo de lagarto', '🦎', '#e6f0c0'], ['🐢', 'a tartaruga', 'o ovo de tartaruga', '🐢', '#f2ead2'], ['🦕', 'a pescoçuda', 'o ovo de pescoçudo', '🦕', '#b5e07a'], ['🐉', 'a dragoa', 'o ovo de dragão', '🐉', '#ff9e80'], ['🦖', 'a mamãe rex', 'o ovo de rex', '🦖', '#c5e1a5']] }
+    animals: [['🦎', 'o lagarto', 'o ovo de lagarto', '🦎', '#e6f0c0'], ['🐢', 'a tartaruga', 'o ovo de tartaruga', '🐢', '#f2ead2'], ['🦕', 'a pescoçuda', 'o ovo de pescoçudo', '🦕', '#b5e07a'], ['🐉', 'a dragoa', 'o ovo de dragão', '🐉', '#ff9e80'], ['🦖', 'a mamãe rex', 'o ovo de rex', '🦖', '#c5e1a5']] },
+  mar: { name: 'Fundo do mar', icon: '🐠', ground: '#62b7dc', spot: '#4fa4cb', path: '#ead9a5', base: '#f3e2a8', fence: '#c99a5e', deco: ['🪸', '🐚', '🌿'], home: '🏝️', homeName: 'Minha ilha',
+    animals: [['🐠', 'a peixinha', 'os ovinhos de peixe', '🐟', '#ffcc80'], ['🐢', 'a tartaruga-marinha', 'o ovo de tartaruga', '🐢', '#f2ead2'], ['🦀', 'a mamãe caranguejo', 'o caranguejinho', '🦀', null], ['🐙', 'a mamãe polvo', 'o polvinho', '🐙', null], ['🐬', 'a golfinha', 'o golfinho bebê', '🐬', null]] },
+  lago: { name: 'Lago', icon: '🐸', ground: '#7fc46a', spot: '#6bb258', path: '#9fd3e8', base: '#e8dcae', fence: '#6b4a24', deco: ['🌾', '🪷', '🌸'], home: '🏡', homeName: 'Casinha do lago',
+    animals: [['🐸', 'a sapa', 'os ovinhos de sapo', '🐸', '#c8e6c9'], ['🦆', 'a pata do lago', 'o ovo de pata', '🦆', '#d7ecff'], ['🦫', 'a castora', 'o castorzinho', '🦫', null], ['🦦', 'a lontra', 'a lontrinha', '🦦', null], ['🦛', 'a hipopótama', 'o hipopotaminho', '🦛', null]] },
+  deserto: { name: 'Deserto', icon: '🐪', ground: '#f0cd84', spot: '#e4bb6a', path: '#d6a058', base: '#f7e1ad', fence: '#a0703a', deco: ['🌵', '🪨', '🌵'], home: '⛺', homeName: 'Oásis',
+    animals: [['🦎', 'a lagartixa', 'o ovo de lagartixa', '🦎', '#f0e0b0'], ['🦉', 'a coruja-buraqueira', 'o ovo de corujinha', '🦉', '#efe6d5'], ['🦊', 'a raposa-do-deserto', 'a raposinha', '🦊', null], ['🐫', 'a camela', 'o camelinho', '🐫', null], ['🐪', 'a dromedária', 'o dromedarinho', '🐪', null]] },
+  fantasia: { name: 'Reino mágico', icon: '🦄', ground: '#f6c6dc', spot: '#f1b0cd', path: '#fff3a8', base: '#ead2f2', fence: '#ab47bc', deco: ['🌈', '🍄', '✨'], home: '🏰', homeName: 'Castelo mágico',
+    animals: [['🦋', 'a borboleta mágica', 'o ovinho de borboleta', '🐛', '#c5e1a5'], ['🦢', 'a cisne', 'o ovo de cisne', '🦢', '#ffffff'], ['🦄', 'a unicórnio', 'o unicorninho', '🦄', null], ['🐎+asa', 'a pégaso', 'o pegasinho', '🐎+asa', null], ['🐉', 'a dragoa mágica', 'o ovo de dragão mágico', '🐉', '#f8bbd0']] },
+  espaco: { name: 'Espaço', icon: '👽', dark: true, ground: '#34377a', spot: '#41449a', path: '#6c6fb8', base: '#4c509a', fence: '#c5cae9', deco: ['⭐', '🪐', '☄️'], home: '🚀', homeName: 'Minha nave',
+    animals: [['👽', 'a ET verde', 'o ovo de ET', '👽', '#b2ff59'], ['👾', 'o monstrinho espacial', 'o monstrinho bebê', '👾', null], ['🤖', 'a robô', 'o robozinho', '🤖', null], ['🛸', 'o disco voador', 'o disquinho', '🛸', null], ['🐲', 'a dragoa das estrelas', 'o ovo estrelado', '🐲', '#b39ddb']] }
 };
 const CH_W = 2400, CH_H = 1000, CH_FARM = { x: 40, y: 290, w: 380, h: 420 };
 // ninhos: quanto mais longe, mais rápida a mamãe e mais moedas
@@ -11302,7 +11318,7 @@ const CH_NESTS = [[700, 210, 95, 5], [900, 820, 130, 10], [1350, 480, 160, 15], 
 const CH_SHOES = [['👣', 'Pé no chão', 0, 150], ['👟', 'Tênis', 20, 190], ['⚡', 'Tênis relâmpago', 60, 235], ['🛼', 'Patins', 150, 290]];
 const CH_CARRY = .92;
 const CH_BUSHES = [[560, 560], [1080, 330], [1120, 690], [1600, 600], [1980, 470]];
-const CH_BUSH_E = { gelo: '⛄', selva: '🌿', safari: '🌳', montanha: '🌲', floresta: '🌲', dinos: '🌿' };
+const CH_BUSH_E = { gelo: '⛄', selva: '🌿', safari: '🌳', montanha: '🌲', floresta: '🌲', dinos: '🌿', mar: '🪸', lago: '🌾', deserto: '🌵', fantasia: '🍄', espaco: '🪐' };
 const chHidden = k => CH_BUSHES.some(([bx, by]) => Math.hypot(k.x - bx, k.y - by) < 58);
 const CH_DOG = 30;   // preço do cachorrinho ajudante
 const chAlbum = id => {
@@ -11351,7 +11367,7 @@ function chMap() {
       if (chHas(id)) askAgain(`${w.icon} ${w.name}`, `🪙 ${my.coins} moedas · ${CH_SHOES[my.shoe][0]} ${CH_SHOES[my.shoe][1]} · 🐣 ${n} filhotes`, fresh => { if (fresh) chSave.w[id] = { coins: 0, shoe: 0, babies: [], done: my.done }; keep('oliver-corre', chSave); chWorld(id); });
       else chWorld(id);
     });
-    b.style.background = w.ground;
+    b.style.background = w.ground; if (w.dark) b.style.color = '#fff';
   });
   $('#chMap').hidden = false; say('Escolha um lugar para brincar!');
 }
@@ -11471,7 +11487,7 @@ function chPaintBg(W, H) {
   } else g.drawImage(kEmo(w.home), F.x + 30, F.y - 10, 180, 180);
   g.strokeStyle = w.fence; g.lineWidth = 9; g.beginPath(); g.roundRect(F.x, F.y, F.w, F.h, 30); g.stroke();
   g.lineWidth = 6; for (let px = F.x + 20; px < F.x + F.w; px += 40) for (const py of [F.y, F.y + F.h]) { g.beginPath(); g.moveTo(px, py - 14); g.lineTo(px, py + 14); g.stroke(); }
-  g.font = '800 34px "Baloo 2", sans-serif'; g.textAlign = 'center'; g.fillStyle = INK; g.fillText(w.homeName, F.x + F.w / 2, F.y - 28);
+  g.font = '800 34px "Baloo 2", sans-serif'; g.textAlign = 'center'; g.fillStyle = w.dark ? '#fff' : INK; g.fillText(w.homeName, F.x + F.w / 2, F.y - 28);
   w.animals.forEach(([, , , , egg], i) => {
     const [nx, ny] = CH_NESTS[i];
     if (egg) { g.fillStyle = '#d9b36a'; g.beginPath(); g.ellipse(nx, ny + 8, 52, 24, 0, 0, TAU); g.fill(); g.strokeStyle = '#8a6a30'; g.lineWidth = 4; g.stroke(); }
@@ -12154,7 +12170,7 @@ GAME_INTRO.studio = 'Toque nos quadradinhos para criar a sua música, e aperte o
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 56, name: '6.21' };
+const APP_VERSION = { code: 57, name: '6.22' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)

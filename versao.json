@@ -1,8 +1,8 @@
 {
-  "code": 56,
-  "name": "6.21",
+  "code": 57,
+  "name": "6.22",
   "minApk": 54,
-  "notes": "Versão 6.21: Estilingue dos Passarinhos com 13 fases (Barris rolantes, Casa de vidro, Caixas surpresa, Telhados, Cidade dos ratos e Grande final), mais ratinhos em cada fase e obstáculos novos: vidro, barril, pneu, telhado e caixa surpresa que explode. Quando a casinha quebra, o ratinho de cima agora cai.",
+  "notes": "Versão 6.22: Corre-Corre dos Bichos com 5 lugares novos (12 no total): Fundo do mar (peixinha, tartaruga-marinha, caranguejo, polvo e golfinho), Lago (sapa, pata, castora, lontra e hipopótamo), Deserto (lagartixa, coruja, raposa-do-deserto, camelo e dromedário), Reino mágico (borboleta, cisne, unicórnio, pégaso e dragoa) e Espaço (ET, monstrinho, robô, disco voador e dragão das estrelas).",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/MundoDoOliver.apk"
 }
