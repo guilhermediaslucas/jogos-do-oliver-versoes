@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 53, name: '6.18' }; -->
+<!-- const APP_VERSION = { code: 54, name: '6.19' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -418,6 +418,9 @@ button:active { transform: scale(.92); }
 .ch-arow b { width: 130px; text-align: left; font-size: 18px; }
 .ch-arow i { font-style: normal; font-size: 40px; width: 56px; height: 56px; display: grid; place-items: center; border-radius: 14px; background: rgba(255,255,255,.7); }
 .ch-arow i.no { filter: brightness(0) opacity(.25); }
+.ch-agrid { display: grid; grid-auto-flow: column; grid-template-rows: repeat(5, 40px); grid-auto-columns: 40px; gap: 2px 6px; }
+.ch-agrid canvas { width: 40px; height: 40px; border-radius: 8px; background: rgba(255,255,255,.6); }
+.ch-agrid canvas.no { filter: brightness(0) opacity(.22); }
 .ch-wcard.locked { filter: grayscale(.85); opacity: .7; }
 .ch-shop { display: grid; gap: 10px; width: 100%; }
 .ch-item { display: flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 800; padding: 8px 16px; border-radius: 22px; background: #fff; box-shadow: 0 4px 0 var(--shadow); text-align: left; }
@@ -10270,30 +10273,42 @@ async function aiRender() {
   const ready = !!st0.exists && st0.size >= m.mb * 1e6 * .9;
   if (ready && prefs.aiReady !== prefs.aiModel) { prefs.aiReady = prefs.aiModel; savePrefs(); }
   const weak = st0.ram && st0.ram / 1e9 < m.ram ? ` ⚠️ Este tablet tem pouca memória para a IA ${m.label}: ela pode ficar lenta ou fechar o app${prefs.aiModel === 'medium' ? '; prefira a Pequena' : ''}.` : '';
-  info.textContent = aiPct >= 0 ? `Baixando a IA ${m.label}: ${aiPct}%... Pode fechar esta área, o download continua.`
+  const dl = st0.dl, waiting = dl && (dl.state === 'paused' || dl.state === 'pending');
+  if (dl && dl.state !== 'failed') aiPct = dl.total > 0 ? Math.floor(dl.got * 100 / dl.total) : 0;
+  info.textContent = dl && dl.state !== 'failed' ? `Baixando a IA ${m.label}: ${aiPct}%${waiting ? ' (esperando o Wi-Fi)' : ''}. Pode fechar o app: o Android continua o download e retoma de onde parou.`
     : ready ? `IA ${m.label} pronta ✔️ e ligada no jogo Conversar. A primeira resposta demora alguns segundos.${weak}`
     : `Para usar a IA ${m.label}, baixe uma vez (${m.mb >= 1000 ? (m.mb / 1000).toLocaleString('pt-BR') + ' GB' : m.mb + ' MB'}; use o Wi-Fi). Precisa de um tablet com ${m.ram} GB de memória ou mais. ${ram}${free}${weak}`;
-  get.hidden = ready || aiPct >= 0; del.hidden = !(st0.exists || prefs.aiReady) || aiPct >= 0;
+  get.hidden = ready || (dl && dl.state !== 'failed'); del.hidden = !(st0.exists || prefs.aiReady || dl);
+  if (dl && dl.state !== 'failed') { clearTimeout(aiWatchT); aiWatchT = setTimeout(aiWatch, 3000); }
 }
 $('#pAiModel').onchange = e => { prefs.aiModel = e.target.value; savePrefs(); blip(600); aiRender(); };
 $('#pAiGet').onclick = async () => {
-  const U = plug('Updater'), A = plug('LocalAI'), key = prefs.aiModel, m = AI_MODELS[key];
-  if (!U || !A || !m || aiPct >= 0) return;
+  const A = plug('LocalAI'), m = AI_MODELS[prefs.aiModel]; if (!A || !m) return;
   const st0 = await A.status({ name: m.file }).catch(() => ({}));
   if (st0.free && st0.free < m.mb * 1.15e6) { toast('Falta espaço no tablet para a IA 📦'); return; }
-  confirmAsk(`Baixar a IA ${m.label} (${m.mb >= 1000 ? '1,6 GB' : m.mb + ' MB'})? Use o Wi-Fi.`, async () => {
-    await A.remove().catch(() => {}); prefs.aiReady = ''; savePrefs();
-    aiPct = 0; aiRender();
-    const h = await U.addListener('progress', e => { if (e.name === 'ai/' + m.file && e.pct !== aiPct) { aiPct = Math.max(0, e.pct); if (!$('#parents').hidden) aiRender(); } });
-    try { await U.download({ url: m.url, name: 'ai/' + m.file }); prefs.aiReady = key; savePrefs(); toast(`IA ${m.label} pronta! 🦉`); }
-    catch (e) { toast('Não deu para baixar a IA. Confira a internet 📶'); }
-    aiPct = -1; h.remove(); aiRender();
+  confirmAsk(`Baixar a IA ${m.label} (${m.mb >= 1000 ? '1,6 GB' : m.mb + ' MB'})? Baixa só no Wi-Fi e continua sozinha, mesmo com o app fechado.`, async () => {
+    try { await A.download({ name: m.file, url: m.url }); toast('Download da IA começou ⬇️'); } catch (e) { toast('Não deu para começar o download 📶'); }
+    aiWatch();
   });
 };
+// o Android baixa a IA sozinho (continua de onde parou se a internet cair, o app fechar ou atualizar); aqui só acompanhamos
+let aiWatchT = 0;
+function aiWatch() {
+  clearTimeout(aiWatchT);
+  const A = plug('LocalAI'), m = AI_MODELS[prefs.aiModel || '']; if (!A || !m) return;
+  A.status({ name: m.file }).then(st0 => {
+    aiPct = st0.dl ? (st0.dl.total > 0 ? Math.floor(st0.dl.got * 100 / st0.dl.total) : 0) : -1;
+    if (st0.exists && st0.size >= m.mb * 1e6 * .9) {
+      if (prefs.aiReady !== prefs.aiModel) { prefs.aiReady = prefs.aiModel; savePrefs(); toast(`IA ${m.label} pronta! 🦉`); }
+    } else if (st0.dl && st0.dl.state === 'failed') { aiPct = -1; toast('O download da IA falhou. Toque em baixar de novo 📶'); }
+    else if (st0.dl) aiWatchT = setTimeout(aiWatch, 3000);
+    if (!$('#parents').hidden) aiRender();
+  }).catch(() => {});
+}
 // ao abrir o app, confere se a IA escolhida já está inteira no tablet (para o Conversar já usar)
 (async () => {
   const A = plug('LocalAI'), m = AI_MODELS[prefs.aiModel || '']; if (!A || !m || prefs.aiReady === prefs.aiModel) return;
-  try { const st0 = await A.status({ name: m.file }); if (st0.exists && st0.size >= m.mb * 1e6 * .9) { prefs.aiReady = prefs.aiModel; savePrefs(); } } catch (e) {}
+  try { const st0 = await A.status({ name: m.file }); if (st0.exists && st0.size >= m.mb * 1e6 * .9) { prefs.aiReady = prefs.aiModel; savePrefs(); } else if (st0.dl) aiWatch(); } catch (e) {}
 })();
 $('#pAiDel').onclick = () => confirmAsk('Apagar a IA do tablet? O amigo volta a usar só as falas prontas.', async () => {
   try { await plug('LocalAI')?.remove(); } catch (e) {} prefs.aiReady = ''; savePrefs(); toast('IA apagada'); aiRender();
@@ -11037,16 +11052,32 @@ const CH_WORLDS = {
   dinos: { name: 'Dinossauros', icon: '🦖', ground: '#9cc46b', spot: '#89b35a', path: '#b98f5f', base: '#d8c79a', fence: '#5a4632', deco: ['🌋', '🌿', '🪨'], home: '🛖', homeName: 'Caverna',
     animals: [['🦎', 'o lagarto', 'o ovo de lagarto', '🦎', '#e6f0c0'], ['🐢', 'a tartaruga', 'o ovo de tartaruga', '🐢', '#f2ead2'], ['🦕', 'a pescoçuda', 'o ovo de pescoçudo', '🦕', '#b5e07a'], ['🐉', 'a dragoa', 'o ovo de dragão', '🐉', '#ff9e80'], ['🦖', 'a mamãe rex', 'o ovo de rex', '🦖', '#c5e1a5']] }
 };
-const CH_W = 1600, CH_H = 1000, CH_FARM = { x: 40, y: 290, w: 380, h: 420 };
+const CH_W = 2400, CH_H = 1000, CH_FARM = { x: 40, y: 290, w: 380, h: 420 };
 // ninhos: quanto mais longe, mais rápida a mamãe e mais moedas
-const CH_NESTS = [[700, 210, 95, 5], [760, 800, 130, 10], [1200, 840, 160, 15], [1150, 470, 178, 20], [1440, 250, 228, 40]];
+const CH_NESTS = [[700, 210, 95, 5], [900, 820, 130, 10], [1350, 480, 160, 15], [1800, 230, 178, 20], [2200, 760, 228, 40]];
 const CH_SHOES = [['👣', 'Pé no chão', 0, 150], ['👟', 'Tênis', 20, 190], ['⚡', 'Tênis relâmpago', 60, 235], ['🛼', 'Patins', 150, 290]];
 const CH_CARRY = .92;
-const CH_BUSHES = [[560, 560], [980, 330], [1000, 690]];
+const CH_BUSHES = [[560, 560], [1080, 330], [1120, 690], [1600, 600], [1980, 470]];
 const CH_BUSH_E = { gelo: '⛄', selva: '🌿', safari: '🌳', montanha: '🌲', floresta: '🌲', dinos: '🌿' };
 const chHidden = k => CH_BUSHES.some(([bx, by]) => Math.hypot(k.x - bx, k.y - by) < 58);
 const CH_DOG = 30;   // preço do cachorrinho ajudante
-const chAlbum = id => (chSave.album || (chSave.album = {}))[id] || (chSave.album[id] = []);
+const chAlbum = id => {
+  const a = (chSave.album || (chSave.album = {}))[id] || (chSave.album[id] = []);
+  for (let i = 0; i < a.length; i++) if (!a[i].includes('|')) a[i] += '|0';   // versões antigas guardavam só o bicho
+  return a;
+};
+// cores dos filhotes: 0 é a cor normal; as outras saem às vezes, para a criança querer pegar todas
+const CH_HUES = [0, 200, 300, 110, 40], CH_EGGS = [null, '#90caf9', '#f48fb1', '#a5d6a7', '#ce93d8'];
+const chVar = () => Math.random() < .45 ? 0 : 1 + (Math.random() * 4 | 0);
+const chTintC = new Map();
+function chTint(e, v) {
+  if (!v) return kEmo(e);
+  const key = e + v; let c = chTintC.get(key);
+  if (!c) { c = document.createElement('canvas'); c.width = c.height = 96; const g = c.getContext('2d'); g.filter = `hue-rotate(${CH_HUES[v]}deg) saturate(1.4)`; g.drawImage(kEmo(e), 0, 0); chTintC.set(key, c); }
+  return c;
+}
+function chBaby(x, e, v, cx, cy, size, flip = 1) { x.save(); x.translate(cx, cy); x.scale(flip, 1); x.drawImage(chTint(e, v), -size / 2, -size * .56, size, size); x.restore(); }
+const chEggColor = (a, v) => v ? CH_EGGS[v] : a.egg;
 const chSave = load('oliver-corre', { world: '', w: {}, open: ['fazenda'] });
 const chW = id => chSave.w[id] || (chSave.w[id] = { coins: 0, shoe: 0, babies: [], done: false });
 const cw = () => chW(ch.world);
@@ -11057,7 +11088,7 @@ if ('coins' in chSave) {   // versão 6.11 guardava tudo junto: passa para o mun
 }
 const chHas = id => { const w = chSave.w[id]; return !!w && (w.coins > 0 || w.shoe > 0 || w.babies.length > 0); };
 let ch = null;
-const chKeep = () => { cw().babies = ch.babies.slice(-30).map(b => [b.emo, Math.round(b.x), Math.round(b.y)]); keep('oliver-corre', chSave); };
+const chKeep = () => { cw().babies = ch.babies.slice(-40).map(b => [b.emo, Math.round(b.x), Math.round(b.y), b.v || 0]); keep('oliver-corre', chSave); };
 function chaseStart() {
   if (ch?.raf) cancelAnimationFrame(ch.raf);
   ch = { raf: 0, run: false, world: chSave.world || 'fazenda', t: 0, last: 0, fx: [], flies: [], eggs: [], babies: [], down: false };
@@ -11069,7 +11100,7 @@ function chMap() {
   const ids = Object.keys(CH_WORLDS);
   ids.forEach((id, i) => {
     const w = CH_WORLDS[id], open = chSave.open.includes(id), my = chSave.w[id], n = my ? my.babies.length : 0;
-    const info = open ? `${my ? CH_SHOES[my.shoe][0] : ''} 📒 ${chAlbum(id).length}/5` : '🔒';
+    const info = open ? `${my ? CH_SHOES[my.shoe][0] : ''} 📒 ${chAlbum(id).length}/25` : '🔒';
     const b = btn(box, 'ch-wcard' + (open ? '' : ' locked'), `<span>${w.icon}</span><b>${w.name}</b><small>${info.trim() || '&nbsp;'}</small>`, w.name, () => {
       if (!open) { const prev = CH_WORLDS[ids[i - 1]]; blip(200, .2); say(`Para abrir, leve para casa ${prev.animals[4][2]}, lá na ${prev.name}!`); return; }
       blip(620); $('#chMap').hidden = true;
@@ -11082,20 +11113,27 @@ function chMap() {
 }
 function chWorld(id) {
   const W = CH_WORLDS[id]; chSave.world = id; keep('oliver-corre', chSave);
-  Object.assign(ch, { world: id, bg: null, dog: null, fx: [], flies: [], eggs: [], run: true,
+  Object.assign(ch, { world: id, bg: null, dog: null, camX: null, mis: null, fx: [], flies: [], eggs: [], run: true,
     kid: { x: CH_FARM.x + CH_FARM.w / 2, y: CH_FARM.y + CH_FARM.h / 2 + 60, tx: null, ty: null, carry: null, inv: 0, face: 1, walk: 0 },
     animals: W.animals.map(([emo, name, item, baby, egg], i) => { const [nx, ny, speed, reward] = CH_NESTS[i]; return { emo, name, item, baby, egg, nx, ny, speed, reward, x: nx - 56, y: ny + 6, has: true, state: 'home', t: 0, face: -1, refill: 0, big: i >= 3 }; }),
-    babies: chW(id).babies.map(([emo, x, y]) => ({ emo, x, y, vx: 0, vy: 0, coinT: 3 + Math.random() * 5, turn: 0 })) });
+    babies: chW(id).babies.map(([emo, x, y, v]) => ({ emo, x, y, v: v || 0, vx: 0, vy: 0, coinT: 3 + Math.random() * 5, turn: 0 })) });
   $('#chTitle').textContent = W.name; chHud();
   say(`${W.name}! Pegue ${W.animals[0][2]} e volte correndo para casa!`);
+  setTimeout(() => { if (alive('chase') && ch.world === id && !ch.mis) chMission(); }, 7000);
+}
+// missão: levar alguns de um bicho para casa (os mais fáceis aparecem mais)
+function chMission() {
+  const ok = [0, 1, 2, 3, 4].filter(i => chNeed(ch.animals[i]) <= cw().shoe), i = pick(ok.concat(ok.filter(j => j < 3)));
+  ch.mis = { i, n: 2 + (Math.random() * 2 | 0), got: 0 };
+  say(`Missão: leve ${ch.mis.n} vezes ${ch.animals[i].item} para casa!`);
 }
 function chHud() { if (!ch?.animals) return; $('#chCoins').textContent = '🪙 ' + cw().coins; $('#chShoe').textContent = CH_SHOES[cw().shoe][0]; }
 const chInHome = (px, py, m = 0) => px > CH_FARM.x - m && px < CH_FARM.x + CH_FARM.w + m && py > CH_FARM.y - m && py < CH_FARM.y + CH_FARM.h + m;
 const chNeed = a => CH_SHOES.findIndex(s => s[3] * CH_CARRY > a.speed * 1.04);
 // tela -> mundo
 function chWorldPt(e) { const cv = $('#chCv'), [px, py] = ptIn(cv, e); return [(px - ch.ox) / ch.sc, (py - ch.oy) / ch.sc]; }
-$('#chCv').addEventListener('pointerdown', e => { if (!ch?.run) return; ch.down = true; [ch.kid.tx, ch.kid.ty] = chWorldPt(e); });
-$('#chCv').addEventListener('pointermove', e => { if (ch?.run && ch.down) [ch.kid.tx, ch.kid.ty] = chWorldPt(e); });
+$('#chCv').addEventListener('pointerdown', e => { if (!ch?.run) return; ch.down = true; ch.ptrS = { clientX: e.clientX, clientY: e.clientY }; [ch.kid.tx, ch.kid.ty] = chWorldPt(e); });
+$('#chCv').addEventListener('pointermove', e => { if (ch?.run && ch.down) { ch.ptrS = { clientX: e.clientX, clientY: e.clientY }; [ch.kid.tx, ch.kid.ty] = chWorldPt(e); } });
 addEventListener('pointerup', () => { if (ch) ch.down = false; });
 function chStep(dt) {
   const k = ch.kid; ch.t += dt; k.inv -= dt;
@@ -11106,9 +11144,9 @@ function chStep(dt) {
   }
   k.x = Math.max(30, Math.min(CH_W - 30, k.x)); k.y = Math.max(110, Math.min(CH_H - 20, k.y));
   for (const a of ch.animals) {
-    if (!a.has && a.state === 'home') { a.refill -= dt; if (a.refill <= 0) { a.has = true; a.gold = Math.random() < .15; chirp(a.gold ? 1300 : 900, .08); } }
+    if (!a.has && a.state === 'home') { a.refill -= dt; if (a.refill <= 0) { a.has = true; a.gold = Math.random() < .15; a.v = chVar(); chirp(a.gold ? 1300 : 900, .08); } }
     if (a.has && !k.carry && k.inv <= 0 && Math.hypot(k.x - a.nx, k.y - a.ny) < 70) {   // pegou!
-      a.has = false; k.carry = a; k.gold = a.gold; a.gold = false; a.state = 'alert'; a.t = .7; chirp(700, .12); chirp(1000, .15);
+      a.has = false; k.carry = a; k.gold = a.gold; k.v = a.v || 0; a.gold = false; a.state = 'alert'; a.t = .7; chirp(700, .12); chirp(1000, .15);
       say(k.gold ? `Uau, brilhante! Vale muitas moedas! Corre para casa!` : `Pegou ${a.item}! Corre para casa!`);
     }
     if (a.state === 'alert') { a.t -= dt; if (a.t <= 0) a.state = 'chase'; }
@@ -11122,7 +11160,7 @@ function chStep(dt) {
       a.x += dx / d * a.speed * dt; a.y += dy / d * a.speed * dt; a.face = dx > 0 ? 1 : -1;
       if (chInHome(a.x, a.y, 20)) { a.state = 'back'; continue; }   // bicho não entra na casa
       if (d < 44) {
-        k.carry = null; k.inv = 1.4; a.state = 'back'; ch.flies.push({ a, fx: k.x, fy: k.y - 110, t: 0, gold: k.gold }); k.gold = false; chirp(220, .3, 'sawtooth', .07);
+        k.carry = null; k.inv = 1.4; a.state = 'back'; ch.flies.push({ a, fx: k.x, fy: k.y - 110, t: 0, gold: k.gold, v: k.v }); k.gold = false; chirp(220, .3, 'sawtooth', .07);
         const N = a.name[0].toUpperCase() + a.name.slice(1);
         say(chNeed(a) > cw().shoe ? `Ops! ${N} pegou de volta! Esse bicho corre mais que você. Compre um tênis na loja!` : `Ops! ${N} pegou de volta! Tenta de novo!`);
       }
@@ -11136,21 +11174,25 @@ function chStep(dt) {
   }
   if (k.carry && chInHome(k.x, k.y)) {   // chegou em casa
     const a = k.carry, gold = k.gold, got = a.reward * (gold ? 5 : 1); k.carry = null; k.gold = false; a.refill = 4; cw().coins += got; chHud();
-    const alb = chAlbum(ch.world), fresh = !alb.includes(a.baby);
-    if (fresh) { alb.push(a.baby); keep('oliver-corre', chSave); setTimeout(() => { say(alb.length >= 5 ? `Você completou o álbum ${CH_WORLDS[ch.world].name === 'Gelo' ? 'do' : 'da'} ${CH_WORLDS[ch.world].name}!` : 'Figurinha nova no álbum!'); if (alb.length >= 5) celebrate(false); }, 3200); }
+    const v = k.v || 0, key = a.baby + '|' + v, alb = chAlbum(ch.world), fresh = !alb.includes(key);
+    if (fresh) { alb.push(key); keep('oliver-corre', chSave); setTimeout(() => { say(alb.length >= 25 ? `Você completou o álbum ${CH_WORLDS[ch.world].name === 'Gelo' ? 'do' : 'da'} ${CH_WORLDS[ch.world].name}!` : v ? 'Uma cor nova! Figurinha nova no álbum!' : 'Figurinha nova no álbum!'); if (alb.length >= 25) celebrate(false); }, 3200); }
+    if (ch.mis && a === ch.animals[ch.mis.i] && ++ch.mis.got >= ch.mis.n) {   // missão cumprida: moedas extras e uma nova missão
+      const bonus = 10 * (ch.mis.i + 1) + 10; cw().coins += bonus; chHud(); setTimeout(() => { celebrate(false); say(`Missão cumprida! Ganhou mais ${bonus} moedas!`); }, 1800);
+      ch.mis = null; setTimeout(() => { if (alive('chase') && ch.animals) chMission(); }, 6000);
+    }
     const ids = Object.keys(CH_WORLDS), nx = ids[ids.indexOf(ch.world) + 1];
     if (a === ch.animals[4] && nx && !chSave.open.includes(nx)) {   // pegou o bicho mais rápido: abre o próximo lugar
       chSave.open.push(nx); cw().done = true; keep('oliver-corre', chSave);
       setTimeout(() => { celebrate(false); say(`Uau! Você abriu um lugar novo: ${CH_WORLDS[nx].name}! Toque no mapa para ir até lá.`); }, 2500);
     }
     const ex = CH_FARM.x + 60 + Math.random() * (CH_FARM.w - 120), ey = CH_FARM.y + 190 + Math.random() * (CH_FARM.h - 230);
-    if (a.egg) ch.eggs.push({ a, x: ex, y: ey, t: 7 }); else ch.babies.push({ emo: a.baby, x: ex, y: ey, vx: 0, vy: 0, coinT: 4, turn: 0 });
+    if (a.egg) ch.eggs.push({ a, v, x: ex, y: ey, t: 7 }); else ch.babies.push({ emo: a.baby, v, x: ex, y: ey, vx: 0, vy: 0, coinT: 4, turn: 0 });
     confettiAt(ch.fx, k.x, k.y - 60); [523, 659, 784, 1047].forEach((f, i) => blip(f, .18, i * .11));
     say(`Eba! Agora ${a.item} mora com você! Ganhou ${got} moedas!`); chKeep();
   }
-  for (const f of ch.flies) { f.t += dt * 1.6; if (f.t >= 1) { f.a.has = true; f.a.gold = !!f.gold; f.done = true; } }
+  for (const f of ch.flies) { f.t += dt * 1.6; if (f.t >= 1) { f.a.has = true; f.a.gold = !!f.gold; f.a.v = f.v || 0; f.done = true; } }
   ch.flies = ch.flies.filter(f => !f.done);
-  for (const e of ch.eggs) if ((e.t -= dt) <= 0) { ch.babies.push({ emo: e.a.baby, x: e.x, y: e.y, vx: 0, vy: 0, coinT: 4, turn: 0 }); confettiAt(ch.fx, e.x, e.y, 14); chirp(1200, .1); say('Nasceu! Que fofo!'); e.done = true; chKeep(); }
+  for (const e of ch.eggs) if ((e.t -= dt) <= 0) { ch.babies.push({ emo: e.a.baby, v: e.v || 0, x: e.x, y: e.y, vx: 0, vy: 0, coinT: 4, turn: 0 }); confettiAt(ch.fx, e.x, e.y, 14); chirp(1200, .1); say('Nasceu! Que fofo!'); e.done = true; chKeep(); }
   ch.eggs = ch.eggs.filter(e => !e.done);
   for (const b of ch.babies) {   // filhotes passeiam e soltam moedinhas
     b.turn -= dt; if (b.turn <= 0) { const an = Math.random() * TAU; b.vx = Math.cos(an) * 40; b.vy = Math.sin(an) * 40; b.turn = 1 + Math.random() * 2; }
@@ -11167,12 +11209,12 @@ function chStep(dt) {
 // cenário parado: desenhado uma vez por mundo e por tamanho de tela
 function chPaintBg(W, H) {
   const w = CH_WORLDS[ch.world], c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
-  g.fillStyle = w.ground; g.fillRect(0, 0, W, H); g.save(); g.translate(ch.ox, ch.oy); g.scale(ch.sc, ch.sc);
+  g.fillStyle = w.ground; g.fillRect(0, 0, W, H); g.save(); g.translate(ch.ox0, ch.oy); g.scale(ch.sc, ch.sc);
   let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
   g.fillStyle = w.spot; for (let i = 0; i < 240; i++) { g.beginPath(); g.ellipse(rnd() * CH_W, rnd() * CH_H, 10 + rnd() * 18, 5 + rnd() * 6, 0, 0, TAU); g.fill(); }
   g.strokeStyle = w.path; g.lineCap = 'round'; g.lineWidth = 46;
   for (const [nx, ny] of CH_NESTS) { g.beginPath(); g.moveTo(CH_FARM.x + CH_FARM.w, CH_FARM.y + CH_FARM.h / 2); g.quadraticCurveTo((CH_FARM.x + CH_FARM.w + nx) / 2, ny + (ny < 500 ? 120 : -120), nx, ny); g.stroke(); }
-  for (let i = 0; i < 34; i++) { const px = rnd() * CH_W, py = rnd() * CH_H; if (chInHome(px, py, 60) || CH_NESTS.some(([nx, ny]) => Math.hypot(px - nx, py - ny) < 110)) continue; g.drawImage(kEmo(w.deco[i % 3]), px - 22, py - 24, 44, 44); }
+  for (let i = 0; i < 52; i++) { const px = rnd() * CH_W, py = rnd() * CH_H; if (chInHome(px, py, 60) || CH_NESTS.some(([nx, ny]) => Math.hypot(px - nx, py - ny) < 110)) continue; g.drawImage(kEmo(w.deco[i % 3]), px - 22, py - 24, 44, 44); }
   const F = CH_FARM; g.fillStyle = w.base; g.beginPath(); g.roundRect(F.x, F.y, F.w, F.h, 30); g.fill();
   g.strokeStyle = INK; g.lineWidth = 6;
   if (w.home === 'barn') {
@@ -11199,23 +11241,28 @@ function chEgg(x, px, py, r, color, wob = 0) {
   if (color !== '#fffdf6' && color !== '#ffffff') { x.fillStyle = 'rgba(80,50,20,.28)'; for (const [a, b] of [[-.3, -.3], [.3, .1], [-.1, .45]]) { x.beginPath(); x.arc(a * r, b * r, r * .14, 0, TAU); x.fill(); } }
   x.restore();
 }
-function chItem(x, a, px, py, size, gold) {
-  if (a.egg) chEgg(x, px, py, size * .45, gold ? '#ffd54f' : a.egg); else emoDraw(x, a.baby, px, py, size * .85, -1);
+function chItem(x, a, px, py, size, gold, v = 0) {
+  if (a.egg) chEgg(x, px, py, size * .45, gold ? '#ffd54f' : chEggColor(a, v)); else chBaby(x, a.baby, v, px, py, size * .85, -1);
   if (gold) for (let i = 0; i < 3; i++) { const an = ch.t * 3 + i * 2.1; emoDraw(x, '✨', px + Math.cos(an) * size * .6, py + Math.sin(an) * size * .5, size * .4); }
 }
 function chaseLoop(t) {
   if (!alive('chase')) { ch.raf = 0; return; }
   const dt = Math.min(.05, (t - ch.last) / 1000 || 0); ch.last = t;
   const cv = $('#chCv'); fitCanvas(cv); const W = cv.width, H = cv.height, x = cv.getContext('2d');
-  const sc = Math.min(W / CH_W, H / CH_H);
-  if (sc !== ch.sc || !ch.bg || ch.bg.width !== W) { ch.sc = sc; ch.ox = (W - CH_W * sc) / 2; ch.oy = (H - CH_H * sc) / 2; ch.bg = ch.animals ? chPaintBg(W, H) : null; }
+  // a altura do mundo cabe na tela; na largura, a câmera segue a criança
+  const sc = H / CH_H, viewW = W / sc, ox0 = Math.max(0, (W - CH_W * sc) / 2);
+  if (sc !== ch.sc || !ch.bg || ch.bgH !== H || ch.ox0 !== ox0) { ch.sc = sc; ch.ox0 = ox0; ch.oy = 0; ch.bgH = H; ch.bg = ch.animals ? chPaintBg(Math.ceil(CH_W * sc + ox0 * 2), H) : null; }
   if (!ch.animals) { ch.raf = requestAnimationFrame(chaseLoop); return; }
+  const want = ox0 > 0 ? 0 : Math.max(0, Math.min(CH_W - viewW, ch.kid.x - viewW * .4));
+  ch.camX = ch.camX == null ? want : ch.camX + (want - ch.camX) * Math.min(1, dt * 6); ch.ox = ox0 - ch.camX * sc;
+  if (ch.down && ch.ptrS) [ch.kid.tx, ch.kid.ty] = chWorldPt(ch.ptrS);   // dedo parado na beirada: continua andando
   if (ch.run) chStep(dt);
-  x.drawImage(ch.bg, 0, 0); x.save(); x.translate(ch.ox, ch.oy); x.scale(sc, sc);
-  for (const e of ch.eggs) chEgg(x, e.x, e.y, 22, e.a.egg, e.t < 2 ? Math.sin(ch.t * 30) * .25 : 0);
-  const list = [...ch.babies.map(b => ({ y: b.y, f: () => emoDraw(x, b.emo, b.x, b.y - 18, 44, b.vx > 0 ? -1 : 1) })),
+  x.fillStyle = CH_WORLDS[ch.world].ground; x.fillRect(0, 0, W, H);
+  x.drawImage(ch.bg, -ch.camX * sc, 0); x.save(); x.translate(ch.ox, ch.oy); x.scale(sc, sc);
+  for (const e of ch.eggs) chEgg(x, e.x, e.y, 22, chEggColor(e.a, e.v), e.t < 2 ? Math.sin(ch.t * 30) * .25 : 0);
+  const list = [...ch.babies.map(b => ({ y: b.y, f: () => chBaby(x, b.emo, b.v, b.x, b.y - 18, 44, b.vx > 0 ? -1 : 1) })),
     ...ch.animals.map(a => ({ y: a.y, f: () => {
-      if (a.has) chItem(x, a, a.nx, a.ny - 6, 52, a.gold);
+      if (a.has) chItem(x, a, a.nx, a.ny - 6, 52, a.gold, a.v);
       const big = a.big ? 108 : 80, hop = a.state === 'chase' ? Math.abs(Math.sin(ch.t * 14)) * 8 : 0;
       emoDraw(x, a.emo, a.x, a.y - big * .38 - hop, big, a.face < 0 ? 1 : -1);
       if (a.state === 'home' && a.has) { x.font = '800 26px sans-serif'; x.fillStyle = 'rgba(58,36,20,.55)'; x.textAlign = 'center'; x.fillText('z', a.x + 30, a.y - big * .7 - Math.sin(ch.t * 2) * 6); }
@@ -11232,17 +11279,26 @@ function chaseLoop(t) {
       const k = ch.kid, s = .62, bob = Math.abs(Math.sin(k.walk * 12)) * 5;
       x.save(); if ((k.inv > 0 && Math.floor(ch.t * 12) % 2) || chHidden(k)) x.globalAlpha = .45;
       drawAvatar(x, k.x - 50 * s, k.y - 150 * s - bob, s, k.face, k.tx !== null ? k.walk * 14 : 0, false, k.carry ? 'cheer' : '');
-      x.restore(); if (k.carry) chItem(x, k.carry, k.x, k.y - 118 - bob, 54, k.gold);
+      x.restore(); if (k.carry) chItem(x, k.carry, k.x, k.y - 118 - bob, 54, k.gold, k.v);
     } },
     ...CH_BUSHES.map(([bx, by]) => ({ y: by + 34, f: () => emoDraw(x, CH_BUSH_E[ch.world] || '🌳', bx, by - 10, 120) })),
     ...(ch.dog ? [{ y: ch.dog.y, f: () => { const d = ch.dog; emoDraw(x, '🐶', d.x, d.y - 26 - (d.bark > 0 ? Math.abs(Math.sin(ch.t * 20)) * 10 : 0), 58, ch.kid.face > 0 ? -1 : 1); if (d.bark > 0) { x.font = '800 30px sans-serif'; x.fillStyle = INK; x.textAlign = 'center'; x.fillText('Au au!', d.x, d.y - 70); } } }] : [])];
   list.sort((p, q) => p.y - q.y).forEach(o => o.f());
-  for (const f of ch.flies) { const u = f.t; chItem(x, f.a, f.fx + (f.a.nx - f.fx) * u, f.fy + (f.a.ny - f.fy) * u - Math.sin(u * Math.PI) * 140, 52, f.gold); }
+  for (const f of ch.flies) { const u = f.t; chItem(x, f.a, f.fx + (f.a.nx - f.fx) * u, f.fy + (f.a.ny - f.fy) * u - Math.sin(u * Math.PI) * 140, 52, f.gold, f.v); }
   for (const f of ch.fx) if (f.coin) { f.t -= dt; f.y += f.vy * dt; emoDraw(x, '🪙', f.x, f.y, 34); }
   ch.fx = ch.fx.filter(f => !f.coin || f.t > 0);
   confettiDraw(x, ch.fx.filter(f => !f.coin), dt); ch.fx = ch.fx.filter(f => f.coin || f.t > 0);
   if (ch.kid.tx !== null && ch.down) { x.strokeStyle = 'rgba(255,255,255,.7)'; x.lineWidth = 5; x.beginPath(); x.arc(ch.kid.tx, ch.kid.ty, 22 + Math.sin(ch.t * 8) * 4, 0, TAU); x.stroke(); }
+  if (ch.kid.carry && ch.camX > CH_FARM.x + CH_FARM.w - 60) {   // casa fora da tela: setinha mostrando o caminho
+    const ax = ch.camX + 70, ay = CH_FARM.y + CH_FARM.h / 2 + Math.sin(ch.t * 6) * 10; emoDraw(x, '⬅️', ax - Math.abs(Math.sin(ch.t * 4)) * 12, ay, 60); emoDraw(x, '🏠', ax + 55, ay, 50);
+  }
   x.restore();
+  if (ch.mis) {   // placa da missão no canto
+    const m = ch.mis, a = ch.animals[m.i], u = H / 100;
+    x.fillStyle = 'rgba(255,248,234,.92)'; x.beginPath(); x.roundRect(u * 2, u * 2, u * 28, u * 9, u * 3); x.fill();
+    x.font = `800 ${u * 4}px "Baloo 2", sans-serif`; x.textAlign = 'left'; x.fillStyle = INK; x.fillText(`🎯 ${m.got}/${m.n}`, u * 4, u * 8);
+    chItem(x, a, u * 24, u * 7, u * 7, false, 0);
+  }
   ch.raf = requestAnimationFrame(chaseLoop);
 }
 function chShop() {
@@ -11271,7 +11327,8 @@ $('#chAlbumBtn').onclick = () => {
   blip(600); const wasRun = ch.run; ch.run = false; const box = $('#chAlbumList'); box.innerHTML = '';
   for (const [id, w] of Object.entries(CH_WORLDS)) {
     const got = chAlbum(id), row = document.createElement('div'); row.className = 'ch-arow'; row.style.background = w.ground;
-    row.innerHTML = `<b>${w.icon} ${w.name}</b>` + w.animals.map(a => `<i class="${got.includes(a[3]) ? '' : 'no'}">${a[3]}</i>`).join('') + (got.length >= 5 ? ' ⭐' : '');
+    row.innerHTML = `<b>${w.icon} ${w.name}<br><small>${got.length}/25${got.length >= 25 ? ' ⭐' : ''}</small></b><span class="ch-agrid"></span>`;
+    for (const a of w.animals) for (let v = 0; v < 5; v++) { const im = chTint(a[3], v); const c = document.createElement('canvas'); c.width = c.height = 96; c.getContext('2d').drawImage(im, 0, 0); if (!got.includes(a[3] + '|' + v)) c.className = 'no'; row.lastChild.appendChild(c); }
     box.appendChild(row);
   }
   $('#chAlbum').hidden = false; $('#chAlbumClose').onclick = () => { $('#chAlbum').hidden = true; ch.run = wasRun && $('#chMap').hidden; };
@@ -11853,7 +11910,7 @@ GAME_INTRO.studio = 'Toque nos quadradinhos para criar a sua música, e aperte o
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 53, name: '6.18' };
+const APP_VERSION = { code: 54, name: '6.19' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)
@@ -11873,7 +11930,7 @@ function renderUpdate() {
 // troca para a versão baixada (só na tela inicial, para não interromper uma brincadeira)
 async function applyUpdate() {
   const p = pendingUpdate(), W = plug('WebView');
-  if (!p || !W || $('#home').hidden || aiPct >= 0 || localStorage.getItem('oliver-update-tried') == p.code) return;   // não troca de versão no meio do download da IA
+  if (!p || !W || $('#home').hidden || localStorage.getItem('oliver-update-tried') == p.code) return;
   localStorage.setItem('oliver-update-tried', p.code);   // se a versão nova não abrir direito, não tenta de novo
   toast(`✨ Atualizando para a versão ${p.name}...`);
   try { await W.setServerBasePath({ path: p.dir }); await W.persistServerBasePath(); } catch (e) { updLog('não consegui trocar de versão: ' + (e.message || e)); }
