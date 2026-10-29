@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 49, name: '6.14' }; -->
+<!-- const APP_VERSION = { code: 50, name: '6.15' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -10221,7 +10221,9 @@ async function aiRender() {
   let st0 = {}; try { st0 = await A.status({ name: m ? m.file : '' }); } catch (e) {}
   const gb = b => (b / 1e9).toLocaleString('pt-BR', { maximumFractionDigits: 1 }), ram = st0.ram ? `Memória do tablet: ${gb(st0.ram)} GB. ` : '', free = st0.free ? `Espaço livre: ${gb(st0.free)} GB.` : '';
   if (!m) { info.textContent = ram + free; get.hidden = true; del.hidden = !prefs.aiReady; return; }
-  const ready = st0.exists && prefs.aiReady === prefs.aiModel;
+  // o arquivo inteiro no tablet já basta: se o app trocou de versão no meio do download, o "pronto" não tinha sido marcado
+  const ready = !!st0.exists && st0.size >= m.mb * 1e6 * .9;
+  if (ready && prefs.aiReady !== prefs.aiModel) { prefs.aiReady = prefs.aiModel; savePrefs(); }
   const weak = st0.ram && st0.ram / 1e9 < m.ram ? ` ⚠️ Este tablet tem pouca memória para a IA ${m.label}: ela pode ficar lenta ou fechar o app${prefs.aiModel === 'medium' ? '; prefira a Pequena' : ''}.` : '';
   info.textContent = aiPct >= 0 ? `Baixando a IA ${m.label}: ${aiPct}%... Pode fechar esta área, o download continua.`
     : ready ? `IA ${m.label} pronta ✔️ e ligada no jogo Conversar. A primeira resposta demora alguns segundos.${weak}`
@@ -10243,6 +10245,11 @@ $('#pAiGet').onclick = async () => {
     aiPct = -1; h.remove(); aiRender();
   });
 };
+// ao abrir o app, confere se a IA escolhida já está inteira no tablet (para o Conversar já usar)
+(async () => {
+  const A = plug('LocalAI'), m = AI_MODELS[prefs.aiModel || '']; if (!A || !m || prefs.aiReady === prefs.aiModel) return;
+  try { const st0 = await A.status({ name: m.file }); if (st0.exists && st0.size >= m.mb * 1e6 * .9) { prefs.aiReady = prefs.aiModel; savePrefs(); } } catch (e) {}
+})();
 $('#pAiDel').onclick = () => confirmAsk('Apagar a IA do tablet? O amigo volta a usar só as falas prontas.', async () => {
   try { await plug('LocalAI')?.remove(); } catch (e) {} prefs.aiReady = ''; savePrefs(); toast('IA apagada'); aiRender();
 });
@@ -11659,7 +11666,7 @@ GAME_INTRO.studio = 'Toque nos quadradinhos para criar a sua música, e aperte o
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 49, name: '6.14' };
+const APP_VERSION = { code: 50, name: '6.15' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)
@@ -11679,7 +11686,7 @@ function renderUpdate() {
 // troca para a versão baixada (só na tela inicial, para não interromper uma brincadeira)
 async function applyUpdate() {
   const p = pendingUpdate(), W = plug('WebView');
-  if (!p || !W || $('#home').hidden || localStorage.getItem('oliver-update-tried') == p.code) return;
+  if (!p || !W || $('#home').hidden || aiPct >= 0 || localStorage.getItem('oliver-update-tried') == p.code) return;   // não troca de versão no meio do download da IA
   localStorage.setItem('oliver-update-tried', p.code);   // se a versão nova não abrir direito, não tenta de novo
   toast(`✨ Atualizando para a versão ${p.name}...`);
   try { await W.setServerBasePath({ path: p.dir }); await W.persistServerBasePath(); } catch (e) { updLog('não consegui trocar de versão: ' + (e.message || e)); }

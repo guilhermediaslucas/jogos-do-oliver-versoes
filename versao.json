@@ -1,8 +1,8 @@
 {
-  "code": 49,
-  "name": "6.14",
+  "code": 50,
+  "name": "6.15",
   "minApk": 41,
-  "notes": "Versão 6.14: no Colorir, o desenho abre com o primeiro pincel (lápis) em vez do balde de tinta. O balde continua nas ferramentas.",
+  "notes": "Versão 6.15: a IA do Conversar não pede mais para baixar de novo quando chega uma versão nova. Se o arquivo da IA já está inteiro no tablet, o app reconhece sozinho; e o app não troca de versão enquanto a IA está baixando.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/MundoDoOliver.apk"
 }
