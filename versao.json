@@ -1,8 +1,8 @@
 {
-  "code": 62,
-  "name": "6.27",
+  "code": 63,
+  "name": "6.28",
   "minApk": 54,
-  "notes": "Versão 6.27: Estilingue com voo mais devagar e poder especial para todos os passarinhos ao bater no alvo (Piu grita, Trio vira três, Flecha faz zum, Pesadão faz terremoto e Bombinha explode). Música de fundo com 🎵 liga/desliga e 🔀 trocar em todos os jogos.",
+  "notes": "Versão 6.28: Aventura do Oliver com o botão de pular sempre funcionando (todo toque pula inteiro) e sem buracos para cair em nenhuma fase.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/MundoDoOliver.apk"
 }
