@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 55, name: '6.20' }; -->
+<!-- const APP_VERSION = { code: 56, name: '6.21' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -11036,29 +11036,54 @@ const SL_W = 1600, SL_H = 900, SL_GROUND = 860, SL_SLING = { x: 230, y: 690 }, S
 // passarinhos: [emoji, nome, raio, densidade, poder]
 const SL_BIRDS = { piu: ['🐦', 'Piu', 26, .002, ''], trio: ['🐤', 'Trio', 22, .002, 'split'], flecha: ['🦜', 'Flecha', 24, .002, 'dash'], pesado: ['🦉', 'Pesadão', 34, .006, ''], bomba: ['🐧', 'Bombinha', 27, .0025, 'boom'] };
 // materiais: [cor, borda, vida por área, densidade]
-const SL_MAT = { gelo: ['rgba(170,225,255,.85)', '#5aa9d6', .02, .0008], madeira: ['#c98b4a', '#7a4e22', .05, .001], pedra: ['#9e9e9e', '#5d5d5d', .14, .0024] };
+const SL_MAT = { gelo: ['rgba(170,225,255,.85)', '#5aa9d6', .02, .0008], madeira: ['#c98b4a', '#7a4e22', .05, .001], pedra: ['#9e9e9e', '#5d5d5d', .14, .0024],
+  vidro: ['rgba(225,248,255,.55)', '#8fc9e8', .008, .0007], pneu: ['#37474f', '#151a1d', .06, .0015], tnt: ['#e53935', '#8e1b1b', .02, .0012] };   // tnt = caixa surpresa: explode quando quebra
 const SL_FOES = { rato: ['🐭', 26, 40], ratao: ['🐀', 30, 90], chefe: ['🦝', 40, 200] };
 const slPost = (x, base, h, m) => [x, base - h / 2, 24, h, m], slPlank = (x, y, w, m) => [x, y - 12, w, 24, m];
+const slBarrel = (x, base, d, m) => [x, base - d / 2, d, d, m, 'circle'], slRoof = (x, base, w, m) => [x, base - w / Math.sqrt(3) / 2, w, w, m, 'tri'], slCrate = (x, base, s, m) => [x, base - s / 2, s, s, m];
 function slFrame(out, x, base, w, h, m) { out.push(slPost(x - w / 2 + 12, base, h, m), slPost(x + w / 2 - 12, base, h, m), slPlank(x, base - h, w + 20, m)); return base - h - 24; }
 const G0 = SL_GROUND;
 // fases: blocos [x, y, largura, altura, material], bichos [x, y, tipo] e os passarinhos da vez
 const SL_LEVELS = [
-  { name: 'Casinha de madeira', icon: '🏠', birds: ['piu', 'piu', 'piu'], build(B, F) { const t = slFrame(B, 1150, G0, 200, 150, 'madeira'); F.push([1150, G0 - 30, 'rato'], [1150, t - 30, 'rato']); } },
-  { name: 'Torre de gelo', icon: '🧊', birds: ['piu', 'trio', 'trio'], build(B, F) { let y = G0; for (let i = 0; i < 3; i++) y = slFrame(B, 1200, y, 170, 110, 'gelo'); F.push([1200, G0 - 30, 'rato'], [1200, y - 30, 'rato'], [1380, G0 - 30, 'rato']); } },
-  { name: 'Castelo de pedra', icon: '🏰', birds: ['piu', 'pesado', 'flecha'], build(B, F) { const t1 = slFrame(B, 1100, G0, 180, 140, 'madeira'), t2 = slFrame(B, 1100, t1, 180, 120, 'pedra'); B.push(slPost(1350, G0, 220, 'pedra')); F.push([1100, G0 - 32, 'ratao'], [1100, t1 - 30, 'rato'], [1100, t2 - 30, 'rato'], [1350, G0 - 250, 'rato']); } },
-  { name: 'Duas torres', icon: '🗼', birds: ['trio', 'flecha', 'bomba', 'pesado'], build(B, F) { for (const x of [1000, 1350]) { let y = slFrame(B, x, G0, 160, 120, 'madeira'); y = slFrame(B, x, y, 160, 110, x > 1200 ? 'pedra' : 'gelo'); F.push([x, y - 30, 'rato'], [x, G0 - 30, x > 1200 ? 'ratao' : 'rato']); } B.push(slPlank(1175, G0 - 278, 260, 'madeira')); } },
-  { name: 'Ponte dos ratinhos', icon: '🌉', birds: ['trio', 'trio', 'flecha', 'bomba'], build(B, F) { for (const x of [900, 1050, 1200, 1350]) B.push(slPost(x, G0, 140, 'madeira')); for (const x of [975, 1125, 1275]) { B.push(slPlank(x, G0 - 140, 136, x === 1125 ? 'gelo' : 'madeira')); F.push([x, G0 - 190, 'rato']); } F.push([1125, G0 - 30, 'ratao']); } },
+  { name: 'Casinha de madeira', icon: '🏠', birds: ['piu', 'piu', 'piu'], build(B, F) { const t = slFrame(B, 1150, G0, 200, 150, 'madeira'); B.push(slCrate(1330, G0, 60, 'madeira')); F.push([1150, G0 - 30, 'rato'], [1150, t - 30, 'rato'], [1330, G0 - 90, 'rato']); } },
+  { name: 'Torre de gelo', icon: '🧊', birds: ['piu', 'trio', 'trio'], build(B, F) { let y = G0; for (let i = 0; i < 3; i++) y = slFrame(B, 1200, y, 170, 110, 'gelo'); B.push(slCrate(1020, G0, 60, 'gelo')); F.push([1200, G0 - 30, 'rato'], [1200, G0 - 164, 'rato'], [1200, y - 30, 'rato'], [1020, G0 - 90, 'rato'], [1400, G0 - 30, 'rato']); } },
+  { name: 'Castelo de pedra', icon: '🏰', birds: ['piu', 'pesado', 'flecha'], build(B, F) { const t1 = slFrame(B, 1100, G0, 180, 140, 'madeira'), t2 = slFrame(B, 1100, t1, 180, 120, 'pedra'); B.push(slPost(1350, G0, 220, 'pedra'), slRoof(1100, t2, 200, 'madeira')); F.push([1100, G0 - 32, 'ratao'], [1100, t1 - 30, 'rato'], [1350, G0 - 250, 'rato'], [1480, G0 - 30, 'rato'], [1230, G0 - 30, 'rato']); } },
+  { name: 'Duas torres', icon: '🗼', birds: ['trio', 'flecha', 'bomba', 'pesado'], build(B, F) { for (const x of [1000, 1350]) { let y = slFrame(B, x, G0, 160, 120, 'madeira'); F.push([x, y - 30, 'rato']); y = slFrame(B, x, y, 160, 110, x > 1200 ? 'pedra' : 'gelo'); F.push([x, y - 30, 'rato'], [x, G0 - 30, x > 1200 ? 'ratao' : 'rato']); } B.push(slPlank(1175, G0 - 278, 260, 'madeira')); F.push([1175, G0 - 332, 'rato']); } },
+  { name: 'Ponte dos ratinhos', icon: '🌉', birds: ['trio', 'trio', 'flecha', 'bomba'], build(B, F) { for (const x of [900, 1050, 1200, 1350]) B.push(slPost(x, G0, 140, 'madeira')); for (const x of [975, 1125, 1275]) { B.push(slPlank(x, G0 - 140, 136, x === 1125 ? 'gelo' : 'madeira')); F.push([x, G0 - 190, 'rato']); } B.push(slBarrel(1480, G0, 70, 'pneu')); F.push([1125, G0 - 30, 'ratao'], [975, G0 - 30, 'rato'], [1550, G0 - 30, 'rato']); } },
   { name: 'Forte do Guaxinim', icon: '🦝', birds: ['piu', 'trio', 'flecha', 'pesado', 'bomba'], build(B, F) {
-    let y = slFrame(B, 1150, G0, 300, 150, 'pedra'); y = slFrame(B, 1150, y, 240, 120, 'madeira'); slFrame(B, 1150, y, 160, 100, 'gelo');
+    let y = slFrame(B, 1150, G0, 300, 150, 'pedra'); y = slFrame(B, 1150, y, 240, 120, 'madeira'); y = slFrame(B, 1150, y, 160, 100, 'gelo'); B.push(slRoof(1150, y, 180, 'gelo'));
     B.push(slPost(900, G0, 160, 'madeira'), slPost(1420, G0, 160, 'madeira'));
-    F.push([1150, G0 - 42, 'chefe'], [1150, G0 - 348, 'rato'], [900, G0 - 190, 'rato'], [1420, G0 - 190, 'ratao']);
+    F.push([1150, G0 - 42, 'chefe'], [1150, G0 - 348, 'rato'], [1150, G0 - 204, 'rato'], [900, G0 - 190, 'rato'], [1420, G0 - 190, 'ratao']);
   } },
   { name: 'Pirâmide', icon: '🔺', birds: ['pesado', 'bomba', 'trio', 'flecha'], build(B, F) {
-    let y = slFrame(B, 1200, G0, 360, 120, 'pedra'); F.push([1200, G0 - 30, 'rato']); y = slFrame(B, 1200, y, 240, 110, 'madeira'); F.push([1200, G0 - 174, 'rato']); y = slFrame(B, 1200, y, 140, 100, 'gelo'); F.push([1200, G0 - 310, 'ratao'], [1200, y - 30, 'rato']);
+    let y = slFrame(B, 1200, G0, 360, 120, 'pedra'); F.push([1200, G0 - 30, 'rato'], [1100, G0 - 30, 'rato']); y = slFrame(B, 1200, y, 240, 110, 'madeira'); F.push([1200, G0 - 174, 'rato']); y = slFrame(B, 1200, y, 140, 100, 'gelo'); F.push([1200, G0 - 310, 'ratao']); B.push(slRoof(1200, y, 160, 'madeira'));
+    B.push(slCrate(1460, G0, 70, 'pedra')); F.push([1460, G0 - 100, 'rato']);
   } },
-  { name: 'Rei Guaxinim', icon: '👑', birds: ['piu', 'trio', 'flecha', 'pesado', 'bomba', 'pesado'], build(B, F) {
-    let a = slFrame(B, 950, G0, 200, 150, 'madeira'); F.push([950, G0 - 32, 'ratao'], [950, a - 32, 'ratao']); a = slFrame(B, 950, a, 200, 120, 'pedra'); F.push([950, a - 30, 'rato']);
-    let b = slFrame(B, 1350, G0, 220, 160, 'pedra'); F.push([1350, G0 - 42, 'chefe'], [1350, b - 30, 'rato']); b = slFrame(B, 1350, b, 180, 120, 'madeira'); F.push([1350, b - 30, 'rato']);
+  { name: 'Barris rolantes', icon: '🛢️', birds: ['piu', 'trio', 'flecha', 'bomba'], build(B, F) {
+    const a = slFrame(B, 1000, G0, 220, 120, 'madeira'); B.push(slBarrel(940, a, 60, 'madeira'), slBarrel(1060, a, 60, 'madeira')); F.push([1000, G0 - 30, 'rato'], [1000, a - 30, 'rato']);
+    const b = slFrame(B, 1350, G0, 180, 160, 'pedra'); B.push(slBarrel(1350, b, 70, 'pneu')); F.push([1350, G0 - 30, 'ratao'], [1500, G0 - 30, 'rato'], [1180, G0 - 30, 'rato']);
+  } },
+  { name: 'Casa de vidro', icon: '🪟', birds: ['piu', 'piu', 'trio'], build(B, F) {
+    let y = slFrame(B, 1050, G0, 180, 130, 'vidro'); F.push([1050, G0 - 30, 'rato'], [1050, y - 30, 'rato']); y = slFrame(B, 1050, y, 180, 110, 'vidro'); F.push([1050, y - 30, 'rato']);
+    const t = slFrame(B, 1350, G0, 200, 140, 'vidro'); B.push(slRoof(1350, t, 220, 'vidro')); F.push([1350, G0 - 30, 'ratao'], [1210, G0 - 30, 'rato']);
+  } },
+  { name: 'Caixas surpresa', icon: '💥', birds: ['piu', 'flecha', 'trio'], build(B, F) {
+    const t = slFrame(B, 1100, G0, 240, 140, 'madeira'); B.push(slCrate(1100, G0, 60, 'tnt')); F.push([1020, G0 - 30, 'rato'], [1180, G0 - 30, 'rato'], [1100, t - 30, 'rato']);
+    B.push(slCrate(1400, G0, 60, 'tnt'), slCrate(1400, G0 - 60, 60, 'madeira')); F.push([1330, G0 - 30, 'rato'], [1470, G0 - 30, 'ratao'], [1400, G0 - 150, 'rato']);
+  } },
+  { name: 'Telhados', icon: '🏘️', birds: ['trio', 'pesado', 'bomba', 'flecha'], build(B, F) {
+    for (const [x, m] of [[950, 'madeira'], [1200, 'pedra'], [1450, 'gelo']]) { const t = slFrame(B, x, G0, 160, 120, m); B.push(slRoof(x, t, 180, m)); F.push([x, G0 - 30, x === 1200 ? 'ratao' : 'rato']); }
+    F.push([1075, G0 - 30, 'rato'], [1325, G0 - 30, 'rato']);
+  } },
+  { name: 'Cidade dos ratos', icon: '🏙️', birds: ['piu', 'trio', 'flecha', 'pesado', 'bomba'], build(B, F) {
+    let y = G0; for (const m of ['madeira', 'pedra', 'madeira', 'gelo']) { F.push([1000, y - 30, 'rato']); y = slFrame(B, 1000, y, 160, 100, m); } F.push([1000, y - 30, 'ratao']);
+    let z = slFrame(B, 1350, G0, 180, 120, 'vidro'); F.push([1350, G0 - 30, 'rato']); z = slFrame(B, 1350, z, 180, 120, 'vidro'); F.push([1350, z + 114, 'rato']); B.push(slRoof(1350, z, 200, 'madeira'));
+  } },
+  { name: 'Grande final', icon: '🏆', birds: ['piu', 'trio', 'flecha', 'pesado', 'bomba', 'trio', 'pesado'], build(B, F) {
+    let y = slFrame(B, 1150, G0, 320, 150, 'pedra'); F.push([1150, G0 - 42, 'chefe']);
+    y = slFrame(B, 1150, y, 240, 120, 'madeira'); F.push([1110, G0 - 204, 'rato'], [1190, G0 - 204, 'rato']);
+    y = slFrame(B, 1150, y, 160, 100, 'vidro'); F.push([1150, G0 - 348, 'ratao']); B.push(slRoof(1150, y, 180, 'gelo'));
+    B.push(slCrate(880, G0, 60, 'tnt'), slCrate(1460, G0, 60, 'tnt')); F.push([820, G0 - 30, 'rato'], [1535, G0 - 32, 'ratao'], [1395, G0 - 30, 'rato']);
   } }
 ];
 const slSave = load('oliver-estilingue', { stars: [], cur: 0 });
@@ -11074,7 +11099,11 @@ function slLevel(i) {
   const engine = Engine.create({ enableSleeping: true, positionIterations: 8, velocityIterations: 8 }), L = SL_LEVELS[i], B = [], F = [];
   L.build(B, F);
   const ground = Bodies.rectangle(SL_W / 2, SL_GROUND + 60, SL_W * 3, 120, { isStatic: true, friction: 1 });
-  const blocks = B.map(([x, y, w, h, m]) => Object.assign(Bodies.rectangle(x, y, w, h, { friction: .8, restitution: .05, density: SL_MAT[m][3] }), { kind: 'block', mat: m, w, h, hp: w * h * SL_MAT[m][2], hp0: w * h * SL_MAT[m][2] }));
+  const blocks = B.map(([x, y, w, h, m, shape]) => {
+    const o = { friction: .8, restitution: .05, density: SL_MAT[m][3] };
+    const body = shape === 'circle' ? Bodies.circle(x, y, w / 2, { ...o, friction: .9, frictionStatic: 2 }) : shape === 'tri' ? Bodies.polygon(x, y, 3, w / Math.sqrt(3), { ...o, angle: Math.PI / 2 }) : Bodies.rectangle(x, y, w, h, o);
+    return Object.assign(body, { kind: 'block', mat: m, shape: shape || 'rect', w, h, hp: w * h * SL_MAT[m][2], hp0: w * h * SL_MAT[m][2] });
+  });
   const foes = F.map(([x, y, t]) => Object.assign(Bodies.circle(x, y, SL_FOES[t][1], { friction: .6, restitution: .2, density: .0012 }), { kind: 'foe', foe: t, hp: SL_FOES[t][2] }));
   Composite.add(engine.world, [ground, ...blocks, ...foes]);
   Object.assign(sl, { engine, i, L, queue: L.birds.slice(), bird: null, flying: [], fx: [], t: 0, drag: null, done: false, settle: 1, quiet: 0, used: 0 });
@@ -11102,15 +11131,15 @@ function slHit(ev) {
     for (const o of [a, b]) if (o.kind === 'bird' && o.power === 'boom' && !o.used) slBoom(o);
   }
 }
-function slBoom(b) {
+function slBoom(b) { b.used = true; slBoomAt(b.position.x, b.position.y, b); Matter.Composite.remove(sl.engine.world, b); sl.flying = sl.flying.filter(f => f !== b); }
+function slBoomAt(bx, by, skip) {
   const { Body, Composite, Sleeping } = Matter;
-  b.used = true; noise(audioOn().currentTime, .5, 900, 100, .3); tone('sawtooth', 120, 40, ac.currentTime, .5, .15);
+  noise(audioOn().currentTime, .5, 900, 100, .3); tone('sawtooth', 120, 40, ac.currentTime, .5, .15);
   for (const o of Composite.allBodies(sl.engine.world)) {
-    if (o.isStatic || o === b) continue; const dx = o.position.x - b.position.x, dy = o.position.y - b.position.y, d = Math.hypot(dx, dy) || 1;
+    if (o.isStatic || o === skip) continue; const dx = o.position.x - bx, dy = o.position.y - by, d = Math.hypot(dx, dy) || 1;
     if (d < 220) { Sleeping.set(o, false); Body.setVelocity(o, { x: o.velocity.x + dx / d * (220 - d) * .12, y: o.velocity.y + dy / d * (220 - d) * .12 - 3 }); if (o.hp != null) o.hp -= (220 - d) * 2; }
   }
-  for (let i = 0; i < 30; i++) sl.fx.push({ x: b.position.x, y: b.position.y, vx: (Math.random() - .5) * 18, vy: (Math.random() - .5) * 18, c: ['#ff7043', '#ffd23f', '#fff'][i % 3], t: .7 });
-  Composite.remove(sl.engine.world, b); sl.flying = sl.flying.filter(f => f !== b);
+  for (let i = 0; i < 30; i++) sl.fx.push({ x: bx, y: by, vx: (Math.random() - .5) * 18, vy: (Math.random() - .5) * 18, c: ['#ff7043', '#ffd23f', '#fff'][i % 3], t: .7 });
 }
 function slPower() {
   const { Bodies, Body, Composite } = Matter;
@@ -11139,10 +11168,11 @@ addEventListener('pointerup', () => {
   const me = sl; setTimeout(() => { if (sl === me && !sl.done && alive('sling')) slNext(); }, 1600);
 });
 function slStep(dt) {
-  const { Composite } = Matter, W = sl.engine.world; sl.t += dt; sl.settle -= dt;
+  const { Composite, Sleeping } = Matter, W = sl.engine.world; sl.t += dt; sl.settle -= dt;
+  let broke = false, booms = [];
   for (const o of Composite.allBodies(W)) {
     if (o.hp != null && o.hp <= 0) {
-      Composite.remove(W, o);
+      Composite.remove(W, o); broke = true; if (o.mat === 'tnt') booms.push([o.position.x, o.position.y]);
       const col = o.kind === 'foe' ? '#ffffff' : SL_MAT[o.mat][0];
       for (let i = 0; i < (o.kind === 'foe' ? 16 : 8); i++) sl.fx.push({ x: o.position.x, y: o.position.y, vx: (Math.random() - .5) * 10, vy: (Math.random() - .5) * 10, c: col, t: .6 });
       if (o.kind === 'foe') { chirp(700, .2); sl.fx.push({ txt: pick(['Pou!', 'Uau!', 'Isso!']), x: o.position.x, y: o.position.y, vx: 0, vy: -2, t: 1 }); }
@@ -11150,6 +11180,8 @@ function slStep(dt) {
     }
     if (o.kind === 'foe' && (o.position.y > SL_H + 100 || o.position.x < -100 || o.position.x > SL_W + 100)) o.hp = 0;
   }
+  if (broke) for (const o of Composite.allBodies(W)) if (!o.isStatic) Sleeping.set(o, false);
+  for (const [bx, by] of booms) slBoomAt(bx, by);
   for (const b of sl.flying) if (b.position.x > SL_W + 200 || b.position.x < -200 || b.position.y > SL_H + 200) Composite.remove(W, b);
   sl.flying = sl.flying.filter(b => Composite.get(W, b.id, 'body'));
   const all = Composite.allBodies(W), foes = all.filter(o => o.kind === 'foe');
@@ -11168,9 +11200,17 @@ function slEnd(won) {
   $('#slEndNext').hidden = !won || sl.i >= SL_LEVELS.length - 1; $('#slEnd').hidden = false;
 }
 function slBlock(x, o) {
-  const [fill, edge] = SL_MAT[o.mat]; x.save(); x.translate(o.position.x, o.position.y); x.rotate(o.angle);
+  const [fill, edge] = SL_MAT[o.mat];
+  if (o.shape === 'tri') { x.fillStyle = fill; x.strokeStyle = edge; x.lineWidth = 4; x.beginPath(); o.vertices.forEach((v, i) => i ? x.lineTo(v.x, v.y) : x.moveTo(v.x, v.y)); x.closePath(); x.fill(); x.stroke(); return; }
+  x.save(); x.translate(o.position.x, o.position.y); x.rotate(o.angle);
+  if (o.shape === 'circle') {   // barril ou pneu
+    const r = o.w / 2; x.fillStyle = fill; x.strokeStyle = edge; x.lineWidth = 4; x.beginPath(); x.arc(0, 0, r, 0, TAU); x.fill(); x.stroke();
+    x.strokeStyle = o.mat === 'pneu' ? '#90a4ae' : 'rgba(90,50,20,.5)'; x.lineWidth = 3; x.beginPath(); x.arc(0, 0, r * .55, 0, TAU); x.moveTo(-r * .55, 0); x.lineTo(r * .55, 0); x.stroke(); x.restore(); return;
+  }
   x.fillStyle = fill; x.strokeStyle = edge; x.lineWidth = 4; x.beginPath(); x.roundRect(-o.w / 2, -o.h / 2, o.w, o.h, 5); x.fill(); x.stroke();
   if (o.mat === 'madeira') { x.strokeStyle = 'rgba(90,50,20,.35)'; x.lineWidth = 2; x.beginPath(); for (let i = 1; i < 3; i++) { if (o.w > o.h) { x.moveTo(-o.w / 2 + 6, -o.h / 2 + i * o.h / 3); x.lineTo(o.w / 2 - 6, -o.h / 2 + i * o.h / 3); } else { x.moveTo(-o.w / 2 + i * o.w / 3, -o.h / 2 + 6); x.lineTo(-o.w / 2 + i * o.w / 3, o.h / 2 - 6); } } x.stroke(); }
+  if (o.mat === 'tnt') x.drawImage(kEmo('💥'), -o.w * .4, -o.h * .45, o.w * .8, o.w * .8);
+  if (o.mat === 'vidro') { x.strokeStyle = 'rgba(255,255,255,.9)'; x.lineWidth = 3; x.beginPath(); x.moveTo(-o.w * .3, o.h * .3); x.lineTo(o.w * .2, -o.h * .35); x.stroke(); }   // brilho do vidro
   if (o.hp < o.hp0 * .5) { x.strokeStyle = 'rgba(0,0,0,.45)'; x.lineWidth = 2; x.beginPath(); x.moveTo(-o.w * .3, -o.h * .4); x.lineTo(0, 0); x.lineTo(o.w * .2, o.h * .35); x.stroke(); }   // rachadura
   x.restore();
 }
@@ -12114,7 +12154,7 @@ GAME_INTRO.studio = 'Toque nos quadradinhos para criar a sua música, e aperte o
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 55, name: '6.20' };
+const APP_VERSION = { code: 56, name: '6.21' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)
