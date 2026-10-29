@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 59, name: '6.24' }; -->
+<!-- const APP_VERSION = { code: 60, name: '6.25' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -651,6 +651,29 @@ button:active { transform: scale(.92); }
 .snkPad .padBtn { width: 66px; height: 66px; font-size: 30px; background: rgba(255,255,255,.55); border-color: rgba(42,29,18,.25); color: var(--ink); }
 #snkU { grid-area: u; } #snkL { grid-area: l; } #snkR { grid-area: r; } #snkD { grid-area: d; }
 #snkMode { white-space: nowrap; width: auto; padding: 0 14px; }
+/* fábrica de squish */
+.sqPlay { border-radius: 24px; overflow: hidden; background: radial-gradient(circle at 50% 40%, #fff6fb, #ffd6e8); touch-action: none; }
+#sqCv { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
+.sqPanel { position: absolute; top: 10px; right: 10px; bottom: 10px; width: 40%; display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,.85); border-radius: 20px; padding: 10px; box-sizing: border-box; }
+.sqTabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.sqTab { padding: 6px 10px; font-size: 15px; }
+.sqTab.on { background: var(--pick); color: #fff; }
+.sqOpts { flex: 1; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start; }
+.sqOpts h4 { width: 100%; margin: 4px 0 0; font-size: 14px; opacity: .75; }
+.sqOpt { min-height: 52px; padding: 6px 12px; border-radius: 16px; background: #fff; box-shadow: 0 3px 0 var(--shadow); font-weight: 800; font-size: 16px; display: grid; place-items: center; }
+.sqOpt small { display: block; font-size: 12px; font-weight: 600; opacity: .7; }
+.sqOpt.on { box-shadow: 0 0 0 4px var(--pick); }
+.sqOpt.sw { width: 46px; height: 46px; min-height: 0; padding: 0; border-radius: 50%; border: 3px solid #fff; }
+.sqOpt.big { font-size: 34px; width: 64px; height: 64px; padding: 0; }
+.sqShelf { position: absolute; inset: 0; overflow-y: auto; padding: 14px; box-sizing: border-box; }
+.sqGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.sqCard { position: relative; background: #fff; border-radius: 22px; box-shadow: 0 5px 0 var(--shadow); display: grid; justify-items: center; padding: 8px 6px 10px; gap: 2px; min-height: 170px; align-content: center; }
+.sqCard canvas { width: 120px; height: 120px; }
+.sqCard b { font-size: 15px; text-align: center; }
+.sqCard.new span { font-size: 64px; } .sqCard.new { background: #fff3bf; } .sqCard.gacha { background: #e5dbff; }
+.sqDel { position: absolute; top: 6px; right: 6px; width: 34px; height: 34px; border-radius: 50%; background: #ffe3e3; font-size: 16px; }
+.sqDoneBtn { background: #c8f2c2; }
+@media (orientation: portrait) { .sqPanel { top: auto; left: 10px; width: auto; height: 46%; } }
 .keys { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; height: 100%; }
 .key { border-radius: 20px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 16px; font-size: clamp(30px, 6vw, 56px); box-shadow: 0 6px 0 rgba(0,0,0,.2); touch-action: none; }
 .key span { display: block; }
@@ -869,6 +892,7 @@ button:active { transform: scale(.92); }
     <button class="mode" style="background:#5c6bc0" data-game="blocks"><span>🧱</span>Encaixa blocos</button>
     <button class="mode" style="background:#689f38" data-game="snake"><span>🐍</span>Cobrinha</button>
     <button class="mode" style="background:#7cb342" data-game="chase"><span>🥚</span>Corre-Corre dos Bichos</button>
+    <button class="mode" style="background:#f783ac" data-game="squish"><span>🧸</span>Fábrica de Squish</button>
     <button class="mode" style="background:#039be5" data-game="sling"><span>🐦</span>Estilingue dos Passarinhos</button>
     <button class="mode" style="background:#29b6f6" data-game="park"><span>⚽</span>Parquinho</button>
     <button class="mode" style="background:var(--g-bal)" data-game="bubbles"><span>🎈</span>Estoura balão</button>
@@ -1214,6 +1238,14 @@ button:active { transform: scale(.92); }
   <div class="play snkPlay"><canvas id="snkCv"></canvas>
     <div class="snkPad"><button class="padBtn" id="snkU" aria-label="Para cima">▲</button><button class="padBtn" id="snkL" aria-label="Para a esquerda">◀</button>
       <button class="padBtn" id="snkR" aria-label="Para a direita">▶</button><button class="padBtn" id="snkD" aria-label="Para baixo">▼</button></div>
+  </div>
+</section>
+<section id="g-squish" class="screen game" hidden>
+  <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Fábrica de Squish</h2><span class="score" id="sqCount"></span>
+    <button class="round wide" id="sqShelfBtn">🧸 Coleção</button><button class="round wide" id="sqEdit" hidden>✏️ Mudar</button><button class="round wide sqDoneBtn" id="sqDone" hidden>✅ Pronto</button></div>
+  <div class="play sqPlay"><canvas id="sqCv"></canvas>
+    <div class="sqPanel" id="sqPanel" hidden><div class="sqTabs" id="sqTabs"></div><div class="sqOpts" id="sqOpts"></div></div>
+    <div class="sqShelf" id="sqShelf"><div class="sqGrid" id="sqGrid"></div></div>
   </div>
 </section>
 <section id="g-count" class="screen game" hidden>
@@ -12211,10 +12243,286 @@ function parkLoop(t) {
 GAMES.park = parkStart;
 GAME_INTRO.studio = 'Toque nos quadradinhos para criar a sua música, e aperte o play para ouvir!';
 
+/* ================= fábrica de squish: cria o brinquedo de apertar (forma, cor, carinha, enfeites e recheio), guarda na coleção e brinca de apertar ================= */
+// formas: cada uma devolve o ponto do contorno para t de 0 a 1 (raio ~1, centro no meio)
+const sqWrap = d => ((d % TAU) + TAU + Math.PI) % TAU - Math.PI;   // diferença de ângulo entre -π e π
+const SQ_SHAPES = {
+  bolinho: ['🥟 Bolinho', t => { const a = t * TAU; return [Math.cos(a) * 1.05, Math.sin(a) * (Math.sin(a) > 0 ? .7 : .85)]; }],
+  gatinho: ['🐱 Gatinho', t => { const a = t * TAU - Math.PI / 2, ear = d => Math.max(0, 1 - Math.abs(sqWrap(d)) / .3) ** 1.6 * .5; const r = 1 + ear(a + Math.PI / 2 + .62) + ear(a + Math.PI / 2 - .62); return [Math.cos(a) * r, Math.sin(a) * r * .92]; }],
+  ursinho: ['🐻 Ursinho', t => { const a = t * TAU - Math.PI / 2, ear = d => Math.max(0, Math.cos(Math.min(Math.PI / 2, Math.abs(sqWrap(d)) / .36 * Math.PI / 2))) * .32; const r = 1 + ear(a + Math.PI / 2 + .75) + ear(a + Math.PI / 2 - .75); return [Math.cos(a) * r, Math.sin(a) * r * .95]; }],
+  coelhinho: ['🐰 Coelhinho', t => { const a = t * TAU - Math.PI / 2, ear = d => Math.max(0, 1 - Math.abs(sqWrap(d)) / .2) ** 1.2 * .95; const r = 1 + ear(a + Math.PI / 2 + .36) + ear(a + Math.PI / 2 - .36); return [Math.cos(a) * r * .95, Math.sin(a) * r * .9 + .15]; }],
+  coracao: ['💖 Coração', t => { const a = t * TAU; return [16 * Math.sin(a) ** 3 / 16, -(13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a)) / 16 + .05]; }],
+  estrela: ['⭐ Estrela', t => { const a = t * TAU - Math.PI / 2, r = .78 + .34 * Math.cos(5 * (a + Math.PI / 2)) ** 3; return [Math.cos(a) * r, Math.sin(a) * r + .05]; }],
+  nuvem: ['☁️ Nuvem', t => { const a = t * TAU, r = .95 + .1 * Math.abs(Math.cos(3.5 * a)); return [Math.cos(a) * r * 1.15, Math.sin(a) * r * .75]; }],
+  morango: ['🍓 Morango', t => { const a = t * TAU - Math.PI / 2, y = Math.sin(a), w = 1 - .38 * Math.max(0, y); return [Math.cos(a) * w, y * 1.05]; }],
+  cubinho: ['🧊 Cubinho', t => { const a = t * TAU, c = Math.cos(a), s = Math.sin(a); return [Math.sign(c) * Math.abs(c) ** .45 * .9, Math.sign(s) * Math.abs(s) ** .45 * .9]; }],
+  gotinha: ['💧 Gotinha', t => { const a = t * TAU - Math.PI / 2, up = Math.max(0, -Math.sin(a)); return [Math.cos(a) * (1 - .75 * up ** 2.5), Math.sin(a) * (1 + .35 * up) + .15]; }]
+};
+const SQ_COLORS = ['#ffb3c7', '#ff7aa2', '#ff5a5f', '#ffa94d', '#ffe066', '#c0eb75', '#69db7c', '#63e6be', '#74c0fc', '#4dabf7', '#b197fc', '#da77f2', '#ffffff', '#ffd8a8', '#a1887f', '#495057'];
+const SQ_TEX = [['liso', 'Liso'], ['degrade', 'Degradê'], ['bolinhas', 'Bolinhas'], ['listras', 'Listras'], ['brilho', 'Brilho ✨'], ['galaxia', 'Galáxia 🌌'], ['arcoiris', 'Arco-íris 🌈']];
+const SQ_EYES = [['bolinha', '👀 Bolinha'], ['feliz', '😊 Feliz'], ['grande', '🥺 Grandão'], ['estrela', '🤩 Estrela'], ['coracao', '😍 Coração'], ['sono', '😴 Soninho']];
+const SQ_MOUTH = [['sorriso', 'Sorriso'], ['o', 'Boquinha O'], ['gato', 'Gatinho :3'], ['lingua', 'Linguinha'], ['dentinho', 'Dentinho']];
+const SQ_STICK = ['🎀', '🌸', '⭐', '💖', '🍓', '🍒', '🌈', '✨', '🦋', '👑', '🍭', '🌼', '🧁', '🎈'];
+// recheio: como volta ao formato (mola k, freio c) e o som
+const SQ_FILL = {
+  espuma: ['🧽 Espuma', 5, 5.5, 'Volta devagarinho'], slime: ['🟢 Slime', 22, 2.2, 'Fica balançando'], agua: ['💧 Água', 80, 3.5, 'Treme todo'],
+  bolinhas: ['🫧 Bolinhas', 40, 8, 'Faz crec-crec'], gel: ['✨ Gel brilhante', 28, 4, 'Solta brilhos']
+};
+const SQ_TABS = [['forma', '🧸 Forma'], ['cor', '🎨 Cor'], ['desenho', '🖌️ Desenho'], ['carinha', '😊 Carinha'], ['enfeites', '🎀 Enfeites'], ['recheio', '💧 Recheio']];
+const sqData = load('oliver-squish', { list: [] });
+const sqSave = () => keep('oliver-squish', sqData);
+let sq = null, sqRaf = 0, sqTab = 'forma';
+const sqNewToy = () => ({ id: Date.now(), shape: 'gatinho', c1: '#ffb3c7', c2: '#ffffff', tex: 'liso', eyes: 'bolinha', mouth: 'sorriso', cheeks: true, stickers: [], fill: 'espuma' });
+function sqRandom() {
+  const keys = o => Object.keys(o);
+  return { id: Date.now(), shape: pick(keys(SQ_SHAPES)), c1: pick(SQ_COLORS.slice(0, 12)), c2: pick(SQ_COLORS), tex: pick(SQ_TEX)[0], eyes: pick(SQ_EYES)[0], mouth: pick(SQ_MOUTH)[0],
+    cheeks: Math.random() < .7, fill: pick(keys(SQ_FILL)), stickers: Array.from({ length: Math.random() * 3 | 0 }, () => ({ e: pick(SQ_STICK), u: (Math.random() - .5) * .9, v: -.55 + Math.random() * .5 })) };
+}
+const sqName = t => `${SQ_SHAPES[t.shape][0].split(' ').slice(1).join(' ')} de ${SQ_FILL[t.fill][0].split(' ').slice(1).join(' ').toLowerCase()}`;
+
+function squishStart() { sqResize(); sqShelf(); cancelAnimationFrame(sqRaf); sqLoop(); }
+function sqResize() { const cv = $('#sqCv'), r = cv.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2, 1100 / Math.max(1, r.width)); cv.width = Math.max(1, r.width * d | 0); cv.height = Math.max(1, r.height * d | 0); }
+addEventListener('resize', () => { if (shown('g-squish')) { sqResize(); if (sq) sqBody(); } });
+
+/* ---------- corpo macio: pontos do contorno presos por molas ao formato ---------- */
+const SQ_N = 44;
+function sqUse(toy, mode) {
+  sq = { toy, mode, pts: [], sqz: 0, sqzV: 0, ptrs: new Map(), t: 0, parts: [], drag: null, lastSound: 0, beads: Array.from({ length: 14 }, () => [(Math.random() - .5) * 1.1, (Math.random() - .5) * 1.1, Math.random()]) };
+  sqBody();
+  $('#sqShelf').hidden = true; $('#sqPanel').hidden = mode !== 'make'; $('#g-squish .sqPlay').classList.toggle('making', mode === 'make');
+  $('#sqEdit').hidden = $('#sqDone').hidden = true;
+  if (mode === 'play') $('#sqEdit').hidden = false;
+  if (mode === 'make') { $('#sqDone').hidden = false; sqPanel(); }
+  sqResize(); sqBody();
+}
+function sqBody() {
+  const cv = $('#sqCv'), make = sq.mode === 'make', W = cv.width * (make && cv.width > cv.height ? .58 : 1), H = cv.height;
+  sq.R = Math.min(W, H) * (make ? .3 : .32); sq.cx = W / 2; sq.cy = H * .52;
+  const f = SQ_SHAPES[sq.toy.shape][1];
+  sq.pts = Array.from({ length: SQ_N }, (_, i) => { const [x, y] = f(i / SQ_N); return { x: x * sq.R, y: y * sq.R, ox: 0, oy: 0, vx: 0, vy: 0 }; });
+}
+function sqPos(p) {   // posição na tela de um ponto do contorno (com o achatamento geral)
+  const s = sq.sqz, R = sq.R;
+  return [sq.cx + p.x * (1 + s * .55) + p.ox, sq.cy + p.y * (1 - s) + R * s * .75 + p.oy];
+}
+function sqInside(x, y) { const c = sq.pts.map(sqPos); let ins = false; for (let i = 0, j = c.length - 1; i < c.length; j = i++) if ((c[i][1] > y) !== (c[j][1] > y) && x < (c[j][0] - c[i][0]) * (y - c[i][1]) / (c[j][1] - c[i][1]) + c[i][0]) ins = !ins; return ins; }
+function sqStep(dt) {
+  sq.t += dt;
+  const [, k, c] = SQ_FILL[sq.toy.fill], R = sq.R;
+  // alvo de cada ponto: amassado pelo dedo ou esticado quando arrasta
+  const tx = new Float32Array(SQ_N), ty = new Float32Array(SQ_N);
+  let press = 0;
+  for (const p of sq.ptrs.values()) {
+    if (p.sticker) continue;
+    p.hold += dt; press = Math.max(press, Math.min(1, p.hold * 3));
+    const dx = p.x - p.x0, dy = p.y - p.y0, far = Math.hypot(dx, dy);
+    sq.pts.forEach((q, i) => {
+      const [qx, qy] = sqPos({ ...q, ox: 0, oy: 0 }), d = Math.hypot(qx - p.x, qy - p.y);
+      if (d < R * .9) { const f = (1 - d / (R * .9)) * .22 * R * Math.min(1, p.hold * 4), nx = (qx - sq.cx), ny = (qy - sq.cy), nl = Math.hypot(nx, ny) || 1; tx[i] -= nx / nl * f; ty[i] -= ny / nl * f; }
+      if (far > R * .12 && p.grab >= 0) {   // esticar: puxa o pedaço do contorno que o dedo pegou
+        const di = Math.min(Math.abs(i - p.grab), SQ_N - Math.abs(i - p.grab)), w = Math.max(0, 1 - di / 7) ** 1.5, cl = Math.min(1, R * 1.1 / far);
+        tx[i] += dx * cl * w; ty[i] += dy * cl * w;
+      }
+    });
+  }
+  const sqzT = press * (sq.ptrs.size > 1 ? .5 : .38);
+  const kz = sqzT > sq.sqz ? 70 : k, cz = sqzT > sq.sqz ? 14 : c;
+  sq.sqzV += (kz * (sqzT - sq.sqz) - cz * sq.sqzV) * dt; sq.sqz += sq.sqzV * dt;
+  sq.pts.forEach((q, i) => {
+    const pressing = Math.hypot(tx[i], ty[i]) > Math.hypot(q.ox, q.oy), kk = pressing ? 90 : k, cc = pressing ? 16 : c;
+    q.vx += (kk * (tx[i] - q.ox) - cc * q.vx) * dt; q.vy += (kk * (ty[i] - q.oy) - cc * q.vy) * dt;
+    q.ox += q.vx * dt; q.oy += q.vy * dt;
+  });
+  for (const pa of sq.parts) { pa.x += pa.vx * dt; pa.y += pa.vy * dt; pa.vy += pa.g * dt; pa.life -= dt; }
+  sq.parts = sq.parts.filter(pa => pa.life > 0);
+  if (sq.toy.fill === 'gel' && press > .3 && Math.random() < dt * 12) sq.parts.push({ x: sq.cx + (Math.random() - .5) * R * 1.6, y: sq.cy + (Math.random() - .6) * R, vx: (Math.random() - .5) * 40, vy: -60 - Math.random() * 60, g: 30, life: 1, kind: 'spark' });
+}
+/* ---------- desenho ---------- */
+function sqPath(x, c) {
+  x.beginPath();
+  const n = c.length, mid = i => [(c[i][0] + c[(i + 1) % n][0]) / 2, (c[i][1] + c[(i + 1) % n][1]) / 2];
+  x.moveTo(...mid(n - 1));
+  for (let i = 0; i < n; i++) x.quadraticCurveTo(c[i][0], c[i][1], ...mid(i));
+  x.closePath();
+}
+function sqDrawToy(x, toy, cont, cx, cy, R, sqz, t, pressed) {
+  const lw = Math.max(2, R * .045);
+  x.save(); x.lineJoin = x.lineCap = 'round';
+  x.fillStyle = 'rgba(0,0,0,.12)'; x.beginPath(); x.ellipse(cx, cy + R * (1 + sqz * .3), R * (1 + sqz * .6), R * .16, 0, 0, TAU); x.fill();
+  sqPath(x, cont);
+  const g = x.createLinearGradient(cx, cy - R, cx, cy + R);
+  if (toy.tex === 'degrade') { g.addColorStop(0, toy.c1); g.addColorStop(1, toy.c2); }
+  else if (toy.tex === 'arcoiris') ['#ff8787', '#ffa94d', '#ffe066', '#8ce99a', '#74c0fc', '#b197fc'].forEach((cl, i) => g.addColorStop(i / 5, cl));
+  else if (toy.tex === 'galaxia') { g.addColorStop(0, '#2b2d6e'); g.addColorStop(1, '#14143a'); }
+  else { g.addColorStop(0, toy.c1); g.addColorStop(1, toy.c1); }
+  x.save(); if (toy.fill === 'agua') x.globalAlpha = .82; x.fillStyle = g; x.fill(); x.restore();
+  x.save(); sqPath(x, cont); x.clip();
+  if (toy.tex === 'bolinhas') { x.fillStyle = toy.c2; for (let i = -4; i <= 4; i++) for (let j = -4; j <= 4; j++) { x.beginPath(); x.arc(cx + i * R * .42 + (j % 2) * R * .21, cy + j * R * .36, R * .09, 0, TAU); x.fill(); } }
+  if (toy.tex === 'listras') { x.strokeStyle = toy.c2; x.lineWidth = R * .14; for (let i = -6; i <= 6; i++) { x.beginPath(); x.moveTo(cx + i * R * .38 - R * 2, cy - R * 2); x.lineTo(cx + i * R * .38 + R * 2, cy + R * 2); x.stroke(); } }
+  if (toy.tex === 'galaxia') { x.fillStyle = toy.c1; x.globalAlpha = .45; x.beginPath(); x.ellipse(cx - R * .2, cy, R * .9, R * .35, -.5, 0, TAU); x.fill(); x.globalAlpha = 1; for (let i = 0; i < 26; i++) { x.fillStyle = '#fff'; x.globalAlpha = .4 + .6 * Math.abs(Math.sin(t * 2 + i)); x.beginPath(); x.arc(cx + Math.sin(i * 12.9) * R, cy + Math.cos(i * 7.3) * R, R * .025, 0, TAU); x.fill(); } x.globalAlpha = 1; }
+  if (toy.tex === 'brilho' || toy.fill === 'gel') for (let i = 0; i < 18; i++) { x.globalAlpha = .5 + .5 * Math.sin(t * 3 + i * 2); sparkle(cx + Math.sin(i * 9.1) * R * .85, cy + Math.cos(i * 5.7) * R * .8, R * .05, '#fff', x); x.globalAlpha = 1; }
+  if (toy.fill === 'bolinhas' || toy.fill === 'agua') for (const [bx, by, h] of (sq && sq.toy === toy ? sq.beads : [[.3, .2, .2], [-.4, .3, .6], [.1, -.3, .9]])) {
+    x.fillStyle = toy.fill === 'agua' ? 'rgba(255,255,255,.6)' : `hsl(${h * 360} 80% 70%)`;
+    const by2 = toy.fill === 'agua' ? ((by + 1 - (t * .15 + h) % 2) % 2) - 1 : by;
+    x.beginPath(); x.arc(cx + bx * R * (1 + sqz * .5), cy + by2 * R * (1 - sqz) + R * sqz * .6, R * (toy.fill === 'agua' ? .05 : .09), 0, TAU); x.fill();
+  }
+  x.fillStyle = 'rgba(255,255,255,.35)'; x.beginPath(); x.ellipse(cx - R * .35, cy - R * .45, R * .28, R * .14, -.5, 0, TAU); x.fill();   // brilho de "molinho"
+  x.restore();
+  x.strokeStyle = INK; x.lineWidth = lw; sqPath(x, cont); x.stroke();
+  if (toy.shape === 'morango') {   // folhinhas em cima
+    const top = cont.reduce((a, b) => b[1] < a[1] ? b : a); x.fillStyle = '#51cf66';
+    for (const a of [-1.2, -.6, 0, .6, 1.2]) { x.beginPath(); x.ellipse(top[0] + Math.sin(a) * R * .22, top[1] + R * .05, R * .1, R * .2, a, 0, TAU); x.fill(); x.stroke(); }
+  }
+  // carinha (aperta os olhos quando é apertado)
+  const fy = cy - R * .02 + R * sqz * .7, fx = cx, ex = R * .3 * (1 + sqz * .5), er = R * .1;
+  x.strokeStyle = INK; x.fillStyle = INK; x.lineWidth = lw;
+  for (const sd of [-1, 1]) {
+    const px = fx + sd * ex, py = fy - R * .08;
+    if (pressed) { x.beginPath(); x.moveTo(px - er * sd, py - er * .7); x.lineTo(px + er * .6 * sd, py); x.lineTo(px - er * sd, py + er * .7); x.stroke(); continue; }
+    if (toy.eyes === 'feliz') { x.beginPath(); x.arc(px, py + er * .4, er, Math.PI * 1.15, Math.PI * 1.85); x.stroke(); }
+    else if (toy.eyes === 'sono') { x.beginPath(); x.arc(px, py - er * .2, er, Math.PI * .15, Math.PI * .85); x.stroke(); }
+    else if (toy.eyes === 'estrela') { x.save(); x.fillStyle = '#ffd43b'; x.beginPath(); for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, d = k % 2 ? er * .55 : er * 1.3; x.lineTo(px + Math.cos(a) * d, py + Math.sin(a) * d); } x.closePath(); x.fill(); x.stroke(); x.restore(); }
+    else if (toy.eyes === 'coracao') { x.save(); x.fillStyle = '#ff6b8a'; heartPath(x, px, py, er * 1.1); x.fill(); x.stroke(); x.restore(); }
+    else { const big = toy.eyes === 'grande' ? 1.5 : 1, blink = Math.sin(t * 1.3 + 1) > .985;
+      if (blink) { x.beginPath(); x.moveTo(px - er, py); x.lineTo(px + er, py); x.stroke(); }
+      else { x.beginPath(); x.ellipse(px, py, er * big, er * 1.15 * big, 0, 0, TAU); x.fill(); x.fillStyle = '#fff'; x.beginPath(); x.arc(px + er * .35 * big, py - er * .4 * big, er * .38 * big, 0, TAU); if (big > 1) x.arc(px - er * .4, py + er * .45, er * .2, 0, TAU); x.fill(); x.fillStyle = INK; } }
+  }
+  if (toy.cheeks) { x.fillStyle = 'rgba(255,120,150,.45)'; for (const sd of [-1, 1]) { x.beginPath(); x.ellipse(fx + sd * ex * 1.45, fy + R * .1, R * .1, R * .06, 0, 0, TAU); x.fill(); } }
+  const my = fy + R * .12, mw = R * .12; x.lineWidth = lw * .85; x.fillStyle = INK;
+  if (pressed || toy.mouth === 'o') { x.beginPath(); x.ellipse(fx, my + mw * .2, mw * .45, mw * (pressed ? .6 : .5), 0, 0, TAU); x.fill(); }
+  else if (toy.mouth === 'gato') { x.beginPath(); x.arc(fx - mw * .5, my, mw * .5, 0, Math.PI); x.arc(fx + mw * .5, my, mw * .5, 0, Math.PI); x.stroke(); }
+  else { x.beginPath(); x.arc(fx, my - mw * .2, mw, .15 * Math.PI, .85 * Math.PI); x.stroke();
+    if (toy.mouth === 'lingua') { x.fillStyle = '#ff8787'; x.beginPath(); x.ellipse(fx, my + mw * .75, mw * .35, mw * .3, 0, 0, TAU); x.fill(); x.stroke(); }
+    if (toy.mouth === 'dentinho') { x.fillStyle = '#fff'; x.fillRect(fx - mw * .2, my + mw * .55, mw * .4, mw * .35); x.strokeRect(fx - mw * .2, my + mw * .55, mw * .4, mw * .35); } }
+  // enfeites: seguem o pedaço do corpo onde estão
+  for (const s of toy.stickers) {
+    const i = Math.round(((Math.atan2(s.v, s.u) / TAU + 1.25) % 1) * cont.length) % cont.length, base = sq && sq.toy === toy ? sq.pts[i] : null, fr = Math.min(1, Math.hypot(s.u, s.v));
+    const sx = cx + s.u * R * (1 + sqz * .55) + (base ? base.ox * fr : 0), sy = cy + s.v * R * (1 - sqz) + R * sqz * .75 + (base ? base.oy * fr : 0), sz = R * .34;
+    x.drawImage(kEmo(s.e), sx - sz / 2, sy - sz * .55, sz, sz);
+  }
+  x.restore();
+}
+function sqDraw() {
+  const cv = $('#sqCv'), x = cv.getContext('2d'); x.clearRect(0, 0, cv.width, cv.height);
+  if (!sq) return;
+  const cont = sq.pts.map(sqPos), pressed = [...sq.ptrs.values()].some(p => !p.sticker && p.hold > .08);
+  sqDrawToy(x, sq.toy, cont, sq.cx, sq.cy, sq.R, sq.sqz, sq.t, pressed);
+  for (const pa of sq.parts) { x.globalAlpha = Math.max(0, pa.life); if (pa.kind === 'spark') sparkle(pa.x, pa.y, sq.R * .05, '#fff59d', x); else { x.fillStyle = pa.c; x.beginPath(); x.arc(pa.x, pa.y, sq.R * .045, 0, TAU); x.fill(); } }
+  x.globalAlpha = 1;
+}
+function sqLoop() {
+  let last = performance.now();
+  const loop = t => { if (!alive('squish')) { sqRaf = 0; return; } if (sq) { sqStep(Math.min(.033, (t - last) / 1000)); sqDraw(); } last = t; sqRaf = requestAnimationFrame(loop); };
+  sqRaf = requestAnimationFrame(loop);
+}
+// miniatura parada (para a prateleira)
+function sqThumb(toy, S = 150) {
+  const c = document.createElement('canvas'); c.width = c.height = S; const x = c.getContext('2d'), R = S * .3, f = SQ_SHAPES[toy.shape][1];
+  const cont = Array.from({ length: SQ_N }, (_, i) => { const [px, py] = f(i / SQ_N); return [S / 2 + px * R, S * .5 + py * R]; });
+  sqDrawToy(x, toy, cont, S / 2, S * .5, R, 0, 0, false); return c;
+}
+/* ---------- sons de apertar (feitos pelo app) ---------- */
+function sqSound(kind) {
+  if (!st.sound) return;
+  try {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)(); const t = ac.currentTime, f = sq.toy.fill;
+    if (kind === 'press') {
+      if (f === 'espuma') noise(t, .35, 900, 300, .18);
+      else if (f === 'slime') { noise(t, .25, 600, 200, .2); for (let i = 0; i < 3; i++) tone('sine', 180 + Math.random() * 200, 90, t + i * .06, .1, .12); }
+      else if (f === 'agua') tone('sine', 300, 120, t, .25, .2);
+      else if (f === 'bolinhas') for (let i = 0; i < 7; i++) noise(t + i * .03 + Math.random() * .02, .03, 5000, 3000, .15);
+      else { noise(t, .3, 1500, 600, .14); tone('triangle', 1200, 1800, t, .2, .05); }
+    } else if (kind === 'release') {
+      if (f === 'espuma') noise(t, 1.2, 300, 900, .08);
+      else if (f === 'agua') { tone('sine', 140, 400, t, .18, .18); tone('sine', 200, 500, t + .12, .15, .12); }
+      else if (f === 'slime') { for (let i = 0; i < 4; i++) tone('sine', 120 + Math.random() * 300, 80, t + i * .08, .12, .1); }
+      else if (f === 'bolinhas') for (let i = 0; i < 4; i++) noise(t + i * .05, .03, 4000, 2500, .1);
+      else [1568, 2093, 2637].forEach((fr, i) => tone('triangle', fr, fr, t + i * .07, .15, .05));
+    } else if (kind === 'stretch') noise(t, .15, 400 + Math.random() * 400, 250, .08);
+  } catch (e) {}
+}
+/* ---------- toques: apertar, esticar e arrastar enfeites ---------- */
+{
+  const cv = $('#sqCv'), pt = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; };
+  cv.addEventListener('pointerdown', e => {
+    if (!sq) return; e.preventDefault(); try { cv.setPointerCapture(e.pointerId); } catch (er) {}
+    const [x, y] = pt(e);
+    if (sq.mode === 'make') {   // na fábrica dá para arrastar os enfeites
+      const R = sq.R, hit = sq.toy.stickers.findIndex(s => Math.hypot(sq.cx + s.u * R - x, sq.cy + s.v * R - y) < R * .22);
+      if (hit >= 0) { sq.ptrs.set(e.pointerId, { sticker: hit }); return; }
+    }
+    if (!sqInside(x, y)) return;
+    let grab = -1, best = 1e9; sq.pts.forEach((q, i) => { const [qx, qy] = sqPos(q), d = Math.hypot(qx - x, qy - y); if (d < best) { best = d; grab = i; } });
+    sq.ptrs.set(e.pointerId, { x, y, x0: x, y0: y, hold: 0, grab: best < sq.R * .55 ? grab : -1 });
+    sqSound('press');
+    if (sq.toy.fill === 'slime' || sq.toy.fill === 'agua') for (let k = 0; k < 6; k++) sq.parts.push({ x, y, vx: (Math.random() - .5) * 160, vy: -Math.random() * 160, g: 400, life: .6, c: sq.toy.fill === 'agua' ? 'rgba(255,255,255,.8)' : sq.toy.c1 });
+  });
+  cv.addEventListener('pointermove', e => {
+    const p = sq && sq.ptrs.get(e.pointerId); if (!p) return;
+    const [x, y] = pt(e);
+    if (p.sticker !== undefined) { const s = sq.toy.stickers[p.sticker]; s.u = Math.max(-1.1, Math.min(1.1, (x - sq.cx) / sq.R)); s.v = Math.max(-1.1, Math.min(1.1, (y - sq.cy) / sq.R)); return; }
+    p.x = x; p.y = y;
+    if (performance.now() - sq.lastSound > 180 && Math.hypot(x - p.x0, y - p.y0) > sq.R * .15) { sq.lastSound = performance.now(); sqSound('stretch'); }
+  });
+  const up = e => {
+    const p = sq && sq.ptrs.get(e.pointerId); if (!p) return; sq.ptrs.delete(e.pointerId);
+    if (p.sticker !== undefined) { const s = sq.toy.stickers[p.sticker]; if (Math.hypot(s.u, s.v) > 1.05) { sq.toy.stickers.splice(p.sticker, 1); blip(300, .1); } return; }   // jogar para fora tira o enfeite
+    sqSound('release');
+    if (Math.random() < .15) say(pick(['Que fofinho!', 'Hmm, que gostoso de apertar!', 'Apertou!', 'Que molinho!']));
+  };
+  cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+}
+/* ---------- fábrica: abas e opções ---------- */
+function sqPanel() {
+  const tabs = $('#sqTabs'), box = $('#sqOpts'), toy = sq.toy; tabs.innerHTML = ''; box.innerHTML = '';
+  for (const [k, l] of SQ_TABS) btn(tabs, 'pbtn sqTab' + (k === sqTab ? ' on' : ''), l, l, () => { sqTab = k; blip(600); sqPanel(); });
+  const opt = (html, on, fn, cls = '') => btn(box, 'sqOpt ' + cls + (on ? ' on' : ''), html, html.replace(/<[^>]+>/g, ''), () => { fn(); blip(650 + Math.random() * 300); sqPanel(); });
+  const sw = (key) => SQ_COLORS.forEach(c => { const b = opt('', toy[key] === c, () => { toy[key] = c; }, 'sw'); b.style.background = c; });
+  if (sqTab === 'forma') for (const [k, [l]] of Object.entries(SQ_SHAPES)) opt(l, toy.shape === k, () => { toy.shape = k; sqBody(); say(l.split(' ').slice(1).join(' ')); });
+  else if (sqTab === 'cor') { box.insertAdjacentHTML('beforeend', '<h4>Cor principal</h4>'); sw('c1'); box.insertAdjacentHTML('beforeend', '<h4>Segunda cor (desenho e degradê)</h4>'); sw('c2'); }
+  else if (sqTab === 'desenho') for (const [k, l] of SQ_TEX) opt(l, toy.tex === k, () => { toy.tex = k; });
+  else if (sqTab === 'carinha') {
+    for (const [k, l] of SQ_EYES) opt(l, toy.eyes === k, () => { toy.eyes = k; });
+    box.insertAdjacentHTML('beforeend', '<h4>Boquinha</h4>');
+    for (const [k, l] of SQ_MOUTH) opt(l, toy.mouth === k, () => { toy.mouth = k; });
+    opt(toy.cheeks ? '😊 Com bochechas' : '🙂 Sem bochechas', toy.cheeks, () => { toy.cheeks = !toy.cheeks; });
+  } else if (sqTab === 'enfeites') {
+    box.insertAdjacentHTML('beforeend', '<h4>Toque para colocar. Arraste no squish para mudar de lugar (ou para fora para tirar).</h4>');
+    for (const e of SQ_STICK) opt(e, false, () => { if (toy.stickers.length < 8) toy.stickers.push({ e, u: (Math.random() - .5) * .9, v: -.6 + Math.random() * .4 }); }, 'big');
+  } else for (const [k, [l, , , d]] of Object.entries(SQ_FILL)) opt(`${l}<small>${d}</small>`, toy.fill === k, () => { toy.fill = k; sqSound('press'); });
+}
+/* ---------- coleção ---------- */
+function sqShelf() {
+  sq = null; $('#sqShelf').hidden = false; $('#sqPanel').hidden = $('#sqEdit').hidden = $('#sqDone').hidden = true;
+  const box = $('#sqGrid'); box.innerHTML = '';
+  btn(box, 'sqCard new', '<span>➕</span><b>Criar squish</b>', 'Criar squish', () => { blip(700); sqUse(sqNewToy(), 'make'); say('Vamos criar um squish!'); });
+  btn(box, 'sqCard new gacha', '<span>🎁</span><b>Surpresa</b>', 'Squish surpresa', sqGacha);
+  for (const toy of sqData.list) {
+    const b = btn(box, 'sqCard', '', sqName(toy), () => { blip(700); sqUse(toy, 'play'); say(sqName(toy)); });
+    b.appendChild(sqThumb(toy)); b.insertAdjacentHTML('beforeend', `<b>${sqName(toy)}</b>`);
+    btn(b, 'sqDel', '✖', 'Apagar', ev => { ev.stopPropagation(); confirmAsk('Apagar este squish?', () => { sqData.list = sqData.list.filter(o => o !== toy); sqSave(); sqShelf(); }); });
+  }
+  $('#sqCount').textContent = `🧸 ${sqData.list.length}`;
+}
+function sqGacha() {
+  // máquina surpresa: sacode, abre a cápsula e o squish novo vai para a coleção
+  const toy = sqRandom(); sqData.list.unshift(toy); sqSave();
+  [523, 659, 784, 1047, 1319].forEach((f, i) => blip(f, .12, i * .09)); celebrate(false);
+  say(`Surpresa! Um ${sqName(toy)}!`); sqUse(toy, 'play');
+}
+$('#sqDone').onclick = () => {
+  const toy = sq.toy; if (!sqData.list.includes(toy)) sqData.list.unshift(toy);
+  if (sqData.list.length > 60) sqData.list.length = 60;
+  sqSave(); celebrate(sqData.list.length % 5 === 0); say(`Pronto! Agora é só apertar o ${sqName(toy)}!`); sqUse(toy, 'play');
+};
+$('#sqEdit').onclick = () => { blip(600); sqTab = 'forma'; sqUse(sq.toy, 'make'); };
+$('#sqShelfBtn').onclick = () => { blip(500); if (sq && sq.mode === 'make' && sqData.list.includes(sq.toy)) sqSave(); sqShelf(); };
+GAMES.squish = squishStart; GAME_INTRO.squish = 'Crie seu squish e aperte bastante!';
+
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 59, name: '6.24' };
+const APP_VERSION = { code: 60, name: '6.25' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)

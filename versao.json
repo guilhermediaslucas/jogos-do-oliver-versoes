@@ -1,8 +1,8 @@
 {
-  "code": 59,
-  "name": "6.24",
+  "code": 60,
+  "name": "6.25",
   "minApk": 54,
-  "notes": "Versão 6.24: todos os lugares do Corre-Corre dos Bichos ficam abertos desde o começo.",
+  "notes": "Versão 6.25: jogo novo Fábrica de Squish! Crie seu squish (10 formas, cores, desenhos, carinha, enfeites e 5 recheios), guarde na coleção e aperte, estique e veja voltar devagarinho, com sons de apertar. Tem também a máquina Surpresa.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/MundoDoOliver.apk"
 }
