@@ -1,8 +1,8 @@
 {
-  "code": 52,
-  "name": "6.17",
+  "code": 53,
+  "name": "6.18",
   "minApk": 41,
-  "notes": "Versão 6.17: a IA pela internet saiu (fica só a IA do tablet). Corre-Corre dos Bichos: ovos dourados que valem 5 vezes mais, cachorrinho ajudante na loja que late e faz a mamãe parar, álbum de filhotes de cada lugar e moitas para se esconder da mamãe. Aventura: 3 fases novas (Selva, Polo Norte e Deserto), canos secretos que levam a uma nuvem cheia de estrelas e um escudo a cada 50 estrelas.",
+  "notes": "Versão 6.18: Ovos de dinossauro muito maior. A criança escolhe um entre três ovos (às vezes aparece um ovo raro), cada dino nasce com um nome, e dá para cuidar dele com comida, banho de esponja, brincadeira de bola e hora de dormir. Tem 7 chapéus para enfeitar, 12 espécies na Dinopédia (duas raras: Dragãozinho e Arco-íris) e no Vale dos Dinos cada um fala o nome quando é tocado.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/MundoDoOliver.apk"
 }

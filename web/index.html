@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 52, name: '6.17' }; -->
+<!-- const APP_VERSION = { code: 53, name: '6.18' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -11447,93 +11447,194 @@ function buildLoop(t) {
 }
 GAMES.build = buildStart;
 
-/* ================= ovos de dinossauro: choca o ovo com toquinhos, dá comida até o dino crescer e leva para o Vale dos Dinos ================= */
-// [nome, emoji, cor (giro de matiz), comida favorita, cor do ovo]
-const DN_KINDS = [['Rex', '🦖', 0, '🍖', '#c5e1a5'], ['Pescoçudo', '🦕', 0, '🥬', '#b2dfdb'], ['Dino azul', '🦖', 170, '🍓', '#bbdefb'],
-  ['Dino rosa', '🦕', 280, '🍓', '#f8bbd0'], ['Dino dourado', '🦖', 45, '🥬', '#ffe082'], ['Dino coral', '🦕', 220, '🍖', '#ffccbc']];
+/* ================= ovos de dinossauro: escolhe um ovo, choca com toquinhos, cuida (comida, banho, bola, soninho), põe chapéu,
+   e quando cresce leva para o Vale dos Dinos. A Dinopédia mostra as 12 espécies (duas são raras) ================= */
+// [nome, emoji, cor (giro de matiz; 'rainbow' muda sem parar), comida favorita, cor do ovo, rara]
+// os nomes seguem a cor que aparece depois do giro de matiz (conferido na tela)
+const DN_KINDS = [['Rex', '🦖', 0, '🍖', '#c5e1a5'], ['Pescoçudo', '🦕', 0, '🥬', '#b2dfdb'], ['Dino rosa', '🦖', 170, '🍓', '#f8bbd0'],
+  ['Dino limão', '🦕', 280, '🍓', '#f0f4c3'], ['Dino azul', '🦖', 45, '🥬', '#b3e5fc'], ['Dino coral', '🦕', 220, '🍖', '#ffccbc'],
+  ['Dino lilás', '🦕', 90, '🥬', '#d1c4e9'], ['Dino laranja', '🦖', 250, '🍖', '#ffe0b2'], ['Lagartão', '🦎', 0, '🍓', '#dcedc8'], ['Dino roxo', '🦖', 120, '🍓', '#e1bee7'],
+  ['Dragãozinho', '🐉', 0, '🍖', '#ff8a80', true], ['Arco-íris', '🦕', 'rainbow', '🍓', 'rainbow', true]];
 const DN_FOOD = [['🥬', 'folhinhas'], ['🍖', 'carne'], ['🍓', 'frutinhas']];
-const dnSave = load('oliver-dinos', { vale: [], cur: null });
+const DN_NAMES = ['Pipoca', 'Bolinha', 'Tico', 'Nina', 'Dudu', 'Lili', 'Totó', 'Mel', 'Juju', 'Bob', 'Fifi', 'Zeca', 'Pituca', 'Bento', 'Lola', 'Rabito'];
+const DN_HATS = ['🎀', '👑', '🎩', '🧢', '🕶️', '🌸', '🎉'];
+const DN_HEAD = { '🦖': [.3, .2], '🦕': [.2, .1], '🐉': [.3, .22], '🦎': [.15, .45] };   // onde fica a cabeça no emoji (para o chapéu)
+const DN_GROW = [5, 12];   // de bebê para jovem, de jovem para adulto
+const dnSave = load('oliver-dinos', { vale: [], cur: null, seen: [] });
+dnSave.vale = dnSave.vale.map(v => typeof v === 'number' ? { k: v, name: pick(DN_NAMES), hat: '' } : v);   // versões antigas guardavam só a espécie
+if (dnSave.cur && !dnSave.cur.name) dnSave.cur.name = pick(DN_NAMES);
 const dnTint = new Map();
-// emoji do dino pintado com a cor da espécie (guardado como imagem)
 function dnImg(k) {
   const key = k[1] + k[2]; let c = dnTint.get(key);
-  if (!c) { c = document.createElement('canvas'); c.width = c.height = 96; const g = c.getContext('2d'); g.filter = `hue-rotate(${k[2]}deg) saturate(1.3)`; g.drawImage(kEmo(k[1]), 0, 0); dnTint.set(key, c); }
+  if (!c) { c = document.createElement('canvas'); c.width = c.height = 96; const g = c.getContext('2d'); if (k[2]) g.filter = `hue-rotate(${k[2]}deg) saturate(1.3)`; g.drawImage(kEmo(k[1]), 0, 0); dnTint.set(key, c); }
   return c;
+}
+// desenha o dino com os pés em (cx, by), virado para a direita; o arco-íris muda de cor o tempo todo
+function dnDraw(x, k, cx, by, sz, t, hat, dirty = 0, squash = 0) {
+  x.save(); x.translate(cx, by); x.scale(-1 * (1 + squash * .08), 1 - squash * .08);
+  if (k[2] === 'rainbow') { x.filter = `hue-rotate(${(t * 120) % 360}deg) saturate(1.4)`; x.drawImage(kEmo(k[1]), -sz / 2, -sz * .95, sz, sz); x.filter = 'none'; }
+  else x.drawImage(dnImg(k), -sz / 2, -sz * .95, sz, sz);
+  x.fillStyle = 'rgba(110,70,30,.55)'; for (let i = 0; i < dirty; i++) { const [a, b] = [[-.1, -.35], [.15, -.5], [-.2, -.6]][i]; x.beginPath(); x.ellipse(a * sz, b * sz, sz * .07, sz * .05, i, 0, TAU); x.fill(); }
+  x.restore();
+  if (hat) { const [fx, fy] = DN_HEAD[k[1]] || [.3, .2]; emoDraw(x, hat, cx + (.5 - fx) * sz, by - sz * .95 + fy * sz - sz * .1, sz * .32); }
+}
+function dnEgg(x, cx, cy, r, color, t, wob = 0) {
+  x.save(); x.translate(cx, cy); x.rotate(wob); x.strokeStyle = INK; x.lineWidth = Math.max(2, r * .05);
+  if (color === 'rainbow') { const g = x.createLinearGradient(-r, -r, r, r); for (let i = 0; i <= 6; i++) g.addColorStop(i / 6, `hsl(${(i * 55 + t * 80) % 360} 90% 72%)`); x.fillStyle = g; } else x.fillStyle = color;
+  x.beginPath(); x.ellipse(0, 0, r * .78, r, 0, 0, TAU); x.fill(); x.stroke();
+  x.fillStyle = 'rgba(0,0,0,.12)'; for (const [a, b] of [[-.3, -.4], [.35, 0], [-.1, .45]]) { x.beginPath(); x.arc(a * r, b * r, r * .15, 0, TAU); x.fill(); }
+  x.restore();
 }
 let dn = null;
 function dinoStart() {
   if (dn?.raf) cancelAnimationFrame(dn.raf);
-  dn = { raf: 0, last: 0, t: 0, fx: [], food: null, jump: 0, wob: 0, vale: false };
-  if (!dnSave.cur) dnNewEgg();
+  dn = { raf: 0, last: 0, t: 0, fx: [], food: null, jump: 0, wob: 0, mode: 'nest', act: null, busy: false, scrub: 0, picks: null, valeHit: [], bubbles: [] };
+  if (!dnSave.cur) dnPickEggs();
   dnButtons(); dn.raf = requestAnimationFrame(dinoLoop);
-  say(dnSave.cur.xp < 0 ? 'Toque no ovo para ajudar o dinossauro a nascer!' : 'O seu dinossauro está com fome!');
+  const c = dnSave.cur;
+  say(!c ? 'Escolha um ovo!' : c.xp < 0 ? 'Toque no ovo para ajudar o dinossauro a nascer!' : `Oi, ${c.name}! Vamos cuidar dele?`);
 }
-function dnNewEgg() { dnSave.cur = { kind: Math.random() * DN_KINDS.length | 0, xp: -1, taps: 0 }; keep('oliver-dinos', dnSave); }
-const dnStage = c => c.xp < 0 ? 'egg' : c.xp < 4 ? 'baby' : c.xp < 10 ? 'kid' : 'adult';
+// três ovos para escolher; cada um tem uma chance pequena de ser de um dino raro
+function dnPickEggs() {
+  dnSave.cur = null; const common = DN_KINDS.map((k, i) => i).filter(i => !DN_KINDS[i][5]), rare = DN_KINDS.map((k, i) => i).filter(i => DN_KINDS[i][5]);
+  dn.picks = shuffle(common.slice()).slice(0, 3).map(i => Math.random() < .12 ? pick(rare) : i);
+  keep('oliver-dinos', dnSave);
+}
+const dnStage = c => !c ? 'pick' : c.xp < 0 ? 'egg' : c.xp < DN_GROW[0] ? 'baby' : c.xp < DN_GROW[1] ? 'kid' : 'adult';
 function dnButtons() {
   const box = $('#dnBtns'), c = dnSave.cur, s = dnStage(c); box.innerHTML = '';
-  if (dn.vale) { btn(box, 'dn-btn', '🥚 Voltar ao ninho', 'Voltar ao ninho', () => { dn.vale = false; dnButtons(); }); return; }
-  if (s !== 'egg' && s !== 'adult') for (const [e, n] of DN_FOOD) btn(box, 'dn-btn', e, 'Dar ' + n, () => dnFeed(e));
-  if (s === 'adult') btn(box, 'dn-btn big', '🌋 Levar para o vale', 'Levar para o vale', () => {
-    dnSave.vale.push(c.kind); dnNewEgg(); dn.vale = true; dnButtons(); celebrate(false); say('Agora ele mora no Vale dos Dinos! Olha quanta gente!');
-  });
-  btn(box, 'dn-btn', `🌋 ${dnSave.vale.length}`, 'Ver o vale', () => { dn.vale = !dn.vale; dnButtons(); });
+  const b = (html, label, fn, big) => btn(box, 'dn-btn' + (big ? ' big' : ''), html, label, () => { if (dn.busy) return; blip(600); fn(); });
+  if (dn.mode !== 'nest') { b('🥚', 'Voltar ao ninho', () => { dn.mode = 'nest'; dnButtons(); }); if (dn.mode === 'vale') b('📖', 'Dinopédia', () => { dn.mode = 'pedia'; dnButtons(); }); return; }
+  if (dn.mode === 'nest' && dn.hats) {   // escolhendo o chapéu
+    b('🚫', 'Sem chapéu', () => { c.hat = ''; keep('oliver-dinos', dnSave); });
+    for (const h of DN_HATS) b(h, 'Chapéu', () => { c.hat = h; keep('oliver-dinos', dnSave); chirp(900, .08); say(pick(['Que chique!', 'Ficou lindo!', 'Uau!'])); });
+    b('✔️', 'Pronto', () => { dn.hats = false; dnButtons(); }); return;
+  }
+  if (s === 'baby' || s === 'kid') {
+    for (const [e, n] of DN_FOOD) b(e, 'Dar ' + n, () => dnFeed(e));
+    b('🧽', 'Dar banho', () => { dn.act = 'bath'; dn.scrub = 0; say(c.dirty ? 'Esfregue o dino com o dedo!' : 'Ele já está limpinho, mas um banho é sempre gostoso! Esfregue!'); });
+    b('🎾', 'Brincar de bola', dnBall); b('🌙', 'Hora de dormir', dnSleep);
+  }
+  if (s === 'adult') b('🌋 Levar para o vale', 'Levar para o vale', () => {
+    dnSave.vale.push({ k: c.kind, name: c.name, hat: c.hat || '' }); dnSave.cur = null; dn.mode = 'vale'; dnPickEggs(); dnButtons(); celebrate(false);
+    say(`Agora ${c.name} mora no Vale dos Dinos! Depois escolha outro ovo.`);
+  }, true);
+  if (s !== 'pick' && s !== 'egg') b('🎩', 'Chapéu', () => { dn.hats = true; dnButtons(); });
+  b(`🌋 ${dnSave.vale.length}`, 'Ver o vale', () => { dn.mode = 'vale'; dnButtons(); });
+  b('📖', 'Dinopédia', () => { dn.mode = 'pedia'; dnButtons(); say('Dinopédia! Quantos dinos você já conhece?'); });
 }
-function dnFeed(e) {
-  if (dn.food) return; const c = dnSave.cur, k = DN_KINDS[c.kind];
-  dn.food = { e, t: 0, fav: e === k[3] }; chirp(600, .08);
+function dnGain(n, msg) {
+  const c = dnSave.cur, before = dnStage(c); c.xp += n; keep('oliver-dinos', dnSave);
+  const cv = $('#dnCv'), now = dnStage(c);
+  if (now !== before) {
+    confettiAt(dn.fx, cv.width * .4, cv.height * .5, 30);
+    if (now === 'adult') { celebrate(false); setTimeout(() => say(`${c.name} ficou grandão! Leve para o Vale dos Dinos!`), 900); } else setTimeout(() => say(`${c.name} cresceu!`), 900);
+    dnButtons();
+  } else if (msg) say(msg);
+}
+function dnFeed(e) { if (dn.food || dn.act) return; dn.food = { e, t: 0, fav: e === DN_KINDS[dnSave.cur.kind][3] }; chirp(600, .08); }
+function dnBall() { if (dn.act) return; dn.act = 'ball'; dn.ball = { t: 0 }; say('Pega a bola!'); }
+function dnSleep() {
+  if (dn.act) return; dn.act = 'sleep'; dn.sleepT = 0; say(`Boa noite, ${dnSave.cur.name}...`);
+  [523, 659, 587, 523, 440, 523].forEach((f, i) => setTimeout(() => chirp(f, .4, 'sine', .06), 300 + i * 450));
 }
 $('#dnCv').addEventListener('pointerdown', e => {
-  if (!dn || dn.vale) return; const c = dnSave.cur;
+  if (!dn || dn.busy) return; const cv = $('#dnCv'), [px, py] = ptIn(cv, e), c = dnSave.cur, W = cv.width, H = cv.height;
+  dn.down = true; dn.ptr = [px, py];
+  if (dn.mode === 'vale') {   // tocar num dino do vale: ele pula e fala o nome
+    const v = dn.valeHit.find(h => Math.abs(px - h.x) < h.s * .5 && py > h.y - h.s && py < h.y);
+    if (v) { v.d.jump = 1; tone('sawtooth', 220, 120, audioOn().currentTime, .3, .07); say(`Rawr! Eu sou ${v.d.name}!`); }
+    return;
+  }
+  if (dn.mode !== 'nest') return;
+  if (!c) {   // escolhendo o ovo
+    const i = [0, 1, 2].find(i => Math.abs(px - W * (.25 + i * .25)) < W * .1); if (i === undefined) return;
+    const k = dn.picks[i]; dnSave.cur = { kind: k, xp: -1, taps: 0, name: pick(DN_NAMES), hat: '', dirty: 0 }; keep('oliver-dinos', dnSave);
+    chirp(800, .1); say(DN_KINDS[k][5] ? 'Uau, um ovo raro! Toque nele para chocar!' : 'Boa escolha! Toque no ovo para chocar!'); dnButtons(); return;
+  }
   if (dnStage(c) === 'egg') {
     c.taps++; dn.wob = 1; tone('triangle', 300 + c.taps * 60, 400 + c.taps * 60, audioOn().currentTime, .1, .12);
-    if (c.taps >= 6) { c.xp = 0; keep('oliver-dinos', dnSave); const cv = $('#dnCv'); confettiAt(dn.fx, cv.width / 2, cv.height * .6, 40); celebrate(false); say(`Nasceu um ${DN_KINDS[c.kind][0]}! Ele gosta de ${DN_FOOD.find(f => f[0] === DN_KINDS[c.kind][3])[1]}.`); dnButtons(); }
-  } else { dn.jump = 1; tone('square', 500, 900, audioOn().currentTime, .15, .06); if (Math.random() < .4) say(pick(['Hihihi!', 'Rawr!', 'Faz cócegas!'])); }
+    if (c.taps >= 6) {
+      c.xp = 0; if (!dnSave.seen.includes(c.kind)) dnSave.seen.push(c.kind); keep('oliver-dinos', dnSave);
+      confettiAt(dn.fx, W * .4, H * .6, 40); celebrate(false);
+      const k = DN_KINDS[c.kind]; say(`Nasceu! O nome dele é ${c.name}. É um ${k[0]} e gosta de ${DN_FOOD.find(f => f[0] === k[3])[1]}.`); dnButtons();
+    }
+  } else if (dn.act !== 'bath') { dn.jump = 1; tone('square', 500, 900, audioOn().currentTime, .15, .06); if (Math.random() < .4) say(pick(['Hihihi!', 'Rawr!', 'Faz cócegas!'])); }
 });
+$('#dnCv').addEventListener('pointermove', e => {
+  if (!dn?.down || dn.act !== 'bath') return; const p = ptIn($('#dnCv'), e), d = Math.hypot(p[0] - dn.ptr[0], p[1] - dn.ptr[1]); dn.ptr = p;
+  dn.scrub += d; if (Math.random() < .5) dn.bubbles.push({ x: p[0], y: p[1], r: 4 + Math.random() * 10, t: 1.2 });
+  if (Math.random() < .08) noise(audioOn().currentTime, .1, 2500, 1500, .04);
+  const cv = $('#dnCv');
+  if (dn.scrub > Math.min(cv.width, cv.height) * 4) { dn.act = null; const was = dnSave.cur.dirty; dnSave.cur.dirty = 0; dnGain(1, was ? 'Cheiroso! Ficou limpinho!' : 'Que banho gostoso!'); chirp(1200, .15); }
+});
+addEventListener('pointerup', () => { if (dn) dn.down = false; });
 function dinoLoop(t) {
   if (!alive('dino')) { dn.raf = 0; return; }
   const dt = Math.min(.05, (t - dn.last) / 1000 || 0); dn.last = t; dn.t += dt;
-  const cv = $('#dnCv'); fitCanvas(cv); const W = cv.width, H = cv.height, x = cv.getContext('2d'), u = Math.min(W, H) / 100, c = dnSave.cur, k = DN_KINDS[c.kind];
-  const sky = x.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, dn.vale ? '#ffcc80' : '#a5e3ff'); sky.addColorStop(1, '#fff6d8'); x.fillStyle = sky; x.fillRect(0, 0, W, H);
-  x.fillStyle = '#8d6e63'; x.beginPath(); x.moveTo(W * .62, H * .7); x.lineTo(W * .78, H * .2); x.lineTo(W * .86, H * .2); x.lineTo(W * 1.02, H * .7); x.fill();   // vulcão
+  const cv = $('#dnCv'); fitCanvas(cv); const W = cv.width, H = cv.height, x = cv.getContext('2d'), u = Math.min(W, H) / 100, c = dnSave.cur;
+  const night = dn.act === 'sleep' ? Math.min(1, dn.sleepT * 2, (4.5 - dn.sleepT) * 2) : 0;
+  const sky = x.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, dn.mode === 'vale' ? '#ffcc80' : '#a5e3ff'); sky.addColorStop(1, '#fff6d8'); x.fillStyle = sky; x.fillRect(0, 0, W, H);
+  x.fillStyle = '#8d6e63'; x.beginPath(); x.moveTo(W * .62, H * .7); x.lineTo(W * .78, H * .2); x.lineTo(W * .86, H * .2); x.lineTo(W * 1.02, H * .7); x.fill();
   x.fillStyle = '#ff7043'; x.beginPath(); x.ellipse(W * .82, H * .2, W * .04, u * 1.5, 0, 0, TAU); x.fill();
   for (let i = 0; i < 3; i++) { x.fillStyle = 'rgba(120,120,120,.35)'; x.beginPath(); x.arc(W * .82 + Math.sin(dn.t + i) * u * 3, H * .16 - ((dn.t * 20 + i * 30) % 60) * u * .2, u * (2 + i), 0, TAU); x.fill(); }
   x.fillStyle = '#7cc35a'; x.fillRect(0, H * .7, W, H * .3);
-  if (dn.vale) {   // todos os dinos que já cresceram passeando
-    dnSave.vale.forEach((ki, i) => {
-      const kk = DN_KINDS[ki], sp = 30 + (i * 17) % 40, px = (i * 173 + dn.t * sp) % (W + 200) - 100, py = H * .74 + (i % 4) * H * .06, sz = u * (14 + (i % 3) * 3);
-      x.save(); x.translate(px, py - Math.abs(Math.sin(dn.t * 4 + i)) * u); x.scale(-1, 1); x.drawImage(dnImg(kk), -sz / 2, -sz, sz, sz); x.restore();
+  const title = s => { x.font = `800 ${u * 5}px "Baloo 2", sans-serif`; x.textAlign = 'center'; x.fillStyle = INK; x.fillText(s, W / 2, H * .12); };
+  if (dn.mode === 'pedia') {   // dinopédia: as 12 espécies; as que ainda não nasceram aparecem como sombra
+    x.fillStyle = 'rgba(255,248,234,.92)'; x.fillRect(0, 0, W, H); title(`Dinopédia: ${dnSave.seen.length} de ${DN_KINDS.length}`);
+    DN_KINDS.forEach((k, i) => {
+      const cx = W * (.14 + (i % 6) * .144), cy = H * (.45 + Math.floor(i / 6) * .38), sz = Math.min(W * .12, H * .26), got = dnSave.seen.includes(i);
+      x.save(); if (!got) x.filter = 'brightness(0) opacity(.3)'; dnDraw(x, got ? k : [k[0], k[1], 0], cx, cy, sz, dn.t); x.restore();
+      x.font = `800 ${u * 2.6}px "Baloo 2", sans-serif`; x.fillStyle = INK; x.fillText(got ? k[0] + (k[5] ? ' ⭐' : '') : '???', cx, cy + u * 4);
     });
-    x.font = `800 ${u * 6}px "Baloo 2", sans-serif`; x.textAlign = 'center'; x.fillStyle = INK; x.fillText(dnSave.vale.length ? `Vale dos Dinos: ${dnSave.vale.length}` : 'O vale está esperando o primeiro dino!', W / 2, H * .18);
+  } else if (dn.mode === 'vale') {
+    dn.valeHit = [];
+    dnSave.vale.forEach((d, i) => {
+      const k = DN_KINDS[d.k] || DN_KINDS[0], sp = 30 + (i * 17) % 40, px = (i * 173 + dn.t * sp) % (W + 200) - 100, py = H * .76 + (i % 4) * H * .055, sz = u * (14 + (i % 3) * 3);
+      d.jump = Math.max(0, (d.jump || 0) - dt * 2.5); const hop = Math.sin(d.jump * Math.PI) * u * 8 + Math.abs(Math.sin(dn.t * 4 + i)) * u;
+      dnDraw(x, k, px, py - hop, sz, dn.t + i, d.hat); dn.valeHit.push({ x: px, y: py, s: sz, d });
+      x.font = `800 ${u * 2.2}px "Baloo 2", sans-serif`; x.textAlign = 'center'; x.fillStyle = INK; x.fillText(d.name, px, py + u * 3);
+    });
+    title(dnSave.vale.length ? `Vale dos Dinos: ${dnSave.vale.length} · toque num dino!` : 'O vale está esperando o primeiro dino!');
+  } else if (!c) {   // escolher um dos três ovos
+    title('Escolha um ovo!');
+    dn.picks.forEach((ki, i) => { const k = DN_KINDS[ki], cx = W * (.25 + i * .25), cy = H * .6; x.fillStyle = '#d9b36a'; x.beginPath(); x.ellipse(cx, cy + u * 10, u * 12, u * 3.5, 0, 0, TAU); x.fill(); dnEgg(x, cx, cy - Math.abs(Math.sin(dn.t * 3 + i)) * u * 2, u * 10, k[4], dn.t); if (k[5]) emoDraw(x, '✨', cx + u * 8, cy - u * 10, u * 6); });
   } else {
-    const cx = W * .4, by = H * .78, st2 = dnStage(c);
-    x.fillStyle = '#d9b36a'; x.beginPath(); x.ellipse(cx, by, u * 16, u * 5, 0, 0, TAU); x.fill();   // ninho
+    const cx = W * .4, by = H * .78, st2 = dnStage(c), k = DN_KINDS[c.kind];
+    x.fillStyle = '#d9b36a'; x.beginPath(); x.ellipse(cx, by, u * 16, u * 5, 0, 0, TAU); x.fill();
     if (st2 === 'egg') {
-      dn.wob = Math.max(0, dn.wob - dt * 3); const r = u * 12;
-      x.save(); x.translate(cx, by - r * .9); x.rotate(Math.sin(dn.t * 25) * .2 * dn.wob); x.fillStyle = k[4]; x.strokeStyle = INK; x.lineWidth = u * .6;
-      x.beginPath(); x.ellipse(0, 0, r * .78, r, 0, 0, TAU); x.fill(); x.stroke();
-      x.fillStyle = 'rgba(0,0,0,.12)'; for (const [a, b] of [[-.3, -.4], [.35, 0], [-.1, .45]]) { x.beginPath(); x.arc(a * r, b * r, r * .15, 0, TAU); x.fill(); }
-      x.beginPath(); for (let i = 0; i < c.taps; i++) { const yy = -r * .2 + (i % 2 ? -1 : 1) * r * .12; x.moveTo(-r * .7 + i * r * .25, yy); x.lineTo(-r * .58 + i * r * .25, -yy * .6); } x.stroke();
-      x.restore();
-      x.font = `800 ${u * 5}px "Baloo 2", sans-serif`; x.textAlign = 'center'; x.fillStyle = INK; x.fillText('👆 Toque no ovo!', cx, H * .2);
+      dn.wob = Math.max(0, dn.wob - dt * 3);
+      dnEgg(x, cx, by - u * 11, u * 12, k[4], dn.t, Math.sin(dn.t * 25) * .2 * dn.wob);
+      x.strokeStyle = INK; x.lineWidth = u * .6; x.beginPath(); for (let i = 0; i < c.taps; i++) { const yy = by - u * 12 + (i % 2 ? -1 : 1) * u * 1.4; x.moveTo(cx - u * 8 + i * u * 3, yy); x.lineTo(cx - u * 6.5 + i * u * 3, by - u * 11 - (i % 2 ? -1 : 1) * u); } x.stroke();
+      title('👆 Toque no ovo!');
     } else {
       dn.jump = Math.max(0, dn.jump - dt * 2.5);
-      const sz = u * { baby: 22, kid: 32, adult: 44 }[st2], hop = Math.sin(dn.jump * Math.PI) * u * 8 + Math.abs(Math.sin(dn.t * 2)) * u;
-      x.save(); x.translate(cx, by - hop); x.scale(-1 * (1 + Math.sin(dn.t * 3) * .02), 1); x.drawImage(dnImg(k), -sz / 2, -sz * .95, sz, sz); x.restore();
+      const sz = u * { baby: 22, kid: 32, adult: 44 }[st2]; let dx = 0, hop = Math.sin(dn.jump * Math.PI) * u * 8 + Math.abs(Math.sin(dn.t * 2)) * u;
+      if (dn.act === 'ball') {   // a bola vem quicando e o dino pula para pegar
+        const b = dn.ball; b.t += dt; const bx = W * 1.05 - b.t * W * .45, bh = Math.abs(Math.sin(b.t * 5)) * u * 14;
+        if (bx > cx + sz * .3) emoDraw(x, '⚽', bx, by - u * 3 - bh, u * 7, 1, -b.t * 6);
+        else if (!b.caught) { b.caught = true; dn.jump = 1; chirp(900, .1); chirp(1200, .12); }
+        if (b.caught) { emoDraw(x, '⚽', cx + sz * .35, by - sz * .5, u * 6); if (b.t > 2.6) { dn.act = null; dnGain(1, pick(['Pegou! Muito bem!', 'Que goleiro!', 'Mais uma!'])); } }
+        dx = b.caught ? 0 : Math.sin(b.t * 6) * u;
+      }
+      dnDraw(x, k, cx + dx, by - hop, sz, dn.t, c.hat, c.dirty, dn.act === 'bath' ? Math.abs(Math.sin(dn.t * 8)) : 0);
       x.font = `800 ${u * 4.5}px "Baloo 2", sans-serif`; x.textAlign = 'center'; x.fillStyle = INK;
-      x.fillText(st2 === 'adult' ? `O ${k[0]} cresceu! 🎉` : `${k[0]} · gosta de ${k[3]}`, cx, H * .14);
-      const need = st2 === 'baby' ? 4 : 10, from = st2 === 'baby' ? 0 : 4;   // barrinha de crescer
-      if (st2 !== 'adult') { const bw = u * 30; x.fillStyle = 'rgba(0,0,0,.12)'; x.fillRect(cx - bw / 2, H * .18, bw, u * 2.5); x.fillStyle = '#43a047'; x.fillRect(cx - bw / 2, H * .18, bw * (c.xp - from) / (need - from), u * 2.5); }
-      if (dn.food) {   // comida voando até a boca
-        const f = dn.food; f.t += dt * 2.2; const fx = W * .85 + (cx - sz * .3 - W * .85) * Math.min(1, f.t), fy = H * .85 + (by - sz * .7 - H * .85) * Math.min(1, f.t) - Math.sin(Math.min(1, f.t) * Math.PI) * u * 15;
+      x.fillText(st2 === 'adult' ? `${c.name} cresceu! 🎉` : `${c.name} · ${k[0]} · gosta de ${k[3]}`, W / 2, H * .1);
+      if (st2 !== 'adult') { const need = st2 === 'baby' ? DN_GROW[0] : DN_GROW[1], from = st2 === 'baby' ? 0 : DN_GROW[0], bw = u * 30; x.fillStyle = 'rgba(0,0,0,.12)'; x.fillRect(W / 2 - bw / 2, H * .15, bw, u * 2.5); x.fillStyle = '#43a047'; x.fillRect(W / 2 - bw / 2, H * .15, bw * (c.xp - from) / (need - from), u * 2.5); }
+      if (dn.act === 'bath') { emoDraw(x, '🧽', (dn.ptr || [cx])[0], (dn.ptr || [0, by - sz * .5])[1], u * 8); if (!dn.down) { x.font = `800 ${u * 4}px "Baloo 2", sans-serif`; x.fillText('👆 Esfregue o dino!', cx, by - sz - u * 3); } }
+      if (dn.food) {
+        const f = dn.food; f.t += dt * 2.2; const p = Math.min(1, f.t), fx = W * .85 + (cx - sz * .3 - W * .85) * p, fy = H * .85 + (by - sz * .7 - H * .85) * p - Math.sin(p * Math.PI) * u * 15;
         if (f.t < 1) emoDraw(x, f.e, fx, fy, u * 9);
-        else {
-          const before = dnStage(c); c.xp += f.fav ? 2 : 1; dn.food = null; dn.jump = 1; keep('oliver-dinos', dnSave);
-          tone('triangle', 400, 200, audioOn().currentTime, .15, .1); say(f.fav ? pick(['Hmm, adoro!', 'Delícia!', 'Que gostoso!']) : 'Hmm, obrigado!');
-          if (dnStage(c) !== before) { confettiAt(dn.fx, cx, by - sz, 30); if (dnStage(c) === 'adult') { celebrate(false); setTimeout(() => say('Ele ficou grandão! Leve para o Vale dos Dinos!'), 1200); } else say('Ele cresceu!'); dnButtons(); }
-        }
+        else { dn.food = null; dn.jump = 1; c.dirty = Math.min(3, (c.dirty || 0) + (Math.random() < .5 ? 1 : 0)); tone('triangle', 400, 200, audioOn().currentTime, .15, .1); dnGain(f.fav ? 2 : 1, f.fav ? pick(['Hmm, adoro!', 'Delícia!', 'Que gostoso!']) : 'Hmm, obrigado!'); }
       }
     }
+  }
+  for (const b of dn.bubbles) { b.t -= dt; b.y -= u * 3 * dt; x.strokeStyle = 'rgba(255,255,255,.9)'; x.lineWidth = 2; x.beginPath(); x.arc(b.x, b.y, b.r, 0, TAU); x.stroke(); }
+  dn.bubbles = dn.bubbles.filter(b => b.t > 0).slice(-60);
+  if (dn.act === 'sleep') {   // noite: escurece, lua, estrelas e zzz; depois amanhece
+    dn.sleepT += dt; x.fillStyle = `rgba(20,24,70,${night * .75})`; x.fillRect(0, 0, W, H);
+    if (night > .3) { emoDraw(x, '🌙', W * .15, H * .2, u * 10); for (let i = 0; i < 12; i++) emoDraw(x, '✨', (i * 97 % 100) / 100 * W, (i * 37 % 40) / 100 * H, u * 3); x.font = `800 ${u * 5}px "Baloo 2", sans-serif`; x.fillStyle = '#fff'; x.textAlign = 'center'; x.fillText('Z z z', W * .45, H * .45 - (dn.sleepT % 1) * u * 6); }
+    if (dn.sleepT > 4.5) { dn.act = null; dnGain(1, `Bom dia, ${dnSave.cur.name}! Dormiu bem!`); }
   }
   confettiDraw(x, dn.fx, dt, u / 6);
   dn.raf = requestAnimationFrame(dinoLoop);
@@ -11752,7 +11853,7 @@ GAME_INTRO.studio = 'Toque nos quadradinhos para criar a sua música, e aperte o
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 52, name: '6.17' };
+const APP_VERSION = { code: 53, name: '6.18' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)
