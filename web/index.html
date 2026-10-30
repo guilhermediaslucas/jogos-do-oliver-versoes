@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 63, name: '6.28' }; -->
+<!-- const APP_VERSION = { code: 64, name: '6.29' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -679,6 +679,33 @@ button:active { transform: scale(.92); }
 .sqOrder .who { font-size: 44px; }
 .sqOrder i { display: inline-block; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--ink); vertical-align: middle; }
 @media (orientation: portrait) { .sqPanel { top: auto; left: 10px; width: auto; height: 46%; } }
+.fz-play { border-radius: 24px; overflow: hidden; touch-action: none; box-shadow: 0 6px 0 var(--shadow); background: #7cc35a; }
+.fz-play canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.fz-hint { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); background: rgba(255,247,234,.9); border-radius: 999px; padding: 6px 16px; font-weight: 800; pointer-events: none; white-space: nowrap; max-width: calc(100% - 20px); overflow: hidden; text-overflow: ellipsis; }
+.fz-sheet { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); width: min(760px, calc(100% - 20px)); background: var(--paper); border-radius: 24px; box-shadow: 0 5px 0 var(--shadow); padding: 8px 14px 12px; box-sizing: border-box; display: grid; gap: 8px; }
+.fz-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-weight: 800; }
+.fz-head b { font-size: 26px; }
+.fz-stage { font-size: 15px; background: #e7f5dc; border-radius: 999px; padding: 2px 10px; }
+.fz-bar { flex: 1; min-width: 100px; height: 14px; background: #eadfcc; border-radius: 999px; overflow: hidden; }
+.fz-bar i { display: block; height: 100%; background: linear-gradient(90deg, #8bc34a, #43a047); border-radius: 999px; transition: width .4s; }
+.fz-x { width: 40px; height: 40px; border-radius: 50%; background: #eadfcc; font-size: 18px; }
+.fz-acts { display: flex; gap: 8px; flex-wrap: wrap; }
+.fz-act { flex: 1 1 80px; border-radius: 20px; background: #fff; box-shadow: 0 4px 0 var(--shadow); font-weight: 800; font-size: 15px; padding: 6px 4px; display: grid; justify-items: center; min-height: 72px; }
+.fz-act span { font-size: 32px; line-height: 1.1; }
+.fz-act.need { background: #fff1c2; animation: fzWig 1s ease-in-out infinite; }
+.fz-act.ride { background: #ffd23f; }
+@keyframes fzWig { 25% { transform: rotate(-3deg); } 75% { transform: rotate(3deg); } }
+.fz-over { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(42,29,18,.45); padding: 14px; box-sizing: border-box; z-index: 2; }
+.fz-card { background: var(--paper); border-radius: 26px; padding: 16px 20px; width: min(560px, 100%); max-height: 100%; overflow-y: auto; box-sizing: border-box; box-shadow: 0 6px 0 var(--shadow); display: grid; gap: 12px; justify-items: center; text-align: center; }
+.fz-card h3 { margin: 0; font-size: 30px; line-height: 1.1; }
+.fz-card p { margin: 0; font-size: 17px; }
+.fz-chips { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.fz-chip { border-radius: 999px; background: #fff; box-shadow: 0 3px 0 var(--shadow); font-weight: 800; font-size: 20px; padding: 10px 18px; }
+.fz-chip.on { background: #ffd23f; box-shadow: 0 0 0 3px #ff6b3d; }
+.fz-go { background: #ff6b3d; color: #fff; font-weight: 800; font-size: 24px; padding: 10px 30px; border-radius: 999px; box-shadow: 0 5px 0 #b8431f; }
+.fz-shop { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; width: 100%; }
+.fz-item { background: #fff; border-radius: 20px; box-shadow: 0 4px 0 var(--shadow); padding: 8px; display: grid; justify-items: center; font-weight: 800; font-size: 15px; gap: 2px; }
+.fz-item b { font-size: 44px; } .fz-item.have { background: #d3f9d8; } .fz-item.cant { opacity: .6; }
 .keys { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; height: 100%; }
 .key { border-radius: 20px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 16px; font-size: clamp(30px, 6vw, 56px); box-shadow: 0 6px 0 rgba(0,0,0,.2); touch-action: none; }
 .key span { display: block; }
@@ -908,7 +935,7 @@ button:active { transform: scale(.92); }
   <div class="doorBar" style="--d1:#ec407a"><button class="round doorBack" aria-label="Voltar">⬅️</button><h2>🧸 Faz de conta</h2></div>
   <div class="modes">
     <button class="mode" style="background:#f06292" data-game="pet"><span>🐶</span>Meu bichinho</button>
-    <button class="mode" style="background:#66bb6a" data-game="dino"><span>🦖</span>Ovos de dinossauro</button>
+    <button class="mode" style="background:#66bb6a" data-game="dino"><span>🦖</span>Fazenda dos Dinos</button>
     <button class="mode" style="background:#ffa000" data-game="build"><span>🏗️</span>Construtor da obra</button>
     <button class="mode" style="background:#e53935" data-game="fire"><span>🚒</span>Bombeiro mirim</button>
     <button class="mode" style="background:#ff9800" data-game="cook"><span>🍕</span>Cozinha</button>
@@ -1113,9 +1140,20 @@ button:active { transform: scale(.92); }
   <div class="play cv-play"><canvas id="bdCv"></canvas><div class="bd-menu" id="bdMenu" hidden></div></div>
 </section>
 <section id="g-dino" class="screen game" hidden>
-  <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Ovos de dinossauro</h2></div>
-  <div class="play cv-play"><canvas id="dnCv"></canvas></div>
-  <div class="dn-btns" id="dnBtns"></div>
+  <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Fazenda dos Dinos</h2><span class="score" id="fzCoins"></span>
+    <button class="round wide" id="fzFarmB" hidden>🏡 Fazenda</button><button class="round wide" id="fzEggB" aria-label="Chocadeira">🥚 <b id="fzEggN"></b></button><button class="round" id="fzRideB" aria-label="Passear">🏇</button>
+    <button class="round" id="fzShopB" aria-label="Loja">🛒</button><button class="round" id="fzPediaB" aria-label="Dinopédia">📖</button><button class="round" id="fzNightB" aria-label="Dia e noite">🌙</button></div>
+  <div class="play fz-play"><canvas id="dnCv"></canvas>
+    <div class="fz-hint" id="fzHint"></div>
+    <div class="fz-sheet" id="fzSheet" hidden>
+      <div class="fz-head"><b id="fzSName"></b><span class="fz-stage" id="fzSStage"></span><span id="fzSHearts"></span><div class="fz-bar" title="Crescimento"><i id="fzSGrow"></i></div><button class="fz-x" id="fzSClose" aria-label="Fechar">✖</button></div>
+      <div class="fz-acts" id="fzActs"></div>
+    </div>
+    <div class="fz-over" id="fzName" hidden><div class="fz-card"><h3 id="fzNameT"></h3><p>Escolha o nome do filhote:</p><div class="fz-chips" id="fzNames"></div><button class="fz-go" id="fzNameGo">Pronto!</button></div></div>
+    <div class="fz-over" id="fzPick" hidden><div class="fz-card"><h3>Passear com qual dino? 🏇</h3><p>Só os dinos grandes aguentam carregar você!</p><div class="fz-chips" id="fzPickList"></div><button class="fz-chip" id="fzPickX">Voltar</button></div></div>
+    <div class="fz-over" id="fzShop" hidden><div class="fz-card"><h3>🛒 Loja da fazenda</h3><div class="fz-shop" id="fzShopList"></div><button class="fz-chip" id="fzShopX">Fechar</button></div></div>
+    <div class="fz-over" id="fzEnd" hidden><div class="fz-card"><h3>Que passeio! 🎉</h3><p id="fzEndP"></p><button class="fz-go" id="fzEndGo">🏡 Voltar para a fazenda</button></div></div>
+  </div>
 </section>
 <section id="g-fire" class="screen game" hidden>
   <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2>Bombeiro mirim</h2></div>
@@ -4133,7 +4171,7 @@ const GAME_SAVE = {
   wash: { has: () => washSave.done > 0, info: () => `Caminhões lavados: ${washSave.done}`, reset: () => unload('oliver-wash') },
   pet: { has: () => { try { return !!localStorage.getItem('oliver-pet'); } catch (e) { return false; } }, info: () => '', reset: () => unload('oliver-pet') },
   scene: { has: () => Object.values(scenes).some(v => v && Object.keys(v).length), info: () => 'Os adesivos que você colou continuam lá', reset: () => unload('oliver-scenes') },
-  dino: { has: () => dnSave.vale.length > 0 || (dnSave.cur && dnSave.cur.xp >= 0), info: () => `Dinos no vale: ${dnSave.vale.length}`, reset: () => unload('oliver-dinos') },
+  dino: { has: () => dnSave.dinos.length > 0, info: () => `Dinos na fazenda: ${dnSave.dinos.length}`, reset: () => unload('oliver-dinos') },
   fire: { has: () => load('oliver-bombeiro', { n: 0 }).n > 0, info: () => `Gatinhos salvos: ${load('oliver-bombeiro', { n: 0 }).n}`, reset: () => unload('oliver-bombeiro') },
   sling: { has: () => slSave.cur > 0, info: () => `Você está na fase ${slSave.cur + 1}`, reset: () => unload('oliver-estilingue') },
   statue: learnSave('statue')
@@ -4651,7 +4689,7 @@ function openParents() {
 }
 function savePrefs() { keep('oliver-prefs', prefs); }
 // o que cada jogo guarda no tablet: [emoji, nome, chaves do localStorage, gravações no IndexedDB]
-const GAME_RESETS = [['🥚', 'Corre-Corre dos Bichos', ['oliver-corre']], ['🦖', 'Ovos de dinossauro', ['oliver-dinos']], ['🚒', 'Bombeiro mirim', ['oliver-bombeiro']],
+const GAME_RESETS = [['🥚', 'Corre-Corre dos Bichos', ['oliver-corre']], ['🦖', 'Fazenda dos Dinos', ['oliver-dinos']], ['🚒', 'Bombeiro mirim', ['oliver-bombeiro']],
   ['🐶', 'Meu bichinho', ['oliver-pet']], ['🎛️', 'Músicas do Estúdio', ['oliver-musicas'], 'mus'], ['🎤', 'Gravação das Vozes mágicas', [], 'voz'],
   ['🏃', 'Aventura e fases (memória, contar, formas, quebra-cabeça)', ['oliver-progress']], ['🏞️', 'Cena de adesivos', ['oliver-scenes']], ['⭐', 'Minha rotina', ['oliver-rotina']],
   ['🍕', 'Cozinha', ['oliver-cook']], ['🧽', 'Lava-rápido da obra', ['oliver-wash']], ['📦', 'Separar e guardar', ['oliver-sort']], ['👤', 'Qual é a sombra?', ['oliver-shadow']],
@@ -10128,7 +10166,7 @@ const CHAT_OPEN = [
   ['adesivo|figurinha', '[data-go="album"]', 'os Meus adesivos', 1],
   ['estudio|fazer musica|fazer uma musica|criar musica|criar uma musica|inventar musica|musica', '[data-game="studio"]', 'o Estúdio musical', 1],
   ['voz|vozes|robo|gravar|microfone|et ', '[data-game="voices"]', 'as Vozes mágicas', 1],
-  ['dinossauro', '[data-game="dino"]', 'os Ovos de dinossauro', 1], ['corre corre|roubar|pegar ovo|ovo', '[data-game="chase"]', 'o Corre-Corre dos Bichos', 1],
+  ['dinossauro|fazenda', '[data-game="dino"]', 'a Fazenda dos Dinos', 1], ['corre corre|roubar|pegar ovo|ovo', '[data-game="chase"]', 'o Corre-Corre dos Bichos', 1],
   ['construtor|construir|guindaste|escavadeira', '[data-game="build"]', 'o Construtor da obra', 1], ['bombeiro|fogo|incendio', '[data-game="fire"]', 'o Bombeiro mirim', 1],
   ['esconde', '[data-game="hide"]', 'o Esconde-esconde', 1], ['estilingue|passarinho|atirar', '[data-game="sling"]', 'o Estilingue dos Passarinhos', 1], ['parquinho|bola', '[data-game="park"]', 'o Parquinho', 1]
 ];
@@ -11558,6 +11596,7 @@ function chStep(dt) {
   }
   if (k.carry && chInHome(k.x, k.y)) {   // chegou em casa
     const a = k.carry, gold = k.gold, got = a.reward * (gold ? 5 : 1); k.carry = null; k.gold = false; a.refill = 4; cw().coins += got; chHud();
+    if (ch.world === 'dinos' && dnSave.eggs < 9) { dnSave.eggs++; keep('oliver-dinos', dnSave); if (!ch.toldFarm) { ch.toldFarm = true; setTimeout(() => toast('🥚 Um ovo foi para a chocadeira da Fazenda dos Dinos!'), 1200); } }
     const v = k.v || 0, key = a.baby + '|' + v, alb = chAlbum(ch.world), fresh = !alb.includes(key);
     if (fresh) { alb.push(key); keep('oliver-corre', chSave); setTimeout(() => { say(alb.length >= 25 ? `Você completou o álbum ${CH_WORLDS[ch.world].name === 'Gelo' ? 'do' : 'da'} ${CH_WORLDS[ch.world].name}!` : v ? 'Uma cor nova! Figurinha nova no álbum!' : 'Figurinha nova no álbum!'); if (alb.length >= 25) celebrate(false); }, 3200); }
     if (ch.mis && a === ch.animals[ch.mis.i] && ++ch.mis.got >= ch.mis.n) {   // missão cumprida: moedas extras e uma nova missão
@@ -11888,8 +11927,8 @@ function buildLoop(t) {
 }
 GAMES.build = buildStart;
 
-/* ================= ovos de dinossauro: escolhe um ovo, choca com toquinhos, cuida (comida, banho, bola, soninho), põe chapéu,
-   e quando cresce leva para o Vale dos Dinos. A Dinopédia mostra as 12 espécies (duas são raras) ================= */
+/* ================= fazenda dos dinos: choca ovos (do Corre-Corre e um surpresa por dia), cuida dos dinos (comida, banho, sono,
+   brincadeira) até crescerem, planta na horta, compra enfeites e passeia montado nos grandes. A Dinopédia mostra as 12 espécies ================= */
 // [nome, emoji, cor (giro de matiz; 'rainbow' muda sem parar), comida favorita, cor do ovo, rara]
 // os nomes seguem a cor que aparece depois do giro de matiz (conferido na tela)
 const DN_KINDS = [['Rex', '🦖', 0, '🍖', '#c5e1a5'], ['Pescoçudo', '🦕', 0, '🥬', '#b2dfdb'], ['Dino rosa', '🦖', 170, '🍓', '#f8bbd0'],
@@ -11901,9 +11940,16 @@ const DN_NAMES = ['Pipoca', 'Bolinha', 'Tico', 'Nina', 'Dudu', 'Lili', 'Totó', 
 const DN_HATS = ['🎀', '👑', '🎩', '🧢', '🕶️', '🌸', '🎉'];
 const DN_HEAD = { '🦖': [.3, .2], '🦕': [.2, .1], '🐉': [.3, .22], '🦎': [.15, .45] };   // onde fica a cabeça no emoji (para o chapéu)
 const DN_GROW = [5, 12];   // de bebê para jovem, de jovem para adulto
+function fzNew(k, name, xp, hat) { return { k, name: name || pick(DN_NAMES), xp, hat: hat || '', hearts: 0, needs: { fome: .6, banho: .6, sono: .8, alegria: .6 }, last: {} }; }
 const dnSave = load('oliver-dinos', { vale: [], cur: null, seen: [] });
-dnSave.vale = dnSave.vale.map(v => typeof v === 'number' ? { k: v, name: pick(DN_NAMES), hat: '' } : v);   // versões antigas guardavam só a espécie
-if (dnSave.cur && !dnSave.cur.name) dnSave.cur.name = pick(DN_NAMES);
+if (!dnSave.dinos) {   // 6.29: o jogo virou a Fazenda dos Dinos; os dinos do vale e o do ninho mudam para a fazenda
+  dnSave.dinos = (dnSave.vale || []).map(v => typeof v === 'number' ? { k: v } : v).map(v => fzNew(v.k, v.name, DN_GROW[1], v.hat));
+  const c = dnSave.cur; dnSave.egg = null;
+  if (c && c.xp >= 0) dnSave.dinos.push(fzNew(c.kind, c.name, c.xp, c.hat)); else if (c) dnSave.egg = { k: c.kind, taps: 0 };
+  for (const d of dnSave.dinos) for (const n in d.needs) d.needs[n] = .2 + Math.random() * .6;
+  Object.assign(dnSave, { eggs: 2, plots: [0, 1, 2, 3].map(() => ({ s: 0 })), deco: [], gift: '', t: Date.now() });
+  delete dnSave.vale; delete dnSave.cur; keep('oliver-dinos', dnSave);
+}
 const dnTint = new Map();
 function dnImg(k) {
   const key = k[1] + k[2]; let c = dnTint.get(key);
@@ -11926,160 +11972,407 @@ function dnEgg(x, cx, cy, r, color, t, wob = 0) {
   x.fillStyle = 'rgba(0,0,0,.12)'; for (const [a, b] of [[-.3, -.4], [.35, 0], [-.1, .45]]) { x.beginPath(); x.arc(a * r, b * r, r * .15, 0, TAU); x.fill(); }
   x.restore();
 }
-let dn = null;
+/* ---- a fazenda: os dinos andam soltos; tocar num dino abre os cuidados. O mundo rola com o dedo ---- */
+const FZ_LEN = 70;   // largura da fazenda (1 unidade = 1/10 da altura da tela)
+const FZ_AREA = { casinhas: 7, horta: 20, lago: 32, parquinho: 44, chocadeira: 60 };
+const FZ_NEEDS = { fome: ['🍖', 'Comer'], banho: ['🛁', 'Banho'], sono: ['😴', 'Dormir'], alegria: ['⚽', 'Brincar'] };
+const FZ_ST = ['bebê', 'jovem', 'adulto'], FZ_SIZE = [.5, .75, 1];
+// enfeites da loja: [emoji, nome, preço, onde fica na fazenda]
+const FZ_DECO = [['🌻', 'Girassóis', 10, 26], ['🎈', 'Balões', 15, 39], ['⛲', 'Fonte', 30, 51], ['🎠', 'Carrossel', 50, 55.5], ['🌈', 'Arco-íris', 60, 32], ['🏰', 'Castelo', 80, 66]];
+const FZ_HOURS = 3;   // em 3 horas uma necessidade vai de cheia a vazia; ninguém fica doente
+const FZ_RIDE_N = 26;   // coisas no caminho do passeio (uns 45 segundos)
+const fzStage = d => d.xp < DN_GROW[0] ? 0 : d.xp < DN_GROW[1] ? 1 : 2;
+const fzKind = d => DN_KINDS[d.k] || DN_KINDS[0];
+const fzRideKind = k => k[1] === '🦕' ? 'pescoco' : k[1] === '🐉' ? 'voa' : 'pula';
+const fzBank = () => chW('dinos');   // as moedas são as mesmas do mundo dos Dinossauros no Corre-Corre
+function fzKeep() { dnSave.t = Date.now(); keep('oliver-dinos', dnSave); }
+function fzPay(n) { fzBank().coins = Math.max(0, fzBank().coins + n); keep('oliver-corre', chSave); fzHud(); }
+function fzHud() { $('#fzCoins').textContent = '🪙 ' + fzBank().coins; $('#fzEggN').textContent = dnSave.eggs + (dnSave.egg ? 1 : 0) || ''; }
+const fzE = (x, e, l, t, s) => x.drawImage(kEmo(e), l, t, s, s);   // emoji pelo canto de cima
+let fz = null;
 function dinoStart() {
-  if (dn?.raf) cancelAnimationFrame(dn.raf);
-  dn = { raf: 0, last: 0, t: 0, fx: [], food: null, jump: 0, wob: 0, mode: 'nest', act: null, busy: false, scrub: 0, picks: null, valeHit: [], bubbles: [] };
-  if (!dnSave.cur) dnPickEggs();
-  dnButtons(); dn.raf = requestAnimationFrame(dinoLoop);
-  const c = dnSave.cur;
-  say(!c ? 'Escolha um ovo!' : c.xp < 0 ? 'Toque no ovo para ajudar o dinossauro a nascer!' : `Oi, ${c.name}! Vamos cuidar dele?`);
+  if (fz?.raf) cancelAnimationFrame(fz.raf);
+  fz = { raf: 0, last: 0, t: 0, fx: [], cam: 0, W: 1, U: 1, mode: 'farm', sel: null, drag: null, night: false, ride: null, nb: null, wob: 0, save: 0, decoHit: [] };
+  const now = Date.now(), gone = Math.max(0, now - (dnSave.t || now)) / 36e5 / FZ_HOURS;
+  dnSave.dinos.forEach((d, i) => { for (const n in d.needs) d.needs[n] = Math.max(0, d.needs[n] - gone); Object.assign(d, { x: 6 + (i * 4.3) % 40, tx: 0, dir: 1, wait: Math.random() * 3, act: null, actT: 0, hop: 0 }); });
+  let gift = false; if (dnSave.gift !== today()) { dnSave.gift = today(); dnSave.eggs++; gift = true; }   // um ovo surpresa por dia
+  fzKeep(); fzHud(); fzBtns(); fzSheet();
+  for (const s of ['#fzName', '#fzPick', '#fzShop', '#fzEnd']) $(s).hidden = true;
+  fz.raf = requestAnimationFrame(fzLoop);
+  if (!dnSave.dinos.length) { fzEggOpen(); return; }
+  say(gift ? 'Bem-vindo à Fazenda dos Dinos! Chegou um ovo surpresa na chocadeira!' : 'Bem-vindo à Fazenda dos Dinos! Toque num dino para cuidar dele.');
 }
-// três ovos para escolher; cada um tem uma chance pequena de ser de um dino raro
-function dnPickEggs() {
-  dnSave.cur = null; const common = DN_KINDS.map((k, i) => i).filter(i => !DN_KINDS[i][5]), rare = DN_KINDS.map((k, i) => i).filter(i => DN_KINDS[i][5]);
-  dn.picks = shuffle(common.slice()).slice(0, 3).map(i => Math.random() < .12 ? pick(rare) : i);
-  keep('oliver-dinos', dnSave);
+function fzBtns() {
+  $('#fzFarmB').hidden = fz.mode === 'farm'; $('#fzNightB').textContent = fz.night ? '☀️' : '🌙';
+  $('#fzHint').hidden = fz.mode !== 'farm' || !!fz.sel;
+  $('#fzHint').textContent = fz.night ? 'Shhh... os dinos estão dormindo' : 'Toque num dino para cuidar dele · arraste para ver a fazenda';
 }
-const dnStage = c => !c ? 'pick' : c.xp < 0 ? 'egg' : c.xp < DN_GROW[0] ? 'baby' : c.xp < DN_GROW[1] ? 'kid' : 'adult';
-function dnButtons() {
-  const box = $('#dnBtns'), c = dnSave.cur, s = dnStage(c); box.innerHTML = '';
-  const b = (html, label, fn, big) => btn(box, 'dn-btn' + (big ? ' big' : ''), html, label, () => { if (dn.busy) return; blip(600); fn(); });
-  if (dn.mode !== 'nest') { b('🥚', 'Voltar ao ninho', () => { dn.mode = 'nest'; dnButtons(); }); if (dn.mode === 'vale') b('📖', 'Dinopédia', () => { dn.mode = 'pedia'; dnButtons(); }); return; }
-  if (dn.mode === 'nest' && dn.hats) {   // escolhendo o chapéu
-    b('🚫', 'Sem chapéu', () => { c.hat = ''; keep('oliver-dinos', dnSave); });
-    for (const h of DN_HATS) b(h, 'Chapéu', () => { c.hat = h; keep('oliver-dinos', dnSave); chirp(900, .08); say(pick(['Que chique!', 'Ficou lindo!', 'Uau!'])); });
-    b('✔️', 'Pronto', () => { dn.hats = false; dnButtons(); }); return;
+function fzGo(mode) { fz.mode = mode; if (mode !== 'ride') fz.ride = null; fz.sel = null; fzSheet(); fzBtns(); }
+// painel de cuidados do dino escolhido
+function fzSheet() {
+  const d = fz && fz.sel; $('#fzSheet').hidden = !d; if (fz) $('#fzHint').hidden = fz.mode !== 'farm' || !!d; if (!d) return;
+  const k = fzKind(d), s = fzStage(d), box = $('#fzActs'); box.innerHTML = '';
+  $('#fzSName').textContent = d.name; $('#fzSStage').textContent = `${k[0]} · ${FZ_ST[s]}`;
+  $('#fzSHearts').textContent = '❤️'.repeat(d.hearts) + '🤍'.repeat(5 - d.hearts);
+  $('#fzSGrow').style.width = Math.min(100, d.xp / DN_GROW[1] * 100) + '%';
+  for (const [n, [e, l]] of Object.entries(FZ_NEEDS)) btn(box, 'fz-act' + (d.needs[n] < .4 ? ' need' : ''), `<span>${n === 'fome' ? k[3] : e}</span>${l}`, l, () => fzCare(d, n));
+  btn(box, 'fz-act', `<span>${d.hat || '🎩'}</span>Chapéu`, 'Chapéu', () => { const hs = ['', ...DN_HATS]; d.hat = hs[(hs.indexOf(d.hat) + 1) % hs.length]; chirp(900, .08); fzKeep(); fzSheet(); });
+  if (s === 2) btn(box, 'fz-act ride', '<span>🏇</span>Passear', 'Passear', () => fzRideStart(d));
+}
+// cada cuidado enche uma necessidade; se não foi repetido logo em seguida, dá coração, moedas e faz crescer
+function fzCare(d, need) {
+  const k = fzKind(d), now = Date.now(), counts = now - (d.last[need] || 0) > 15000, au = audioOn().currentTime;
+  d.last[need] = now; d.act = need; d.actT = 0; d.needs[need] = 1; d.tx = 0;
+  if (need === 'fome') { tone('square', 500, 300, au, .12, .05); tone('square', 500, 300, au + .2, .12, .05); say(pick([`${d.name} adora ${DN_FOOD.find(f => f[0] === k[3])[1]}!`, 'Hummm, que delícia!'])); }
+  else if (need === 'banho') { for (let i = 0; i < 6; i++) tone('sine', 800 + Math.random() * 600, 400, au + i * .1, .1, .05); say(pick(['Que cheiroso!', 'Banho de lago!'])); }
+  else if (need === 'sono') { [523, 440, 392, 330].forEach((f, i) => tone('sine', f, f * .99, au + i * .4, .4, .07)); say('Boa noite, ' + d.name + '!'); }
+  else { tone('sine', 300, 900, au, .3, .1); say(pick(['Pega a bola!', 'Que divertido!'])); }
+  if (counts) {
+    d.hearts = Math.min(5, d.hearts + 1); fzPay(2);
+    const before = fzStage(d); d.xp++; const after = fzStage(d);
+    if (after > before) setTimeout(() => { if (!fz || !alive('dino')) return; celebrate(false); confettiAt(fz.fx, d.sx || fz.W / 2, (d.sy || 0) - fz.U * 2, 40); say(`${d.name} cresceu! Agora é ${FZ_ST[after]}!`); fzSheet(); }, 2400);
   }
-  if (s === 'baby' || s === 'kid') {
-    for (const [e, n] of DN_FOOD) b(e, 'Dar ' + n, () => dnFeed(e));
-    b('🧽', 'Dar banho', () => { dn.act = 'bath'; dn.scrub = 0; say(c.dirty ? 'Esfregue o dino com o dedo!' : 'Ele já está limpinho, mas um banho é sempre gostoso! Esfregue!'); });
-    b('🎾', 'Brincar de bola', dnBall); b('🌙', 'Hora de dormir', dnSleep);
+  fzKeep(); fzSheet();
+}
+// chocadeira: um toquinho de cada vez esquenta o ovo até ele rachar
+function fzEggOpen() {
+  if (!dnSave.egg) {
+    if (!dnSave.eggs) { fzGo('farm'); say('A chocadeira está vazia. Pegue ovos no Corre-Corre dos Dinossauros, ou volte amanhã para ganhar um ovo surpresa!'); return; }
+    const common = DN_KINDS.map((k, i) => i).filter(i => !DN_KINDS[i][5]), rare = DN_KINDS.map((k, i) => i).filter(i => DN_KINDS[i][5]);
+    dnSave.eggs--; dnSave.egg = { k: Math.random() < .12 ? pick(rare) : pick(common), taps: 0 }; fzKeep(); fzHud();
   }
-  if (s === 'adult') b('🌋 Levar para o vale', 'Levar para o vale', () => {
-    dnSave.vale.push({ k: c.kind, name: c.name, hat: c.hat || '' }); dnSave.cur = null; dn.mode = 'vale'; dnPickEggs(); dnButtons(); celebrate(false);
-    say(`Agora ${c.name} mora no Vale dos Dinos! Depois escolha outro ovo.`);
-  }, true);
-  if (s !== 'pick' && s !== 'egg') b('🎩', 'Chapéu', () => { dn.hats = true; dnButtons(); });
-  b(`🌋 ${dnSave.vale.length}`, 'Ver o vale', () => { dn.mode = 'vale'; dnButtons(); });
-  b('📖', 'Dinopédia', () => { dn.mode = 'pedia'; dnButtons(); say('Dinopédia! Quantos dinos você já conhece?'); });
+  fzGo('egg'); fz.nb = null;
+  say(DN_KINDS[dnSave.egg.k][5] ? 'Uau, um ovo raro! Toque nele para esquentar!' : 'Toque no ovo para esquentar!');
 }
-function dnGain(n, msg) {
-  const c = dnSave.cur, before = dnStage(c); c.xp += n; keep('oliver-dinos', dnSave);
-  const cv = $('#dnCv'), now = dnStage(c);
-  if (now !== before) {
-    confettiAt(dn.fx, cv.width * .4, cv.height * .5, 30);
-    if (now === 'adult') { celebrate(false); setTimeout(() => say(`${c.name} ficou grandão! Leve para o Vale dos Dinos!`), 900); } else setTimeout(() => say(`${c.name} cresceu!`), 900);
-    dnButtons();
-  } else if (msg) say(msg);
+function fzEggTap() {
+  const e = dnSave.egg; e.taps++; fz.wob = 1; tone('triangle', 300 + e.taps * 50, 400 + e.taps * 50, audioOn().currentTime, .1, .12);
+  if (e.taps < 8) { fzKeep(); return; }
+  const k = DN_KINDS[e.k], cv = $('#dnCv'), d = fzNew(e.k, pick(DN_NAMES), 0);
+  dnSave.egg = null; if (!dnSave.seen.includes(e.k)) dnSave.seen.push(e.k);
+  d.needs.fome = .3; Object.assign(d, { x: FZ_AREA.chocadeira - 4, tx: 0, dir: -1, wait: 2, act: null, actT: 0, hop: 0 });
+  dnSave.dinos.push(d); fz.nb = d; fzKeep(); fzHud();
+  confettiAt(fz.fx, cv.width / 2, cv.height * .55, 40); celebrate(false);
+  const box = $('#fzNames'); box.innerHTML = '';
+  for (const n of [...new Set([d.name, pick(DN_NAMES), pick(DN_NAMES), pick(DN_NAMES)])].slice(0, 3)) {
+    const b = btn(box, 'fz-chip' + (n === d.name ? ' on' : ''), n, n, () => { d.name = n; for (const c of box.children) c.classList.toggle('on', c === b); chirp(800, .08); say(n); });
+  }
+  $('#fzNameT').textContent = k[5] ? 'Nasceu um dino raro! ✨' : `Nasceu um ${k[0]}! 🎉`;
+  setTimeout(() => { if (fz && fz.nb === d && alive('dino')) { $('#fzName').hidden = false; say(`Nasceu! É um ${k[0]} e gosta de ${DN_FOOD.find(f => f[0] === k[3])[1]}. Escolha o nome!`); } }, 1200);
 }
-function dnFeed(e) { if (dn.food || dn.act) return; dn.food = { e, t: 0, fav: e === DN_KINDS[dnSave.cur.kind][3] }; chirp(600, .08); }
-function dnBall() { if (dn.act) return; dn.act = 'ball'; dn.ball = { t: 0 }; say('Pega a bola!'); }
-function dnSleep() {
-  if (dn.act) return; dn.act = 'sleep'; dn.sleepT = 0; say(`Boa noite, ${dnSave.cur.name}...`);
-  [523, 659, 587, 523, 440, 523].forEach((f, i) => setTimeout(() => chirp(f, .4, 'sine', .06), 300 + i * 450));
+$('#fzNameGo').addEventListener('click', () => {
+  const d = fz.nb; $('#fzName').hidden = true; fz.nb = null; fzKeep(); fzGo('farm');
+  fz.cam = d.x * fz.U - fz.W / 2; fz.sel = d; fzSheet(); say(`Bem-vindo à fazenda, ${d.name}!`);
+});
+// horta: plantar, regar e colher
+function fzPlot(p) {
+  const au = audioOn().currentTime;
+  if (p.s === 0) { Object.assign(p, { s: 1, food: pick(['🥕', '🍓', '🥬', '🌽', '🍅']) }); tone('triangle', 400, 600, au, .1, .1); say('Plantou! Agora regue.'); }
+  else if (p.s === 1) { p.s = 2; p.at = Date.now(); for (let i = 0; i < 8; i++) tone('sine', 1200 + Math.random() * 500, 800, au + i * .05, .06, .04); say('Regou! Espere crescer.'); }
+  else if (p.s === 2) say('Está crescendo... espera um pouquinho!');
+  else { p.s = 0; fzPay(5); celebrate(false); toast(`Colheu ${p.food}! +5 🪙`); say('Que colheita!'); }
+  fzKeep();
 }
-$('#dnCv').addEventListener('pointerdown', e => {
-  if (!dn || dn.busy) return; const cv = $('#dnCv'), [px, py] = ptIn(cv, e), c = dnSave.cur, W = cv.width, H = cv.height;
-  dn.down = true; dn.ptr = [px, py];
-  if (dn.mode === 'vale') {   // tocar num dino do vale: ele pula e fala o nome
-    const v = dn.valeHit.find(h => Math.abs(px - h.x) < h.s * .5 && py > h.y - h.s && py < h.y);
-    if (v) { v.d.jump = 1; tone('sawtooth', 220, 120, audioOn().currentTime, .3, .07); say(`Rawr! Eu sou ${v.d.name}!`); }
+// loja de enfeites
+function fzShopOpen() {
+  const box = $('#fzShopList'); box.innerHTML = '';
+  for (const [e, n, price, u] of FZ_DECO) {
+    const have = dnSave.deco.includes(e);
+    btn(box, 'fz-item' + (have ? ' have' : fzBank().coins < price ? ' cant' : ''), `<b>${e}</b><span>${n}</span>${have ? '✔️' : '🪙 ' + price}`, n, () => {
+      if (have) { say(`${n} já está na fazenda!`); return; }
+      if (fzBank().coins < price) { say(`Faltam ${price - fzBank().coins} moedas. Cuide dos dinos, plante na horta e passeie para ganhar mais!`); return; }
+      fzPay(-price); dnSave.deco.push(e); fzKeep(); $('#fzShop').hidden = true; fzGo('farm'); fz.cam = u * fz.U - fz.W / 2;
+      celebrate(false); say(`Comprou ${n}! Olha só na fazenda!`);
+    });
+  }
+  $('#fzShop').hidden = false; say('Loja da fazenda! O que vamos comprar?');
+}
+// passeio montado: o dino corre sozinho; tocar na tela faz pular (ou voar, no dragãozinho)
+function fzRideStart(d) {
+  const kind = fzRideKind(fzKind(d)), items = []; let egg = false;
+  for (let i = 1; i < FZ_RIDE_N; i++) {
+    const ux = 14 + i * 9 + Math.random() * 3, r = Math.random();
+    if (!egg && i > 8 && r < .08) { egg = true; items.push({ t: 'egg', x: ux, h: 1.2 }); }
+    else if (r < .35) items.push({ t: 'coin', x: ux, h: 1 + Math.random() * 1.5 });
+    else if (r < .6) items.push({ t: 'tree', x: ux, h: 4.2 });   // fruta no alto: o pescoçudo alcança, os outros pulam
+    else if (r < .8) items.push({ t: 'rock', x: ux, h: 0 });
+    else items.push({ t: 'fruit', x: ux, h: 1.2 });
+  }
+  $('#fzPick').hidden = true; fzGo('ride'); fz.ride = { d, kind, x: 0, y: 0, vy: 0, items, got: { coin: 0, fruit: 0, egg: 0 }, done: false, neck: 0, txt: [] };
+  say(kind === 'pescoco' ? `Vamos passear com ${d.name}! O pescoço comprido alcança as frutas lá no alto!` : kind === 'voa' ? `Vamos voar com ${d.name}! Toque na tela para subir!` : `Vamos passear com ${d.name}! Toque na tela para pular. As pedras, ${d.name} quebra com a cabeça!`);
+}
+function fzJump() {
+  const R = fz.ride; if (!R || R.done) return;
+  if (R.kind === 'voa') { R.vy = -9; tone('triangle', 500, 800, audioOn().currentTime, .12, .08); }
+  else if (R.y === 0) { R.vy = R.kind === 'pula' ? -15 : -12; tone('sine', 300, 800, audioOn().currentTime, .2, .1); }
+}
+function fzRideStep(dt) {
+  const R = fz.ride; if (R.done) return; const fly = R.kind === 'voa', au = () => audioOn().currentTime;
+  R.x += 5.5 * dt; R.vy += (fly ? 16 : 28) * dt; R.y = Math.max(-6, Math.min(0, R.y + R.vy * dt));
+  if (R.y === 0 && R.vy > 0) R.vy = 0; if (R.y === -6 && R.vy < 0) R.vy = 0;
+  R.neck = Math.max(0, R.neck - dt * 2);
+  const reach = -R.y + (R.kind === 'pescoco' ? 3.2 : 2.2);
+  for (const it of R.items) {
+    if (it.got || Math.abs(it.x - (R.x + 4)) > .9) continue;
+    if (it.t === 'rock') {
+      if (-R.y < .8) { if (R.kind === 'pula') { it.got = true; tone('square', 150, 60, au(), .25, .1); R.txt.push({ x: it.x, t: .8 }); } else { R.vy = fly ? -9 : -13; tone('sine', 300, 700, au(), .2, .1); } }
+      continue;
+    }
+    if (it.h <= reach || (it.t === 'tree' && R.kind === 'pescoco')) {
+      it.got = true; if (it.t === 'tree' && R.kind === 'pescoco') R.neck = 1;
+      if (it.t === 'coin') { R.got.coin++; tone('square', 988, 1319, au(), .15, .05); }
+      else if (it.t === 'egg') { R.got.egg++; celebrate(false); say('Um ovo! Vai para a chocadeira!'); }
+      else { R.got.fruit++; tone('triangle', 660, 990, au(), .15, .1); }
+    }
+  }
+  if (R.x > 14 + FZ_RIDE_N * 9) {
+    R.done = true; const d = R.d; fzPay(R.got.coin); dnSave.eggs += R.got.egg; d.needs.alegria = 1; d.hearts = Math.min(5, d.hearts + 1); fzKeep(); fzHud(); celebrate(false);
+    $('#fzEndP').textContent = `${d.name} pegou 🪙 ${R.got.coin} e 🍓 ${R.got.fruit}${R.got.egg ? ' e um 🥚 para a chocadeira' : ''}. ${d.name} adorou passear!`;
+    $('#fzEnd').hidden = false; say(`Que passeio! ${d.name} adorou!`);
+  }
+}
+function fzStep(dt) {
+  const dec = dt / 3600 / FZ_HOURS;
+  for (const d of dnSave.dinos) {
+    for (const n in d.needs) d.needs[n] = Math.max(0, d.needs[n] - dec);
+    if (d.act) { d.actT += dt; if (d.actT > 2.5) d.act = null; continue; }
+    if (fz.night || d === fz.sel) { d.hop = 0; continue; }
+    d.wait -= dt;
+    if (d.wait <= 0 && !d.tx) { d.tx = 4 + Math.random() * (FZ_LEN - 10); d.dir = d.tx > d.x ? 1 : -1; }
+    if (d.tx) {
+      d.x += Math.sign(d.tx - d.x) * (fzStage(d) + 1) * .8 * dt; d.hop = Math.abs(Math.sin(fz.t * 8 + d.xp * 3 + d.k)) * fz.U * .12;
+      if (Math.abs(d.tx - d.x) < .2) { d.tx = 0; d.hop = 0; d.wait = 2 + Math.random() * 4; }
+    }
+  }
+  for (const p of dnSave.plots) if (p.s === 2 && Date.now() - p.at > 8000) { p.s = 3; tone('triangle', 880, 1320, audioOn().currentTime, .2, .1); }
+}
+/* ---- desenho ---- */
+function fzLabel(x, t, cx, y, U) {
+  x.font = `800 ${U * .32}px "Baloo 2", sans-serif`; x.textAlign = 'center'; const w = x.measureText(t).width + U * .4;
+  x.fillStyle = 'rgba(255,247,234,.92)'; x.beginPath(); x.roundRect(cx - w / 2, y - U * .32, w, U * .44, U * .22); x.fill(); x.fillStyle = INK; x.fillText(t, cx, y);
+}
+function fzFarm(x, W, H, U) {
+  const night = fz.night, wx = u => u * U - fz.cam, gy = H * .64, T = fz.t;
+  // céu, sol (ou lua e estrelas), nuvens e morros
+  const g = x.createLinearGradient(0, 0, 0, H * .7); g.addColorStop(0, night ? '#1d2160' : '#7fd0ff'); g.addColorStop(1, night ? '#5a4b8c' : '#e6f7ff'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+  if (night) {
+    x.fillStyle = '#fff'; for (let i = 0; i < 60; i++) { x.globalAlpha = .4 + .6 * Math.abs(Math.sin(T * 2 + i)); x.fillRect((i * 173) % W, (i * 71) % (H * .5), 3, 3); } x.globalAlpha = 1;
+    x.fillStyle = '#fff6c4'; x.beginPath(); x.arc(W * .82, H * .14, U * .7, 0, TAU); x.fill();
+  } else {
+    x.fillStyle = 'rgba(255,224,102,.3)'; x.beginPath(); x.arc(W * .85, H * .14, U * 1.2, 0, TAU); x.fill(); x.fillStyle = '#ffe066'; x.beginPath(); x.arc(W * .85, H * .14, U * .8, 0, TAU); x.fill();
+    x.fillStyle = 'rgba(255,255,255,.95)';
+    for (let i = 0; i < 5; i++) { const cx = ((i * 320 + T * 12 - fz.cam * .2) % (W + 400) + W + 400) % (W + 400) - 200, cy = H * (.1 + (i % 3) * .07), r = U * .45; x.beginPath(); x.arc(cx, cy, r, 0, TAU); x.arc(cx + r, cy - r * .5, r * 1.25, 0, TAU); x.arc(cx + r * 2.2, cy, r, 0, TAU); x.fill(); }
+  }
+  if (dnSave.deco.includes('🌈')) { const rx = wx(32), ry = gy; x.lineWidth = U * .22; ['#ff6b6b', '#ffa94d', '#ffd43b', '#69db7c', '#4dabf7', '#9775fa'].forEach((c, i) => { x.strokeStyle = c; x.globalAlpha = night ? .35 : .8; x.beginPath(); x.arc(rx, ry, U * (5 - i * .22), Math.PI, 0); x.stroke(); }); x.globalAlpha = 1; }
+  for (const [col, k, hh, f] of [[night ? '#3d5a6c' : '#a8dc8c', .3, .2, 4], [night ? '#2f4b4a' : '#8ccf6a', .55, .13, 7]]) {
+    x.fillStyle = col; x.beginPath(); x.moveTo(0, H * .62);
+    for (let i = 0; i <= 40; i++) { const px = i / 40 * W, q = (px + fz.cam * k) / W; x.lineTo(px, H * .62 - (Math.sin(q * f) * .5 + .5) * H * hh); }
+    x.lineTo(W, H * .66); x.lineTo(0, H * .66); x.fill();
+  }
+  // chão, caminho de terra e cerca
+  x.fillStyle = night ? '#3e6b3a' : '#7cc35a'; x.fillRect(0, gy, W, H - gy);
+  x.fillStyle = night ? '#386236' : '#72b851'; for (let i = 0; i < 30; i++) { const px = ((i * 211 - fz.cam) % (W + 200) + W + 200) % (W + 200) - 100; x.beginPath(); x.ellipse(px, gy + (i % 5) * H * .07 + U * .4, U * 1.4, U * .25, 0, 0, TAU); x.fill(); }
+  x.fillStyle = night ? '#8a7354' : '#e9c995'; x.beginPath(); x.moveTo(wx(0), H * .9);
+  for (let u = 0; u <= FZ_LEN; u++) x.lineTo(wx(u), H * (.86 + Math.sin(u * .35) * .02)); for (let u = FZ_LEN; u >= 0; u--) x.lineTo(wx(u), H * (.95 + Math.sin(u * .35) * .02)); x.fill();
+  x.strokeStyle = night ? '#7a5a3a' : '#a0703f'; x.lineWidth = U * .12; x.lineCap = 'round';
+  for (let u = 0; u < FZ_LEN; u += 1.2) { const px = wx(u); if (px < -20 || px > W + 20) continue; x.beginPath(); x.moveTo(px, gy + U * .2); x.lineTo(px, gy - U * .7); x.stroke(); }
+  for (const dy of [-.45, -.05]) { x.beginPath(); x.moveTo(wx(0), gy + dy * U); x.lineTo(wx(FZ_LEN), gy + dy * U); x.stroke(); }
+  x.lineWidth = Math.max(2, U * .05); x.strokeStyle = INK; x.lineJoin = 'round'; x.lineCap = 'butt';
+  // celeiro
+  const bx = wx(1.5), bw = U * 3, bh = U * 2.4;
+  x.fillStyle = '#d84a3a'; x.beginPath(); x.rect(bx, gy - bh, bw, bh); x.fill(); x.stroke();
+  x.beginPath(); x.moveTo(bx - U * .25, gy - bh); x.lineTo(bx + bw / 2, gy - bh - U * 1.3); x.lineTo(bx + bw + U * .25, gy - bh); x.closePath(); x.fillStyle = '#a8322a'; x.fill(); x.stroke();
+  x.fillStyle = '#fff'; x.beginPath(); x.rect(bx + bw * .3, gy - bh * .62, bw * .4, bh * .62); x.fill(); x.stroke();
+  x.beginPath(); x.moveTo(bx + bw * .3, gy - bh * .62); x.lineTo(bx + bw * .7, gy); x.moveTo(bx + bw * .7, gy - bh * .62); x.lineTo(bx + bw * .3, gy); x.stroke();
+  // casinhas (uma para cada dino, de três a cinco)
+  const nh = Math.max(3, Math.min(5, dnSave.dinos.length));
+  for (let i = 0; i < nh; i++) {
+    const hx = wx(FZ_AREA.casinhas + i * 2.6), r = U * 1.05;
+    x.fillStyle = ['#ffcc80', '#b2dfdb', '#f8bbd0', '#d1c4e9', '#fff59d'][i]; x.beginPath(); x.arc(hx, gy, r, Math.PI, 0); x.closePath(); x.fill(); x.stroke();
+    x.fillStyle = night ? '#ffe082' : '#5d4037'; x.beginPath(); x.arc(hx, gy, r * .45, Math.PI, 0); x.closePath(); x.fill(); x.stroke();
+    x.fillStyle = '#66bb6a'; for (const a of [-1, 0, 1]) { x.beginPath(); x.ellipse(hx + a * r * .5, gy - r * .9 + Math.abs(a) * r * .2, r * .45, r * .2, a * .4, 0, TAU); x.fill(); x.stroke(); }
+  }
+  fzLabel(x, '🏠 Casinhas', wx(FZ_AREA.casinhas + (nh - 1) * 1.3), gy - U * 1.75, U);
+  // horta
+  dnSave.plots.forEach((p, i) => {
+    const px = wx(FZ_AREA.horta - 3 + i * 2.2), py = gy + U * .9; p.sx = px; p.sy = py;
+    x.fillStyle = '#8d6e63'; x.beginPath(); x.roundRect(px - U * .9, py - U * .35, U * 1.8, U * .9, U * .2); x.fill(); x.stroke();
+    x.strokeStyle = 'rgba(0,0,0,.2)'; x.beginPath(); x.moveTo(px - U * .7, py); x.lineTo(px + U * .7, py); x.moveTo(px - U * .7, py + U * .25); x.lineTo(px + U * .7, py + U * .25); x.stroke(); x.strokeStyle = INK;
+    const sz = p.s === 1 ? U * .5 : p.s === 2 ? U * (.5 + Math.min(1, (Date.now() - p.at) / 8000) * .5) : U * 1.1;
+    if (p.s) fzE(x, p.s === 3 ? p.food : '🌱', px - sz / 2, py - sz * .9, sz);
+    if (p.s === 0) { x.globalAlpha = .6 + .4 * Math.sin(T * 4 + i); fzE(x, '➕', px - U * .25, py - U * .3, U * .5); x.globalAlpha = 1; }
+    if (p.s === 1) fzE(x, '💧', px + U * .3, py - U * 1.1 - Math.abs(Math.sin(T * 4)) * U * .2, U * .5);
+    if (p.s === 3) { x.globalAlpha = .5 + .5 * Math.sin(T * 5); fzE(x, '✨', px + U * .35, py - U * 1.2, U * .45); x.globalAlpha = 1; }
+  });
+  fzLabel(x, '🥕 Horta', wx(FZ_AREA.horta), gy + U * .1, U);
+  // lago
+  const lx = wx(FZ_AREA.lago), lg = x.createLinearGradient(0, gy, 0, gy + U * 2); lg.addColorStop(0, night ? '#2e5d8a' : '#64b5f6'); lg.addColorStop(1, night ? '#1d3b5c' : '#1e88e5');
+  x.fillStyle = lg; x.beginPath(); x.ellipse(lx, gy + U * 1.05, U * 4, U * .95, 0, 0, TAU); x.fill(); x.stroke();
+  x.strokeStyle = 'rgba(255,255,255,.6)'; for (let i = 0; i < 4; i++) { x.beginPath(); x.ellipse(lx + (i - 1.5) * U * 1.5, gy + U * (.8 + (i % 2) * .4), U * (.4 + Math.sin(T * 2 + i) * .1), U * .08, 0, 0, TAU); x.stroke(); } x.strokeStyle = INK;
+  fzE(x, '🦆', lx + U * 2 + Math.sin(T * .5) * U, gy + U * .5, U * .8);
+  fzLabel(x, '🛁 Lago', lx, gy - U * .25, U);
+  // parquinho
+  const qx = wx(FZ_AREA.parquinho); x.fillStyle = '#ffe0a3'; x.beginPath(); x.ellipse(qx, gy + U, U * 2.4, U * .6, 0, 0, TAU); x.fill(); x.stroke();
+  fzE(x, '🛝', qx - U * 2.2, gy - U * 1.1, U * 1.8); fzE(x, '⚽', qx + U * .8 + Math.sin(T) * U * .3, gy + U * .3, U * .7);
+  fzLabel(x, '⚽ Parquinho', qx, gy - U * 1.3, U);
+  // chocadeira
+  const cx2 = wx(FZ_AREA.chocadeira), cw = U * 2.6, ch = U * 2;
+  x.fillStyle = '#fff3e0'; x.beginPath(); x.rect(cx2 - cw / 2, gy - ch, cw, ch); x.fill(); x.stroke();
+  x.beginPath(); x.moveTo(cx2 - cw / 2 - U * .2, gy - ch); x.lineTo(cx2, gy - ch - U); x.lineTo(cx2 + cw / 2 + U * .2, gy - ch); x.closePath(); x.fillStyle = '#ffb74d'; x.fill(); x.stroke();
+  x.fillStyle = `rgba(255,200,80,${.6 + .3 * Math.sin(T * 3)})`; x.beginPath(); x.arc(cx2, gy - ch * .5, U * .55, 0, TAU); x.fill(); x.stroke();
+  fzE(x, '🥚', cx2 - U * .35, gy - ch * .5 - U * .45, U * .7);
+  const ne = dnSave.eggs + (dnSave.egg ? 1 : 0); fzLabel(x, ne ? `🥚 Chocadeira (${ne})` : '🥚 Chocadeira', cx2, gy - ch - U * 1.25, U);
+  // árvores, flores e enfeites comprados
+  for (const u of [.5, 24.5, 47.8, 58, 69.5]) fzE(x, u % 2 > 1 ? '🌳' : '🌲', wx(u) - U * 1.2, gy - U * 2.3, U * 2.4);
+  for (let i = 0; i < 28; i++) fzE(x, ['🌼', '🌷', '🌸'][i % 3], wx((i * 2.3) % FZ_LEN), gy + U * (1.8 + (i % 4) * .5), U * .45);
+  fz.decoHit = [];
+  for (const [e, n, , u] of FZ_DECO) if (e !== '🌈' && dnSave.deco.includes(e)) {
+    const s = e === '🏰' ? U * 3 : e === '🎠' || e === '⛲' ? U * 2.2 : U * 1.6, px = wx(u), bob = e === '🎈' ? Math.sin(T * 2) * U * .15 : 0;
+    fzE(x, e, px - s / 2, gy - s * .8 + bob, s); fz.decoHit.push({ x: px, y: gy - s * .3, r: s * .5, e, n });
+  }
+  // dinos (os de trás primeiro); de noite cada um dorme na frente de uma casinha
+  const row = (d, i) => gy + U * (1.3 + ((i * .37 + d.k * .13) % 1) * 1.7);
+  const list = dnSave.dinos.map((d, i) => ({ d, i, y: fz.night ? gy + U * (1.1 + Math.floor(i / nh) * 1.1) : row(d, i) })).sort((a, b) => a.y - b.y);
+  for (const { d, i, y } of list) {
+    const u = fz.night ? FZ_AREA.casinhas + (i % nh) * 2.6 : d.x, s = U * 2.6 * FZ_SIZE[fzStage(d)] * (fz.night ? .8 : 1);
+    d.sx = wx(u); d.sy = y; d.ss = s;
+    if (d.sx > -s && d.sx < W + s) fzDino(x, d, d.sx, y, s, T + i * 5, U);
+  }
+  if (night) { x.fillStyle = 'rgba(20,20,60,.25)'; x.fillRect(0, 0, W, H); }
+}
+function fzDino(x, d, cx, by, s, t, U) {
+  const k = fzKind(d), a = d.actT, act = d.act, sleep = act === 'sono' || fz.night;
+  x.fillStyle = 'rgba(0,0,0,.15)'; x.beginPath(); x.ellipse(cx, by, s * .4, s * .08, 0, 0, TAU); x.fill();
+  const hop = act === 'alegria' ? Math.abs(Math.sin(a * 6)) * s * .35 : d.hop || 0;
+  x.save(); x.translate(cx, by - hop); if (sleep) x.rotate(-.2 * d.dir); x.scale(d.dir, 1);
+  dnDraw(x, k, 0, 0, s, t, d.hat, 0, act === 'fome' ? Math.abs(Math.sin(a * 18)) * .6 : 0);
+  x.restore();
+  if (act === 'banho') { x.strokeStyle = 'rgba(255,255,255,.95)'; x.lineWidth = 3; x.fillStyle = 'rgba(180,230,255,.55)'; for (let i = 0; i < 9; i++) { const r = s * (.06 + (i % 3) * .03); x.beginPath(); x.arc(cx + Math.sin(i * 2.3 + a * 2) * s * .4, by - s * .5 - ((a * 60 + i * 30) % (s * .9)), r, 0, TAU); x.fill(); x.stroke(); } }
+  if (act === 'fome') { const fy = Math.min(1, a * 1.5); fzE(x, k[3], cx + d.dir * s * .25 - s * .15, by - s * 1.4 + fy * s * .7, s * .3); }
+  if (sleep) { x.fillStyle = fz.night ? '#fff' : INK; x.font = `800 ${s * .22}px sans-serif`; x.textAlign = 'center'; for (let i = 0; i < 3; i++) { const q = (t * .6 + i / 3) % 1; x.globalAlpha = 1 - q; x.fillText('z', cx + s * .3 + q * s * .3, by - s * .8 - q * s * .5); } x.globalAlpha = 1; }
+  if (act === 'alegria') fzE(x, '⚽', cx + d.dir * s * .5 - s * .12, by - s * .25 - Math.abs(Math.cos(a * 6)) * s * .7, s * .24);
+  if (act) { for (let i = 0; i < 2; i++) { const q = (a * .8 + i * .5) % 1; x.globalAlpha = 1 - q; fzE(x, '❤️', cx - s * .3 + i * s * .5, by - s * 1.1 - q * s * .5, s * .18); } x.globalAlpha = 1; }
+  // balãozinho com o que ele está precisando
+  const low = Object.entries(d.needs).filter(([, v]) => v < .4).sort((p, q) => p[1] - q[1])[0];
+  if (low && !act && !fz.night) {
+    const bx = cx, byy = by - s * 1.1 - U * .35 - Math.abs(Math.sin(t * 3)) * U * .1;
+    x.fillStyle = '#fff'; x.strokeStyle = INK; x.lineWidth = 3; x.beginPath(); x.arc(bx, byy, U * .42, 0, TAU); x.fill(); x.stroke();
+    fzE(x, low[0] === 'fome' ? k[3] : FZ_NEEDS[low[0]][0], bx - U * .27, byy - U * .3, U * .54);
+  }
+  if (fz.sel === d) { x.strokeStyle = '#ffd23f'; x.lineWidth = 5; x.beginPath(); x.ellipse(cx, by, s * .5, s * .12, 0, 0, TAU); x.stroke(); }
+  x.font = `800 ${U * .3}px "Baloo 2", sans-serif`; x.textAlign = 'center'; x.lineWidth = 4; x.strokeStyle = '#fff'; x.strokeText(d.name, cx, by + U * .45); x.fillStyle = INK; x.fillText(d.name, cx, by + U * .45);
+}
+function fzEggDraw(x, W, H, U, dt) {
+  const g = x.createRadialGradient(W / 2, H * .5, U, W / 2, H * .5, W * .7); g.addColorStop(0, '#fff3c4'); g.addColorStop(1, '#ffb74d'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+  x.fillStyle = 'rgba(255,240,180,.6)'; x.beginPath(); x.moveTo(W / 2 - U * .3, 0); x.lineTo(W / 2 + U * .3, 0); x.lineTo(W / 2 + U * 3, H * .7); x.lineTo(W / 2 - U * 3, H * .7); x.fill();
+  x.fillStyle = '#8d6e63'; x.strokeStyle = INK; x.lineWidth = Math.max(3, U * .06); x.beginPath(); x.ellipse(W / 2, H * .78, U * 3.2, U * .9, 0, 0, TAU); x.fill(); x.stroke();
+  x.strokeStyle = '#d7b98e'; x.lineWidth = U * .12; for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI; x.beginPath(); x.moveTo(W / 2 - Math.cos(a) * U * 3, H * .76); x.lineTo(W / 2 - Math.cos(a) * U * 2.2, H * .7 - Math.sin(a) * U * .4); x.stroke(); }
+  x.font = `800 ${U * .55}px "Baloo 2", sans-serif`; x.textAlign = 'center'; x.fillStyle = INK;
+  const e = dnSave.egg;
+  if (!e) {   // acabou de nascer: o filhote pula no ninho
+    if (fz.nb) dnDraw(x, fzKind(fz.nb), W / 2, H * .76 - Math.abs(Math.sin(fz.t * 5)) * U * .4, U * 2.6, fz.t);
     return;
   }
-  if (dn.mode !== 'nest') return;
-  if (!c) {   // escolhendo o ovo
-    const i = [0, 1, 2].find(i => Math.abs(px - W * (.25 + i * .25)) < W * .1); if (i === undefined) return;
-    const k = dn.picks[i]; dnSave.cur = { kind: k, xp: -1, taps: 0, name: pick(DN_NAMES), hat: '', dirty: 0 }; keep('oliver-dinos', dnSave);
-    chirp(800, .1); say(DN_KINDS[k][5] ? 'Uau, um ovo raro! Toque nele para chocar!' : 'Boa escolha! Toque no ovo para chocar!'); dnButtons(); return;
+  x.fillText('👆 Toque no ovo para esquentar!', W / 2, H * .12);
+  fz.wob = Math.max(0, fz.wob - dt * 3);
+  const ex = W / 2, ey = H * .55, r = U * 1.6, k = DN_KINDS[e.k];
+  dnEgg(x, ex, ey, r, k[4], fz.t, Math.sin(fz.t * 30) * fz.wob * .15);
+  x.strokeStyle = INK; x.lineWidth = Math.max(2, U * .05);
+  for (let i = 0; i < e.taps; i++) { const cy = ey - r * .3 + (i % 4) * r * .2, cx = ex + ((i * .37) % 1 - .5) * r * .8; x.beginPath(); x.moveTo(cx - r * .2, cy); for (let q = 0; q < 3; q++) x.lineTo(cx - r * .2 + (q + 1) * r * .13, cy + (q % 2 ? -1 : 1) * r * .08); x.stroke(); }
+  if (k[5]) fzE(x, '✨', ex + r * .6, ey - r * 1.1, U * .7);
+  const bar = Math.min(1, e.taps / 8); x.fillStyle = 'rgba(255,255,255,.8)'; x.beginPath(); x.roundRect(W / 2 - U * 2, H * .9, U * 4, U * .3, U * .15); x.fill();
+  x.fillStyle = '#ff7043'; x.beginPath(); x.roundRect(W / 2 - U * 2, H * .9, U * 4 * bar, U * .3, U * .15); x.fill();
+  fzE(x, '🌡️', W / 2 - U * 2.6, H * .87, U * .5);
+}
+function fzRideDraw(x, W, H, U) {
+  const R = fz.ride, gy = H * .74, cam = R.x * U, uw = u => u * U - cam, T = fz.t;
+  const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#9fdcff'); g.addColorStop(1, '#fff3d6'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+  for (const [col, k, hh] of [['#b7e1a1', .2, .2], ['#9ccf7c', .45, .13]]) { x.fillStyle = col; x.beginPath(); x.moveTo(0, gy); for (let i = 0; i <= 40; i++) { const px = i / 40 * W; x.lineTo(px, gy - (Math.sin((px + cam * k) / W * 6) * .5 + .5) * H * hh); } x.lineTo(W, gy); x.fill(); }
+  x.fillStyle = '#7cc35a'; x.fillRect(0, gy, W, H - gy); x.fillStyle = '#e9c995'; x.fillRect(0, gy + U * .3, W, U * .8);
+  for (const it of R.items) {
+    const px = uw(it.x); if (px < -U * 3 || px > W + U * 3) continue;
+    if (it.t === 'tree') { fzE(x, '🌴', px - U * 1.6, gy - U * 5, U * 3.2); if (!it.got) fzE(x, '🍎', px - U * .35, gy - it.h * U - U * .4, U * .7); }
+    else if (it.got) continue;
+    else if (it.t === 'rock') fzE(x, '🪨', px - U * .5, gy - U * .9, U);
+    else fzE(x, it.t === 'coin' ? '🪙' : it.t === 'egg' ? '🥚' : '🍓', px - U * .35, gy - it.h * U - U * .35 + Math.sin(T * 4 + it.x) * U * .1, U * .7);
   }
-  if (dnStage(c) === 'egg') {
-    c.taps++; dn.wob = 1; tone('triangle', 300 + c.taps * 60, 400 + c.taps * 60, audioOn().currentTime, .1, .12);
-    if (c.taps >= 6) {
-      c.xp = 0; if (!dnSave.seen.includes(c.kind)) dnSave.seen.push(c.kind); keep('oliver-dinos', dnSave);
-      confettiAt(dn.fx, W * .4, H * .6, 40); celebrate(false);
-      const k = DN_KINDS[c.kind]; say(`Nasceu! O nome dele é ${c.name}. É um ${k[0]} e gosta de ${DN_FOOD.find(f => f[0] === k[3])[1]}.`); dnButtons();
-    }
-  } else if (dn.act !== 'bath') { dn.jump = 1; tone('square', 500, 900, audioOn().currentTime, .15, .06); if (Math.random() < .4) say(pick(['Hihihi!', 'Rawr!', 'Faz cócegas!'])); }
+  const d = R.d, k = fzKind(d), s = U * 3, px = U * 4, by = gy + R.y * U - (R.y === 0 ? Math.abs(Math.sin(T * 10)) * U * .1 : 0);
+  x.fillStyle = 'rgba(0,0,0,.15)'; x.beginPath(); x.ellipse(px, gy, s * .4, s * .07, 0, 0, TAU); x.fill();
+  if (R.kind === 'pescoco' && R.neck > 0) { x.strokeStyle = '#7cb342'; x.lineWidth = U * .35; x.lineCap = 'round'; x.beginPath(); x.moveTo(px + s * .25, by - s * .6); x.lineTo(px + s * .3, by - s * .6 - R.neck * U * 2); x.stroke(); x.lineCap = 'butt'; }
+  dnDraw(x, k, px, by, s, T, d.hat);
+  fzE(x, '🧒', px - s * .2, by - s * 1.12, s * .4);   // a criança montada no dino
+  x.font = `800 ${U * .5}px "Baloo 2", sans-serif`; x.textAlign = 'center'; x.lineWidth = 5; x.strokeStyle = INK; x.fillStyle = '#ffd23f';
+  for (const f of R.txt) { f.t -= 1 / 60; if (f.t > 0) { x.strokeText('Pou!', uw(f.x), gy - U * 1.4); x.fillText('Pou!', uw(f.x), gy - U * 1.4); } }
+  x.font = `800 ${U * .45}px "Baloo 2", sans-serif`; x.textAlign = 'right'; x.fillStyle = INK;
+  x.fillText(`🪙 ${R.got.coin}   🍓 ${R.got.fruit}${R.got.egg ? '   🥚 1' : ''}`, W - U * .5, U * .8);
+  if (R.x < 3) { x.textAlign = 'center'; x.fillText(R.kind === 'voa' ? '👆 Toque para voar!' : '👆 Toque para pular!', W / 2, H * .3); }
+}
+function fzPedia(x, W, H, U) {   // dinopédia: as 12 espécies; as que ainda não nasceram aparecem como sombra
+  x.fillStyle = '#fff8ea'; x.fillRect(0, 0, W, H);
+  x.font = `800 ${U * .6}px "Baloo 2", sans-serif`; x.textAlign = 'center'; x.fillStyle = INK; x.fillText(`📖 Dinopédia: ${dnSave.seen.length} de ${DN_KINDS.length}`, W / 2, U * 1.1);
+  DN_KINDS.forEach((k, i) => {
+    const cx = W * (.14 + (i % 6) * .144), cy = H * (.47 + Math.floor(i / 6) * .38), sz = Math.min(W * .12, H * .26), got = dnSave.seen.includes(i);
+    x.save(); if (!got) x.filter = 'brightness(0) opacity(.3)'; dnDraw(x, got ? k : [k[0], k[1], 0], cx, cy, sz, fz.t); x.restore();
+    x.font = `800 ${U * .3}px "Baloo 2", sans-serif`; x.fillStyle = INK; x.fillText(got ? k[0] + (k[5] ? ' ⭐' : '') : '???', cx, cy + U * .45);
+  });
+}
+function fzLoop(t) {
+  if (!alive('dino')) { fz.raf = 0; return; }
+  const dt = Math.min(.05, (t - fz.last) / 1000 || 0); fz.last = t; fz.t += dt;
+  const cv = $('#dnCv'); fitCanvas(cv); const W = cv.width, H = cv.height, x = cv.getContext('2d'), U = H / 10; fz.W = W; fz.U = U;
+  fz.cam = Math.max(0, Math.min(FZ_LEN * U - W, fz.cam));
+  if ((fz.save += dt) > 20) { fz.save = 0; fzKeep(); }
+  if (fz.mode === 'farm') { fzStep(dt); fzFarm(x, W, H, U); }
+  else if (fz.mode === 'egg') fzEggDraw(x, W, H, U, dt);
+  else if (fz.mode === 'ride') { fzRideStep(dt); fzRideDraw(x, W, H, U); }
+  else fzPedia(x, W, H, U);
+  confettiDraw(x, fz.fx, dt, U / 60);
+  fz.raf = requestAnimationFrame(fzLoop);
+}
+/* ---- toques: arrastar a fazenda; tocar nos dinos, na horta, na chocadeira e nos enfeites ---- */
+$('#dnCv').addEventListener('pointerdown', e => {
+  if (!fz) return; const cv = $('#dnCv'), [px, py] = ptIn(cv, e), U = fz.U;
+  if (fz.mode === 'ride') { fzJump(); return; }
+  if (fz.mode === 'egg') { if (dnSave.egg && Math.hypot(px - cv.width / 2, py - cv.height * .55) < U * 2.2) fzEggTap(); return; }
+  if (fz.mode !== 'farm') return;
+  fz.drag = { x: px, cam: fz.cam, moved: false }; try { cv.setPointerCapture(e.pointerId); } catch (er) {}
 });
 $('#dnCv').addEventListener('pointermove', e => {
-  if (!dn?.down || dn.act !== 'bath') return; const p = ptIn($('#dnCv'), e), d = Math.hypot(p[0] - dn.ptr[0], p[1] - dn.ptr[1]); dn.ptr = p;
-  dn.scrub += d; if (Math.random() < .5) dn.bubbles.push({ x: p[0], y: p[1], r: 4 + Math.random() * 10, t: 1.2 });
-  if (Math.random() < .08) noise(audioOn().currentTime, .1, 2500, 1500, .04);
-  const cv = $('#dnCv');
-  if (dn.scrub > Math.min(cv.width, cv.height) * 4) { dn.act = null; const was = dnSave.cur.dirty; dnSave.cur.dirty = 0; dnGain(1, was ? 'Cheiroso! Ficou limpinho!' : 'Que banho gostoso!'); chirp(1200, .15); }
+  if (!fz?.drag) return; const [px] = ptIn($('#dnCv'), e);
+  if (Math.abs(px - fz.drag.x) > 12) fz.drag.moved = true;
+  if (fz.drag.moved) fz.cam = fz.drag.cam - (px - fz.drag.x);
 });
-addEventListener('pointerup', () => { if (dn) dn.down = false; });
-function dinoLoop(t) {
-  if (!alive('dino')) { dn.raf = 0; return; }
-  const dt = Math.min(.05, (t - dn.last) / 1000 || 0); dn.last = t; dn.t += dt;
-  const cv = $('#dnCv'); fitCanvas(cv); const W = cv.width, H = cv.height, x = cv.getContext('2d'), u = Math.min(W, H) / 100, c = dnSave.cur;
-  const night = dn.act === 'sleep' ? Math.min(1, dn.sleepT * 2, (4.5 - dn.sleepT) * 2) : 0;
-  const sky = x.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, dn.mode === 'vale' ? '#ffcc80' : '#a5e3ff'); sky.addColorStop(1, '#fff6d8'); x.fillStyle = sky; x.fillRect(0, 0, W, H);
-  x.fillStyle = '#8d6e63'; x.beginPath(); x.moveTo(W * .62, H * .7); x.lineTo(W * .78, H * .2); x.lineTo(W * .86, H * .2); x.lineTo(W * 1.02, H * .7); x.fill();
-  x.fillStyle = '#ff7043'; x.beginPath(); x.ellipse(W * .82, H * .2, W * .04, u * 1.5, 0, 0, TAU); x.fill();
-  for (let i = 0; i < 3; i++) { x.fillStyle = 'rgba(120,120,120,.35)'; x.beginPath(); x.arc(W * .82 + Math.sin(dn.t + i) * u * 3, H * .16 - ((dn.t * 20 + i * 30) % 60) * u * .2, u * (2 + i), 0, TAU); x.fill(); }
-  x.fillStyle = '#7cc35a'; x.fillRect(0, H * .7, W, H * .3);
-  const title = s => { x.font = `800 ${u * 5}px "Baloo 2", sans-serif`; x.textAlign = 'center'; x.fillStyle = INK; x.fillText(s, W / 2, H * .12); };
-  if (dn.mode === 'pedia') {   // dinopédia: as 12 espécies; as que ainda não nasceram aparecem como sombra
-    x.fillStyle = 'rgba(255,248,234,.92)'; x.fillRect(0, 0, W, H); title(`Dinopédia: ${dnSave.seen.length} de ${DN_KINDS.length}`);
-    DN_KINDS.forEach((k, i) => {
-      const cx = W * (.14 + (i % 6) * .144), cy = H * (.45 + Math.floor(i / 6) * .38), sz = Math.min(W * .12, H * .26), got = dnSave.seen.includes(i);
-      x.save(); if (!got) x.filter = 'brightness(0) opacity(.3)'; dnDraw(x, got ? k : [k[0], k[1], 0], cx, cy, sz, dn.t); x.restore();
-      x.font = `800 ${u * 2.6}px "Baloo 2", sans-serif`; x.fillStyle = INK; x.fillText(got ? k[0] + (k[5] ? ' ⭐' : '') : '???', cx, cy + u * 4);
-    });
-  } else if (dn.mode === 'vale') {
-    dn.valeHit = [];
-    dnSave.vale.forEach((d, i) => {
-      const k = DN_KINDS[d.k] || DN_KINDS[0], sp = 30 + (i * 17) % 40, px = (i * 173 + dn.t * sp) % (W + 200) - 100, py = H * .76 + (i % 4) * H * .055, sz = u * (14 + (i % 3) * 3);
-      d.jump = Math.max(0, (d.jump || 0) - dt * 2.5); const hop = Math.sin(d.jump * Math.PI) * u * 8 + Math.abs(Math.sin(dn.t * 4 + i)) * u;
-      dnDraw(x, k, px, py - hop, sz, dn.t + i, d.hat); dn.valeHit.push({ x: px, y: py, s: sz, d });
-      x.font = `800 ${u * 2.2}px "Baloo 2", sans-serif`; x.textAlign = 'center'; x.fillStyle = INK; x.fillText(d.name, px, py + u * 3);
-    });
-    title(dnSave.vale.length ? `Vale dos Dinos: ${dnSave.vale.length} · toque num dino!` : 'O vale está esperando o primeiro dino!');
-  } else if (!c) {   // escolher um dos três ovos
-    title('Escolha um ovo!');
-    dn.picks.forEach((ki, i) => { const k = DN_KINDS[ki], cx = W * (.25 + i * .25), cy = H * .6; x.fillStyle = '#d9b36a'; x.beginPath(); x.ellipse(cx, cy + u * 10, u * 12, u * 3.5, 0, 0, TAU); x.fill(); dnEgg(x, cx, cy - Math.abs(Math.sin(dn.t * 3 + i)) * u * 2, u * 10, k[4], dn.t); if (k[5]) emoDraw(x, '✨', cx + u * 8, cy - u * 10, u * 6); });
-  } else {
-    const cx = W * .4, by = H * .78, st2 = dnStage(c), k = DN_KINDS[c.kind];
-    x.fillStyle = '#d9b36a'; x.beginPath(); x.ellipse(cx, by, u * 16, u * 5, 0, 0, TAU); x.fill();
-    if (st2 === 'egg') {
-      dn.wob = Math.max(0, dn.wob - dt * 3);
-      dnEgg(x, cx, by - u * 11, u * 12, k[4], dn.t, Math.sin(dn.t * 25) * .2 * dn.wob);
-      x.strokeStyle = INK; x.lineWidth = u * .6; x.beginPath(); for (let i = 0; i < c.taps; i++) { const yy = by - u * 12 + (i % 2 ? -1 : 1) * u * 1.4; x.moveTo(cx - u * 8 + i * u * 3, yy); x.lineTo(cx - u * 6.5 + i * u * 3, by - u * 11 - (i % 2 ? -1 : 1) * u); } x.stroke();
-      title('👆 Toque no ovo!');
-    } else {
-      dn.jump = Math.max(0, dn.jump - dt * 2.5);
-      const sz = u * { baby: 22, kid: 32, adult: 44 }[st2]; let dx = 0, hop = Math.sin(dn.jump * Math.PI) * u * 8 + Math.abs(Math.sin(dn.t * 2)) * u;
-      if (dn.act === 'ball') {   // a bola vem quicando e o dino pula para pegar
-        const b = dn.ball; b.t += dt; const bx = W * 1.05 - b.t * W * .45, bh = Math.abs(Math.sin(b.t * 5)) * u * 14;
-        if (bx > cx + sz * .3) emoDraw(x, '⚽', bx, by - u * 3 - bh, u * 7, 1, -b.t * 6);
-        else if (!b.caught) { b.caught = true; dn.jump = 1; chirp(900, .1); chirp(1200, .12); }
-        if (b.caught) { emoDraw(x, '⚽', cx + sz * .35, by - sz * .5, u * 6); if (b.t > 2.6) { dn.act = null; dnGain(1, pick(['Pegou! Muito bem!', 'Que goleiro!', 'Mais uma!'])); } }
-        dx = b.caught ? 0 : Math.sin(b.t * 6) * u;
-      }
-      dnDraw(x, k, cx + dx, by - hop, sz, dn.t, c.hat, c.dirty, dn.act === 'bath' ? Math.abs(Math.sin(dn.t * 8)) : 0);
-      x.font = `800 ${u * 4.5}px "Baloo 2", sans-serif`; x.textAlign = 'center'; x.fillStyle = INK;
-      x.fillText(st2 === 'adult' ? `${c.name} cresceu! 🎉` : `${c.name} · ${k[0]} · gosta de ${k[3]}`, W / 2, H * .1);
-      if (st2 !== 'adult') { const need = st2 === 'baby' ? DN_GROW[0] : DN_GROW[1], from = st2 === 'baby' ? 0 : DN_GROW[0], bw = u * 30; x.fillStyle = 'rgba(0,0,0,.12)'; x.fillRect(W / 2 - bw / 2, H * .15, bw, u * 2.5); x.fillStyle = '#43a047'; x.fillRect(W / 2 - bw / 2, H * .15, bw * (c.xp - from) / (need - from), u * 2.5); }
-      if (dn.act === 'bath') { emoDraw(x, '🧽', (dn.ptr || [cx])[0], (dn.ptr || [0, by - sz * .5])[1], u * 8); if (!dn.down) { x.font = `800 ${u * 4}px "Baloo 2", sans-serif`; x.fillText('👆 Esfregue o dino!', cx, by - sz - u * 3); } }
-      if (dn.food) {
-        const f = dn.food; f.t += dt * 2.2; const p = Math.min(1, f.t), fx = W * .85 + (cx - sz * .3 - W * .85) * p, fy = H * .85 + (by - sz * .7 - H * .85) * p - Math.sin(p * Math.PI) * u * 15;
-        if (f.t < 1) emoDraw(x, f.e, fx, fy, u * 9);
-        else { dn.food = null; dn.jump = 1; c.dirty = Math.min(3, (c.dirty || 0) + (Math.random() < .5 ? 1 : 0)); tone('triangle', 400, 200, audioOn().currentTime, .15, .1); dnGain(f.fav ? 2 : 1, f.fav ? pick(['Hmm, adoro!', 'Delícia!', 'Que gostoso!']) : 'Hmm, obrigado!'); }
-      }
-    }
+$('#dnCv').addEventListener('pointerup', e => {
+  const dr = fz?.drag; if (!dr) return; fz.drag = null; if (dr.moved) return;
+  const cv = $('#dnCv'), [px, py] = ptIn(cv, e), U = fz.U, gy = cv.height * .64;
+  const hit = dnSave.dinos.filter(d => d.sx != null && Math.abs(px - d.sx) < d.ss * .5 && py < d.sy + U * .4 && py > d.sy - d.ss).sort((a, b) => b.sy - a.sy)[0];
+  if (hit) {
+    if (fz.night) { say(`Shhh... ${hit.name} está dormindo.`); return; }
+    fz.sel = hit; hit.tx = 0; tone('square', 500, 900, audioOn().currentTime, .15, .06); say(pick([`Oi, eu sou ${hit.name}!`, `Rawr! ${hit.name}!`])); fzSheet(); return;
   }
-  for (const b of dn.bubbles) { b.t -= dt; b.y -= u * 3 * dt; x.strokeStyle = 'rgba(255,255,255,.9)'; x.lineWidth = 2; x.beginPath(); x.arc(b.x, b.y, b.r, 0, TAU); x.stroke(); }
-  dn.bubbles = dn.bubbles.filter(b => b.t > 0).slice(-60);
-  if (dn.act === 'sleep') {   // noite: escurece, lua, estrelas e zzz; depois amanhece
-    dn.sleepT += dt; x.fillStyle = `rgba(20,24,70,${night * .75})`; x.fillRect(0, 0, W, H);
-    if (night > .3) { emoDraw(x, '🌙', W * .15, H * .2, u * 10); for (let i = 0; i < 12; i++) emoDraw(x, '✨', (i * 97 % 100) / 100 * W, (i * 37 % 40) / 100 * H, u * 3); x.font = `800 ${u * 5}px "Baloo 2", sans-serif`; x.fillStyle = '#fff'; x.textAlign = 'center'; x.fillText('Z z z', W * .45, H * .45 - (dn.sleepT % 1) * u * 6); }
-    if (dn.sleepT > 4.5) { dn.act = null; dnGain(1, `Bom dia, ${dnSave.cur.name}! Dormiu bem!`); }
-  }
-  confettiDraw(x, dn.fx, dt, u / 6);
-  dn.raf = requestAnimationFrame(dinoLoop);
-}
+  const p = dnSave.plots.find(p => Math.abs(px - p.sx) < U * .9 && Math.abs(py - p.sy) < U * .8); if (p) { fzPlot(p); return; }
+  if (Math.abs(px - (FZ_AREA.chocadeira * U - fz.cam)) < U * 1.6 && py > gy - U * 3.2 && py < gy + U * .3) { fzEggOpen(); return; }
+  const dc = fz.decoHit.find(h => Math.hypot(px - h.x, py - h.y) < h.r); if (dc) { chirp(1000, .15); confettiAt(fz.fx, dc.x, dc.y, 14, .6); say(dc.n + '!'); return; }
+  if (fz.sel) { fz.sel = null; fzSheet(); }
+});
+$('#fzSClose').addEventListener('click', () => { fz.sel = null; fzSheet(); });
+$('#fzFarmB').addEventListener('click', () => { $('#fzEnd').hidden = true; $('#fzName').hidden = true; if (fz.nb) { fz.nb = null; fzKeep(); } fzGo('farm'); });
+$('#fzEggB').addEventListener('click', () => { if (fz.mode === 'ride' && !fz.ride.done) return; fzEggOpen(); });
+$('#fzPediaB').addEventListener('click', () => { fzGo('pedia'); say('Dinopédia! Quantos dinos você já conhece?'); });
+$('#fzShopB').addEventListener('click', fzShopOpen);
+$('#fzShopX').addEventListener('click', () => { $('#fzShop').hidden = true; });
+$('#fzRideB').addEventListener('click', () => {
+  const big = dnSave.dinos.filter(d => fzStage(d) === 2), box = $('#fzPickList'); box.innerHTML = '';
+  if (!big.length) { say('Cuide dos dinos para eles crescerem! Só os grandes aguentam carregar você.'); return; }
+  for (const d of big) btn(box, 'fz-chip', `${fzKind(d)[1]} ${d.name}`, d.name, () => { $('#fzPick').hidden = true; fzRideStart(d); });
+  $('#fzPick').hidden = false; say('Com qual dino vamos passear?');
+});
+$('#fzPickX').addEventListener('click', () => { $('#fzPick').hidden = true; });
+$('#fzEndGo').addEventListener('click', () => { $('#fzEnd').hidden = true; fzGo('farm'); });
+$('#fzNightB').addEventListener('click', () => {
+  fz.night = !fz.night; if (fz.mode !== 'farm') fzGo('farm'); fz.sel = null; fzSheet(); fzBtns(); const au = audioOn().currentTime;
+  if (fz.night) { for (const d of dnSave.dinos) { d.needs.sono = 1; d.act = null; d.tx = 0; } fzKeep(); fz.cam = 0; say('Boa noite, dinos! Todo mundo para a casinha.'); [392, 330, 294, 262].forEach((f, i) => tone('sine', f, f * .99, au + i * .45, .5, .06)); }
+  else { say('Bom dia, fazenda!'); tone('triangle', 523, 1047, au, .4, .1); }
+});
 GAMES.dino = dinoStart;
 
 /* ================= bombeiro mirim: arrasta o dedo para jogar água no fogo; depois salva o gatinho no telhado ================= */
@@ -12727,7 +13020,7 @@ GAMES.squish = squishStart; GAME_INTRO.squish = 'Crie seu squish e aperte bastan
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 63, name: '6.28' };
+const APP_VERSION = { code: 64, name: '6.29' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)

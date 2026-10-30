@@ -1,8 +1,8 @@
 {
-  "code": 63,
-  "name": "6.28",
+  "code": 64,
+  "name": "6.29",
   "minApk": 54,
-  "notes": "Versão 6.28: Aventura do Oliver com o botão de pular sempre funcionando (todo toque pula inteiro) e sem buracos para cair em nenhuma fase.",
+  "notes": "Versão 6.29: os Ovos de dinossauro viraram a Fazenda dos Dinos! Os dinos do vale moram na fazenda, com cuidados para crescer, chocadeira com ovo surpresa todo dia e ovos do Corre-Corre, horta, loja de enfeites, noite nas casinhas, Dinopédia e passeio montado nos dinos grandes.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/MundoDoOliver.apk"
 }
