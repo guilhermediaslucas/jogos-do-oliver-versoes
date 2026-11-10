@@ -1,8 +1,8 @@
 {
-  "code": 65,
-  "name": "6.30",
+  "code": 66,
+  "name": "6.31",
   "minApk": 54,
-  "notes": "Versão 6.30: o som não some mais. Quando o tablet apagava a tela ou outro app usava o som, o Mundo do Oliver ficava mudo; agora qualquer toque traz o som de volta.",
+  "notes": "Versão 6.31: as falas voltam a funcionar. Se a voz escolhida na área dos pais falhar (ou precisar de internet e o tablet estiver sem), o app fala com a voz padrão do tablet.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/MundoDoOliver.apk"
 }
