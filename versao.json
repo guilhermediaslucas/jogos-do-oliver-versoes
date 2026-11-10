@@ -1,8 +1,8 @@
 {
-  "code": 66,
-  "name": "6.31",
+  "code": 67,
+  "name": "6.32",
   "minApk": 54,
-  "notes": "Versão 6.31: as falas voltam a funcionar. Se a voz escolhida na área dos pais falhar (ou precisar de internet e o tablet estiver sem), o app fala com a voz padrão do tablet.",
+  "notes": "Versão 6.32: Corre-Corre dos Bichos novo! Visual com câmera inclinada, capim balançando e clima em cada lugar; botão de disparada; cada mamãe com seu jeito (pula, nada, dá arrancada, dorme, salta as moitas); lama, trampolim, túnel secreto e itens (banana, bolha, estrela, ímã); 3 estrelas por lugar, minimapa e o desafio da Mamãe Gigante com filhote dourado. Moedas, tênis, álbum e filhotes continuam.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/MundoDoOliver.apk"
 }

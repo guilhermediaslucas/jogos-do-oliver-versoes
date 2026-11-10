@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- const APP_VERSION = { code: 66, name: '6.31' }; -->
+<!-- const APP_VERSION = { code: 67, name: '6.32' }; -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}</style>
@@ -706,6 +706,13 @@ button:active { transform: scale(.92); }
 .fz-shop { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; width: 100%; }
 .fz-item { background: #fff; border-radius: 20px; box-shadow: 0 4px 0 var(--shadow); padding: 8px; display: grid; justify-items: center; font-weight: 800; font-size: 15px; gap: 2px; }
 .fz-item b { font-size: 44px; } .fz-item.have { background: #d3f9d8; } .fz-item.cant { opacity: .6; }
+.ch-dash { position: absolute; right: 14px; bottom: 14px; width: 104px; height: 104px; border-radius: 50%; padding: 8px; background: conic-gradient(#4dabf7 calc(var(--p, 1) * 360deg), #c9d6e2 0); box-shadow: 0 6px 0 var(--shadow); display: grid; place-items: center; z-index: 1; }
+.ch-dash span { width: 100%; height: 100%; border-radius: 50%; background: var(--paper); display: grid; place-items: center; font-size: 46px; line-height: 1; }
+.ch-dash.ready span { background: #e7f5ff; animation: chBreathe 1.2s ease-in-out infinite; }
+@keyframes chBreathe { 50% { transform: scale(1.06); } }
+.ch-pop { animation: chPop .25s; }
+@keyframes chPop { 50% { transform: scale(1.18); } }
+#chGiantP { font-size: 18px; margin: 0 0 12px; text-align: center; }
 .keys { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; height: 100%; }
 .key { border-radius: 20px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 16px; font-size: clamp(30px, 6vw, 56px); box-shadow: 0 6px 0 rgba(0,0,0,.2); touch-action: none; }
 .key span { display: block; }
@@ -1129,8 +1136,9 @@ button:active { transform: scale(.92); }
 </section>
 <section id="g-chase" class="screen game" hidden>
   <div class="bar"><button class="round" data-home aria-label="Início">🏠</button><h2 id="chTitle">Corre-Corre dos Bichos</h2><span class="score" id="chCoins">🪙 0</span><span class="score" id="chShoe">👣</span>
-    <button class="round" id="chAlbumBtn" aria-label="Álbum de filhotes">📒</button><button class="round" id="chMapBtn" aria-label="Escolher o lugar">🗺️</button><button class="round" id="chShopBtn" aria-label="Loja de tênis">🛒</button></div>
-  <div class="play cv-play"><canvas id="chCv"></canvas></div>
+    <button class="round" id="chAlbumBtn" aria-label="Álbum de filhotes">📒</button><button class="round" id="chMapBtn" aria-label="Escolher o lugar">🗺️</button><button class="round" id="chShopBtn" aria-label="Loja de tênis">🛒</button><button class="round" id="chGiantBtn" aria-label="Desafio da mamãe gigante">👑</button></div>
+  <div class="play cv-play"><canvas id="chCv"></canvas><button class="ch-dash" id="chDash" aria-label="Disparada" hidden><span>💨</span></button></div>
+  <div class="over" id="chGiantEnd" hidden><div class="tray ch-tray"><h2>👑 Você venceu a mamãe gigante!</h2><p id="chGiantP"></p><button class="pbtn ok" id="chGiantGo">Voltar para o cercadinho</button></div></div>
   <div class="over" id="chAlbum" hidden><div class="tray ch-tray"><h2>📒 Álbum de filhotes</h2><div class="ch-album" id="chAlbumList"></div><button class="pbtn ok" id="chAlbumClose">Voltar</button></div></div>
   <div class="over" id="chMap" hidden><div class="tray ch-tray"><h2>Onde vamos brincar?</h2><div class="ch-worlds" id="chWorlds"></div></div></div>
   <div class="over" id="chShopBox" hidden><div class="tray ch-tray"><h2>🛒 Loja de tênis</h2><div class="ch-shop" id="chShopList"></div><button class="pbtn ok" id="chShopClose">Voltar</button></div></div>
@@ -11480,14 +11488,32 @@ const CH_WORLDS = {
   halloween: { name: 'Halloween', icon: '🎃', special: true, dark: true, ground: '#3b2a4f', spot: '#4a3462', path: '#e8892e', base: '#5a4270', fence: '#ff9800', deco: ['🎃', '🕸️', '🍬'], home: '🏚️', homeName: 'Casa assombrada',
     animals: [['🕷️', 'a aranha', 'o ovo de aranha', '🕷️', '#d1c4e9'], ['🦇', 'a morcega', 'o morceguinho', '🦇', null], ['🐈‍⬛', 'a gata preta', 'o gatinho preto', '🐈‍⬛', null], ['🦉', 'a coruja da noite', 'o ovo de coruja', '🦉', '#ffcc80'], ['👻', 'a mamãe fantasma', 'o fantasminha', '👻', null]] }
 };
-const CH_W = 2400, CH_H = 1000, CH_FARM = { x: 40, y: 290, w: 380, h: 420 };
-// ninhos: quanto mais longe, mais rápida a mamãe e mais moedas
-const CH_NESTS = [[700, 210, 95, 5], [900, 820, 130, 10], [1350, 480, 160, 15], [1800, 230, 178, 20], [2200, 760, 228, 40]];
+// o mapa (6.32): medidas em unidades do mundo; a câmera inclinada achata o eixo y
+const CH_W = 2600, CH_H = 1500, CH_TILT = .72, CH_FARM = { x: 90, y: 520, w: 430, h: 480 };
+// ninhos: [x, y, velocidade da mamãe, moedas]; quanto mais longe, mais rápida a mamãe e mais moedas
+const CH_NESTS = [[820, 330, 95, 5], [1180, 1000, 130, 10], [1550, 720, 160, 15], [1990, 300, 178, 20], [2380, 1010, 228, 40]];
+// o jeito de cada mamãe, pela posição do ninho: pula e cansa, nada rápido no lago, dá arrancadas, dorme (e voa se tiver asa), salta as moitas
+const CH_KINDS = ['pula', 'nada', 'arranca', 'dorme', 'salta'];
+const CH_FLY = /🐔|🦆|🦜|🦉|🦅|🐧|🦩|🦢|🦇|🦋|🛸|🐉|🐲|🐦|asa/;
 const CH_SHOES = [['👣', 'Pé no chão', 0, 150], ['👟', 'Tênis', 20, 190], ['⚡', 'Tênis relâmpago', 60, 235], ['🛼', 'Patins', 150, 290]];
 const CH_CARRY = .92;
-const CH_BUSHES = [[560, 560], [1080, 330], [1120, 690], [1600, 600], [1980, 470]];
+const CH_LAKE = { x: 1180, y: 1200, rx: 290, ry: 165 };
+const CH_BUSHES = [[650, 800], [1060, 520], [1360, 960], [1760, 520], [2060, 840], [2200, 1280], [880, 1150]];
 const CH_BUSH_E = { halloween: '🎃', gelo: '⛄', selva: '🌿', safari: '🌳', montanha: '🌲', floresta: '🌲', dinos: '🌿', mar: '🪸', lago: '🌾', deserto: '🌵', fantasia: '🍄', espaco: '🪐' };
-const chHidden = k => CH_BUSHES.some(([bx, by]) => Math.hypot(k.x - bx, k.y - by) < 58);
+const CH_MUDS = [{ x: 1380, y: 400, rx: 130, ry: 70 }, { x: 1930, y: 1130, rx: 150, ry: 80 }, { x: 760, y: 560, rx: 90, ry: 55 }];
+const CH_TRAMPS = [[1000, 790], [2150, 620]];
+const CH_TUNNEL = [[1820, 1360], [640, 1330]];
+// cores da água e da lama, e o que cai do céu, em cada lugar
+const CH_WATER = { gelo: ['#d4f1ff', '#6cb8e6'], mar: ['#2f78b8', '#174f86'], espaco: ['#c5b3f0', '#5e35b1'], halloween: ['#c5e1a5', '#558b2f'], dinos: ['#9be0d5', '#2a8f86'] };
+const CH_MUD = { gelo: '#a9c2d3', espaco: '#3a2f6b', mar: '#8d6e63', fantasia: '#c48bd6', halloween: '#2e2018' };
+const CH_SKY = { fazenda: '🌸', lago: '🌸', gelo: '❄️', montanha: '❄️', mar: '🫧', espaco: '✨', fantasia: '✨', halloween: '🍂', floresta: '🍂', selva: '🍃', dinos: '🍃' };
+const chInLake = (px, py) => ((px - CH_LAKE.x) / (CH_LAKE.rx * .95)) ** 2 + ((py - CH_LAKE.y) / (CH_LAKE.ry * .95)) ** 2 < 1;
+const chInMud = (px, py) => CH_MUDS.some(m => ((px - m.x) / m.rx) ** 2 + ((py - m.y) / m.ry) ** 2 < 1);
+// escondido: na bolha mágica, ou numa moita (a que salta e a que voa enxergam por cima)
+const chHidden = (k, a) => k.bubble > 0 || (!(a && (a.kind === 'salta' || a.fly)) && CH_BUSHES.some(([bx, by]) => Math.hypot(k.x - bx, k.y - by) < 62));
+const CH_TUFTS = (() => { let s = 5; const r = () => (s = (s * 9301 + 49297) % 233280) / 233280, out = [];
+  while (out.length < 200) { const px = 20 + r() * (CH_W - 40), py = 120 + r() * (CH_H - 140); if (!chInLake(px, py) && !chInMud(px, py) && !(px > CH_FARM.x - 10 && px < CH_FARM.x + CH_FARM.w + 10 && py > CH_FARM.y - 10 && py < CH_FARM.y + CH_FARM.h + 10)) out.push([px, py, r() * TAU]); }
+  return out; })();
 const CH_DOG = 30;   // preço do cachorrinho ajudante
 const chAlbum = id => {
   const a = (chSave.album || (chSave.album = {}))[id] || (chSave.album[id] = []);
@@ -11501,7 +11527,7 @@ const chTintC = new Map();
 function chTint(e, v) {
   if (!v) return kEmo(e);
   const key = e + v; let c = chTintC.get(key);
-  if (!c) { c = document.createElement('canvas'); c.width = c.height = 96; const g = c.getContext('2d'); g.filter = `hue-rotate(${CH_HUES[v]}deg) saturate(1.4)`; g.drawImage(kEmo(e), 0, 0); chTintC.set(key, c); }
+  if (!c) { c = document.createElement('canvas'); c.width = c.height = 96; const g = c.getContext('2d'); g.filter = v === 5 ? CH_GOLD : `hue-rotate(${CH_HUES[v]}deg) saturate(1.4)`; g.drawImage(kEmo(e), 0, 0); chTintC.set(key, c); }
   return c;
 }
 function chBaby(x, e, v, cx, cy, size, flip = 1) { x.save(); x.translate(cx, cy); x.scale(flip, 1); x.drawImage(chTint(e, v), -size / 2, -size * .56, size, size); x.restore(); }
@@ -11541,12 +11567,14 @@ function chMap() {
 }
 function chWorld(id) {
   const W = CH_WORLDS[id]; chSave.world = id; keep('oliver-corre', chSave);
-  Object.assign(ch, { world: id, bg: null, dog: null, camX: null, mis: null, fx: [], flies: [], eggs: [], run: true,
-    kid: { x: CH_FARM.x + CH_FARM.w / 2, y: CH_FARM.y + CH_FARM.h / 2 + 60, tx: null, ty: null, carry: null, inv: 0, face: 1, walk: 0 },
-    animals: W.animals.map(([emo, name, item, baby, egg], i) => { const [nx, ny, speed, reward] = CH_NESTS[i]; return { emo, name, item, baby, egg, nx, ny, speed, reward, x: nx - 56, y: ny + 6, has: true, state: 'home', t: 0, face: -1, refill: 0, big: i >= 3 }; }),
+  Object.assign(ch, { world: id, bg: null, dog: null, mis: null, giant: null, fx: [], cf: [], pfx: [], flies: [], eggs: [], items: [], peels: [], run: true, itemT: 4, slow: 0, shake: 0, zoom: 1, delivered: 0, streak: 0,
+    cam: { x: null, y: null, z: 1 }, coins: Array.from({ length: 14 }, () => chNewCoin()), petals: Array.from({ length: 22 }, () => ({ x: Math.random(), y: Math.random(), s: .6 + Math.random() * .6, ph: Math.random() * TAU })),
+    kid: { x: CH_FARM.x + CH_FARM.w / 2, y: CH_FARM.y + CH_FARM.h - 80, tx: null, ty: null, carry: null, inv: 0, face: 1, walk: 0, dash: 0, dashCd: 0, jump: 0, bubble: 0, star: 0, magnet: 0, banana: 0, tunnel: 0, trail: 0 },
+    animals: W.animals.map(([emo, name, item, baby, egg], i) => { const [nx, ny, speed, reward] = CH_NESTS[i], kind = CH_KINDS[i];
+      return { emo, name, item, baby, egg, nx, ny, speed, reward, kind, fly: kind === 'dorme' && CH_FLY.test(emo), x: nx - 60, y: ny + 8, has: true, state: kind === 'dorme' ? 'nap' : 'home', t: 0, face: -1, refill: 0, big: i >= 3, run: 0, phase: 0, dir: null }; }),
     babies: chW(id).babies.map(([emo, x, y, v]) => ({ emo, x, y, v: v || 0, vx: 0, vy: 0, coinT: 3 + Math.random() * 5, turn: 0 })) });
-  $('#chTitle').textContent = W.name; chHud();
-  say(`${W.name}! Pegue ${W.animals[0][2]} e volte correndo para casa!`);
+  $('#chTitle').textContent = W.name; $('#chDash').hidden = false; $('#chGiantEnd').hidden = true; chHud();
+  say(`${W.name}! Pegue ${W.animals[0][2]} e volte correndo para o cercadinho! O botão de vento dá uma disparada!`);
   setTimeout(() => { if (alive('chase') && ch.world === id && !ch.mis) chMission(); }, 7000);
 }
 // missão: levar alguns de um bicho para casa (os mais fáceis aparecem mais)
@@ -11559,175 +11587,426 @@ function chHud() { if (!ch?.animals) return; $('#chCoins').textContent = '🪙 '
 const chInHome = (px, py, m = 0) => px > CH_FARM.x - m && px < CH_FARM.x + CH_FARM.w + m && py > CH_FARM.y - m && py < CH_FARM.y + CH_FARM.h + m;
 const chNeed = a => CH_SHOES.findIndex(s => s[3] * CH_CARRY > a.speed * 1.04);
 // tela -> mundo
-function chWorldPt(e) { const cv = $('#chCv'), [px, py] = ptIn(cv, e); return [(px - ch.ox) / ch.sc, (py - ch.oy) / ch.sc]; }
-$('#chCv').addEventListener('pointerdown', e => { if (!ch?.run) return; ch.down = true; ch.ptrS = { clientX: e.clientX, clientY: e.clientY }; [ch.kid.tx, ch.kid.ty] = chWorldPt(e); });
-$('#chCv').addEventListener('pointermove', e => { if (ch?.run && ch.down) { ch.ptrS = { clientX: e.clientX, clientY: e.clientY }; [ch.kid.tx, ch.kid.ty] = chWorldPt(e); } });
+function chWorldPt(e) {
+  if (ch.cam.x == null) return [ch.kid.x, ch.kid.y];
+  const cv = $('#chCv'), [px, py] = ptIn(cv, e); return [(px - ch.W / 2) / ch.cam.z + ch.cam.x, (py - ch.H / 2) / (ch.cam.z * CH_TILT) + ch.cam.y];
+}
+$('#chCv').addEventListener('pointerdown', e => { if (ch?.giant) { if (ch.run) chGiantJump(); return; } if (!ch?.run) return; ch.down = true; ch.ptrS = { clientX: e.clientX, clientY: e.clientY }; [ch.kid.tx, ch.kid.ty] = chWorldPt(e); });
+$('#chCv').addEventListener('pointermove', e => { if (ch?.run && ch.down && !ch.giant) { ch.ptrS = { clientX: e.clientX, clientY: e.clientY }; [ch.kid.tx, ch.kid.ty] = chWorldPt(e); } });
 addEventListener('pointerup', () => { if (ch) ch.down = false; });
+// câmera: mundo -> tela (o y é achatado para parecer visto de cima, meio de lado)
+const chP = (wx, wy) => [(wx - ch.cam.x) * ch.cam.z + ch.W / 2, (wy - ch.cam.y) * ch.cam.z * CH_TILT + ch.H / 2];
+const chZ = wy => ch.cam.z * (.86 + .14 * wy / CH_H);   // quem está mais embaixo (mais perto) fica um pouco maior
+const CH_GOLD = 'sepia(1) saturate(4) hue-rotate(5deg) brightness(1.1)';
+// emoji (ou imagem pronta) com os pés em (cx, by); sq estica (>1) ou achata (<1)
+function chSpr(x, img, cx, by, size, flip = 1, sq = 1, rot = 0) {
+  x.save(); x.translate(cx, by); if (rot) x.rotate(rot); x.scale(flip / Math.sqrt(sq), sq); x.drawImage(img, -size / 2, -size * .95, size, size); x.restore();
+}
+function chKidSpeed(k) {
+  let v = CH_SHOES[cw().shoe][3] * (k.carry ? CH_CARRY : 1);
+  if (k.dash > 0) v = Math.max(470, v * 1.8); else if (k.jump > 0) v *= 1.45; else if (chInMud(k.x, k.y)) v *= .55;
+  return k.star > 0 ? v * 1.2 : v;
+}
+function chMomSpeed(a, dt) {
+  let v = a.speed;
+  if (a.kind === 'pula') v *= .55 + .9 * Math.abs(Math.sin(a.run * 7));   // pulinhos
+  if (a.kind === 'nada') v *= chInLake(a.x, a.y) ? 1.8 : .85;
+  if (!a.fly && chInMud(a.x, a.y)) v *= .45;
+  return v * dt;
+}
+function chNewCoin() { let px, py; do { px = 600 + Math.random() * (CH_W - 680); py = 160 + Math.random() * (CH_H - 240); } while (chInLake(px, py) || chInHome(px, py, 60)); return { x: px, y: py, t: 0 }; }
+// moedas que voam até o contador lá em cima (o valor já foi somado; aqui é só o efeito)
+function chCoinFx(wx, wy, n = 1) { const [sx, sy] = chP(wx, wy); for (let i = 0; i < Math.min(10, n); i++) ch.pfx.push({ x: sx + (Math.random() - .5) * 50, y: sy + (Math.random() - .5) * 50, t: -i * .06 }); }
+function chDash() {
+  const k = ch?.kid; if (!ch?.run || ch.giant || !k || k.dashCd > 0) return;
+  k.dash = .55; k.dashCd = 3.2; if (k.tx === null) { k.tx = k.x + k.face * 400; k.ty = k.y; }
+  tone('sawtooth', 200, 1200, audioOn().currentTime, .3, .06); ch.shake = .1;
+}
+const chCap = s => s[0].toUpperCase() + s.slice(1);
 function chStep(dt) {
-  const k = ch.kid; ch.t += dt; k.inv -= dt;
-  if (k.tx !== null) {
-    const dx = k.tx - k.x, dy = k.ty - k.y, d = Math.hypot(dx, dy), v = CH_SHOES[cw().shoe][3] * (k.carry ? CH_CARRY : 1) * dt;
-    if (d > 4) { k.x += dx / d * Math.min(v, d); k.y += dy / d * Math.min(v, d); k.walk += dt; if (Math.abs(dx) > 3) k.face = dx > 0 ? 1 : -1; }
+  const k = ch.kid, my = cw(), au = () => audioOn().currentTime; ch.t += dt;
+  for (const p of ['inv', 'dash', 'dashCd', 'jump', 'bubble', 'star', 'magnet', 'tunnel', 'trail']) k[p] -= dt;
+  // anda até o dedo (na disparada e no pulo do trampolim segue em frente)
+  if (k.tx !== null || k.dash > 0 || k.jump > 0) {
+    const dx = k.tx !== null ? k.tx - k.x : k.face, dy = k.tx !== null ? k.ty - k.y : 0, d = Math.hypot(dx, dy) || 1, v = chKidSpeed(k) * dt, push = k.dash > 0 || k.jump > 0;
+    if (d > 4 || push) { const s = push ? v : Math.min(v, d); k.x += dx / d * s; k.y += dy / d * s; k.walk += dt; if (Math.abs(dx) > 3) k.face = dx > 0 ? 1 : -1; }
     else if (!ch.down) k.tx = null;
   }
-  k.x = Math.max(30, Math.min(CH_W - 30, k.x)); k.y = Math.max(110, Math.min(CH_H - 20, k.y));
-  for (const a of ch.animals) {
-    if (!a.has && a.state === 'home') { a.refill -= dt; if (a.refill <= 0) { a.has = true; a.gold = Math.random() < .15; a.v = chVar(); chirp(a.gold ? 1300 : 900, .08); } }
-    if (a.has && !k.carry && k.inv <= 0 && Math.hypot(k.x - a.nx, k.y - a.ny) < 70) {   // pegou!
-      a.has = false; k.carry = a; k.gold = a.gold; k.v = a.v || 0; a.gold = false; a.state = 'alert'; a.t = .7; chirp(700, .12); chirp(1000, .15);
-      say(k.gold ? `Uau, brilhante! Vale muitas moedas! Corre para casa!` : `Pegou ${a.item}! Corre para casa!`);
-    }
-    if (a.state === 'alert') { a.t -= dt; if (a.t <= 0) a.state = 'chase'; }
-    else if (a.state === 'chase') {
-      if (k.carry !== a || chInHome(k.x, k.y)) { a.state = 'back'; continue; }
-      if (chHidden(k)) { a.state = 'lost'; a.t = 2.2; chirp(500, .1, 'sine'); continue; }   // escondeu na moita
-      if (ch.dog && ch.dog.cd <= 0 && Math.hypot(k.x - a.x, k.y - a.y) < 170) {   // o cachorrinho late e a mamãe para
-        a.state = 'stun'; a.t = 2; ch.dog.cd = 7; ch.dog.bark = .6; tone('square', 520, 380, audioOn().currentTime, .12, .08); tone('square', 560, 400, audioOn().currentTime + .18, .12, .08); continue;
-      }
-      const dx = k.x - a.x, dy = k.y - a.y, d = Math.hypot(dx, dy);
-      a.x += dx / d * a.speed * dt; a.y += dy / d * a.speed * dt; a.face = dx > 0 ? 1 : -1;
-      if (chInHome(a.x, a.y, 20)) { a.state = 'back'; continue; }   // bicho não entra na casa
-      if (d < 44) {
-        k.carry = null; k.inv = 1.4; a.state = 'back'; ch.flies.push({ a, fx: k.x, fy: k.y - 110, t: 0, gold: k.gold, v: k.v }); k.gold = false; chirp(220, .3, 'sawtooth', .07);
-        const N = a.name[0].toUpperCase() + a.name.slice(1);
-        say(chNeed(a) > cw().shoe ? `Ops! ${N} pegou de volta! Esse bicho corre mais que você. Compre um tênis na loja!` : `Ops! ${N} pegou de volta! Tenta de novo!`);
-      }
-    } else if (a.state === 'stun' || a.state === 'lost') {   // parada pelo latido, ou procurando a criança escondida
-      a.t -= dt;
-      if (a.t <= 0) a.state = k.carry === a && !chInHome(k.x, k.y) && !chHidden(k) ? 'chase' : 'back';
-    } else if (a.state === 'back') {
-      const hx = a.nx - 56, hy = a.ny + 6, dx = hx - a.x, dy = hy - a.y, d = Math.hypot(dx, dy);
-      if (d < 4) { a.state = 'home'; a.face = -1; } else { const v = Math.min(d, a.speed * .6 * dt); a.x += dx / d * v; a.y += dy / d * v; a.face = dx > 0 ? 1 : -1; }
+  if (chInLake(k.x, k.y) && k.jump <= 0) { const an = Math.atan2((k.y - CH_LAKE.y) / CH_LAKE.ry, (k.x - CH_LAKE.x) / CH_LAKE.rx); k.x = CH_LAKE.x + Math.cos(an) * CH_LAKE.rx * .96; k.y = CH_LAKE.y + Math.sin(an) * CH_LAKE.ry * .96; }
+  k.x = Math.max(30, Math.min(CH_W - 30, k.x)); k.y = Math.max(140, Math.min(CH_H - 20, k.y));
+  // poeira dos pés e rastro de estrelinhas
+  if (k.dash > 0 || k.jump > 0 || k.star > 0) { if (k.trail <= 0) { k.trail = .04; ch.fx.push({ dust: true, x: k.x, y: k.y, t: .5, r: 10 + Math.random() * 8, c: k.star > 0 ? `hsl(${ch.t * 300 % 360} 90% 70%)` : 'rgba(255,255,255,.8)' }); } }
+  else if (k.tx !== null && Math.random() < dt * 10) ch.fx.push({ dust: true, x: k.x - k.face * 16, y: k.y, t: .4, r: 6 + Math.random() * 5, c: chInMud(k.x, k.y) ? 'rgba(122,83,50,.6)' : 'rgba(240,215,160,.7)' });
+  if (k.carry && Math.random() < dt * 14) ch.fx.push({ spark: true, x: k.x + (Math.random() - .5) * 40, y: k.y, h: 100 + Math.random() * 30, t: .7 });
+  // trampolim: pulo alto, por cima de tudo
+  for (const [px, py] of CH_TRAMPS) if (k.jump <= -.3 && Math.hypot(k.x - px, k.y - py) < 45) { k.jump = .9; if (k.tx === null) { k.tx = k.x + k.face * 300; k.ty = k.y; } tone('sine', 300, 1100, au(), .4, .12); say('Boing!'); }
+  // túnel secreto: entra num buraco e sai no outro (a mamãe perde a criança de vista)
+  for (let i = 0; i < 2; i++) {
+    const [px, py] = CH_TUNNEL[i], [qx, qy] = CH_TUNNEL[1 - i];
+    if (k.tunnel <= 0 && k.jump <= 0 && Math.hypot(k.x - px, k.y - py) < 40) {
+      k.x = qx + (i ? 60 : -60); k.y = qy; k.tx = null; k.tunnel = 1.5; tone('square', 900, 200, au(), .35, .06); tone('square', 200, 900, au() + .3, .35, .06);
+      ch.fx.push({ ring: true, x: qx, y: qy, t: .6 }); say('Túnel secreto!'); for (const a of ch.animals) if (a.state === 'chase' && k.carry === a) { a.state = 'lost'; a.t = 2.5; }
     }
   }
-  if (k.carry && chInHome(k.x, k.y)) {   // chegou em casa
-    const a = k.carry, gold = k.gold, got = a.reward * (gold ? 5 : 1); k.carry = null; k.gold = false; a.refill = 4; cw().coins += got; chHud();
-    if (ch.world === 'dinos' && dnSave.eggs < 9) { dnSave.eggs++; keep('oliver-dinos', dnSave); if (!ch.toldFarm) { ch.toldFarm = true; setTimeout(() => toast('🥚 Um ovo foi para a chocadeira da Fazenda dos Dinos!'), 1200); } }
-    const v = k.v || 0, key = a.baby + '|' + v, alb = chAlbum(ch.world), fresh = !alb.includes(key);
-    if (fresh) { alb.push(key); keep('oliver-corre', chSave); setTimeout(() => { say(alb.length >= 25 ? `Você completou o álbum ${CH_WORLDS[ch.world].name === 'Gelo' ? 'do' : 'da'} ${CH_WORLDS[ch.world].name}!` : v ? 'Uma cor nova! Figurinha nova no álbum!' : 'Figurinha nova no álbum!'); if (alb.length >= 25) celebrate(false); }, 3200); }
-    if (ch.mis && a === ch.animals[ch.mis.i] && ++ch.mis.got >= ch.mis.n) {   // missão cumprida: moedas extras e uma nova missão
-      const bonus = 10 * (ch.mis.i + 1) + 10; cw().coins += bonus; chHud(); setTimeout(() => { celebrate(false); say(`Missão cumprida! Ganhou mais ${bonus} moedas!`); }, 1800);
-      ch.mis = null; setTimeout(() => { if (alive('chase') && ch.animals) chMission(); }, 6000);
-    }
-    const ids = Object.keys(CH_WORLDS).filter(k => !CH_WORLDS[k].special), nx = ids[ids.indexOf(ch.world) + 1];
-    if (a === ch.animals[4] && nx && !chSave.open.includes(nx)) {   // pegou o bicho mais rápido: abre o próximo lugar
-      chSave.open.push(nx); cw().done = true; keep('oliver-corre', chSave);
-      setTimeout(() => { celebrate(false); say(`Uau! Você abriu um lugar novo: ${CH_WORLDS[nx].name}! Toque no mapa para ir até lá.`); }, 2500);
-    }
-    const ex = CH_FARM.x + 60 + Math.random() * (CH_FARM.w - 120), ey = CH_FARM.y + 190 + Math.random() * (CH_FARM.h - 230);
-    if (a.egg) ch.eggs.push({ a, v, x: ex, y: ey, t: 7 }); else ch.babies.push({ emo: a.baby, v, x: ex, y: ey, vx: 0, vy: 0, coinT: 4, turn: 0 });
-    confettiAt(ch.fx, k.x, k.y - 60); [523, 659, 784, 1047].forEach((f, i) => blip(f, .18, i * .11));
-    say(`Eba! Agora ${a.item} mora com você! Ganhou ${got} moedas!`); chKeep();
+  // itens que aparecem no mapa
+  if ((ch.itemT -= dt) <= 0 && ch.items.length < 3) { ch.itemT = 8 + Math.random() * 4; let px, py; do { px = 560 + Math.random() * (CH_W - 660); py = 180 + Math.random() * (CH_H - 260); } while (chInLake(px, py) || chInMud(px, py)); ch.items.push({ t: pick(['🍌', '🫧', '⭐', '🧲']), x: px, y: py }); }
+  for (const it of ch.items) if (Math.hypot(k.x - it.x, k.y - it.y) < 60) {
+    it.got = true; tone('square', 700, 1400, au(), .2, .06);
+    if (it.t === '🍌') { k.banana = 1; say('Casca de banana! Quando a mamãe chegar perto, ela escorrega!'); }
+    else if (it.t === '🫧') { k.bubble = 5; say('Bolha mágica! Ninguém te vê!'); }
+    else if (it.t === '⭐') { k.star = 6; say('Estrela! Super rápido, ninguém te pega!'); }
+    else { k.magnet = 10; say('Ímã! Puxa as moedas!'); }
   }
+  ch.items = ch.items.filter(i => !i.got);
+  // moedas soltas pelo mapa (o ímã puxa)
+  for (const c of ch.coins) {
+    if (c.t > 0) { if ((c.t -= dt) <= 0) Object.assign(c, chNewCoin()); continue; }
+    const d = Math.hypot(k.x - c.x, k.y - c.y) || 1;
+    if (k.magnet > 0 && d < 420) { c.x += (k.x - c.x) / d * 600 * dt; c.y += (k.y - c.y) / d * 600 * dt; }
+    if (d < 46) { c.t = 20; my.coins++; ch.dirty = true; chCoinFx(c.x, c.y); chirp(1400, .05, 'square', .04); }
+  }
+  // casca de banana: cai para trás quando uma mamãe chega perto
+  if (k.banana) { const near = ch.animals.find(a => a.state === 'chase' && Math.hypot(a.x - k.x, a.y - k.y) < 260); if (near) { k.banana = 0; ch.peels.push({ x: k.x - k.face * 40, y: k.y, t: 8 }); } }
+  for (const p of ch.peels) { p.t -= dt; for (const a of ch.animals) if ((a.state === 'chase' || a.state === 'back') && !a.fly && Math.hypot(a.x - p.x, a.y - p.y) < 40) { a.state = 'slip'; a.t = 2.2; p.t = 0; tone('sawtooth', 900, 200, au(), .5, .06); say(`${chCap(a.name)} escorregou!`); } }
+  ch.peels = ch.peels.filter(p => p.t > 0);
+  for (const a of ch.animals) chMom(a, dt);
+  if (k.carry && chInHome(k.x, k.y)) chDeliver();
   for (const f of ch.flies) { f.t += dt * 1.6; if (f.t >= 1) { f.a.has = true; f.a.gold = !!f.gold; f.a.v = f.v || 0; f.done = true; } }
   ch.flies = ch.flies.filter(f => !f.done);
-  for (const e of ch.eggs) if ((e.t -= dt) <= 0) { ch.babies.push({ emo: e.a.baby, v: e.v || 0, x: e.x, y: e.y, vx: 0, vy: 0, coinT: 4, turn: 0 }); confettiAt(ch.fx, e.x, e.y, 14); chirp(1200, .1); say('Nasceu! Que fofo!'); e.done = true; chKeep(); }
+  for (const e of ch.eggs) if ((e.t -= dt) <= 0) { ch.babies.push({ emo: e.a.baby, v: e.v || 0, x: e.x, y: e.y, vx: 0, vy: 0, coinT: 4, turn: 0, hop: 0 }); ch.fx.push({ conf: true, n: 14, x: e.x, y: e.y }); chirp(1200, .1); say('Nasceu! Que fofo!'); e.done = true; chKeep(); }
   ch.eggs = ch.eggs.filter(e => !e.done);
-  for (const b of ch.babies) {   // filhotes passeiam e soltam moedinhas
-    b.turn -= dt; if (b.turn <= 0) { const an = Math.random() * TAU; b.vx = Math.cos(an) * 40; b.vy = Math.sin(an) * 40; b.turn = 1 + Math.random() * 2; }
-    b.x = Math.max(CH_FARM.x + 30, Math.min(CH_FARM.x + CH_FARM.w - 30, b.x + b.vx * dt)); b.y = Math.max(CH_FARM.y + 170, Math.min(CH_FARM.y + CH_FARM.h - 30, b.y + b.vy * dt));
-    if ((b.coinT -= dt) <= 0) { b.coinT = 6 + Math.random() * 3; ch.fx.push({ coin: true, x: b.x, y: b.y - 30, t: 1.1, vx: 0, vy: -50 }); }
+  for (const b of ch.babies) {   // filhotes passeiam no cercadinho e soltam moedinhas
+    b.turn -= dt; b.hop = (b.hop || 0) + dt; if (b.turn <= 0) { const an = Math.random() * TAU; b.vx = Math.cos(an) * 45; b.vy = Math.sin(an) * 45; b.turn = 1 + Math.random() * 2; }
+    b.x = Math.max(CH_FARM.x + 40, Math.min(CH_FARM.x + CH_FARM.w - 40, b.x + b.vx * dt)); b.y = Math.max(CH_FARM.y + 180, Math.min(CH_FARM.y + CH_FARM.h - 30, b.y + b.vy * dt));
+    if ((b.coinT -= dt) <= 0) { b.coinT = 6 + Math.random() * 3; my.coins++; ch.dirty = true; chCoinFx(b.x, b.y - 40); chirp(1400, .05, 'square', .04); }
   }
-  if (cw().dog) {
+  if (my.dog) {   // cachorrinho ajudante: segue a criança e late para a mamãe parar
     const d = ch.dog || (ch.dog = { x: k.x - 60, y: k.y, cd: 0, bark: 0 }), tx = k.x - k.face * 60, ty = k.y + 10, dd = Math.hypot(tx - d.x, ty - d.y);
-    if (dd > 5) { const v = Math.min(dd, (CH_SHOES[cw().shoe][3] + 40) * dt); d.x += (tx - d.x) / dd * v; d.y += (ty - d.y) / dd * v; }
+    if (dd > 5) { const v = Math.min(dd, (chKidSpeed(k) + 40) * dt); d.x += (tx - d.x) / dd * v; d.y += (ty - d.y) / dd * v; }
     d.cd -= dt; d.bark -= dt;
   } else ch.dog = null;
-  for (const f of ch.fx) if (f.coin && f.t - dt <= 0 && !f.paid) { f.paid = true; cw().coins++; chHud(); chirp(1400, .05, 'square', .04); }
+  if (ch.dirty && (ch.saveT = (ch.saveT || 0) + dt) > 8) { ch.saveT = 0; ch.dirty = false; keep('oliver-corre', chSave); }
 }
-// cenário parado: desenhado uma vez por mundo e por tamanho de tela
-function chPaintBg(W, H) {
-  const w = CH_WORLDS[ch.world], c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
-  g.fillStyle = w.ground; g.fillRect(0, 0, W, H); g.save(); g.translate(ch.ox0, ch.oy); g.scale(ch.sc, ch.sc);
-  let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
-  g.fillStyle = w.spot; for (let i = 0; i < 240; i++) { g.beginPath(); g.ellipse(rnd() * CH_W, rnd() * CH_H, 10 + rnd() * 18, 5 + rnd() * 6, 0, 0, TAU); g.fill(); }
-  g.strokeStyle = w.path; g.lineCap = 'round'; g.lineWidth = 46;
-  for (const [nx, ny] of CH_NESTS) { g.beginPath(); g.moveTo(CH_FARM.x + CH_FARM.w, CH_FARM.y + CH_FARM.h / 2); g.quadraticCurveTo((CH_FARM.x + CH_FARM.w + nx) / 2, ny + (ny < 500 ? 120 : -120), nx, ny); g.stroke(); }
-  for (let i = 0; i < 52; i++) { const px = rnd() * CH_W, py = rnd() * CH_H; if (chInHome(px, py, 60) || CH_NESTS.some(([nx, ny]) => Math.hypot(px - nx, py - ny) < 110)) continue; g.drawImage(kEmo(w.deco[i % 3]), px - 22, py - 24, 44, 44); }
-  const F = CH_FARM; g.fillStyle = w.base; g.beginPath(); g.roundRect(F.x, F.y, F.w, F.h, 30); g.fill();
-  g.strokeStyle = INK; g.lineWidth = 6;
-  if (w.home === 'barn') {
-    g.fillStyle = '#d9483b'; g.beginPath(); g.moveTo(F.x + 40, F.y + 150); g.lineTo(F.x + 40, F.y + 60); g.lineTo(F.x + 120, F.y + 6); g.lineTo(F.x + 200, F.y + 60); g.lineTo(F.x + 200, F.y + 150); g.closePath(); g.fill(); g.stroke();
-    g.fillStyle = '#fff8ea'; g.beginPath(); g.rect(F.x + 95, F.y + 90, 50, 60); g.fill(); g.stroke();
-  } else if (w.home === 'igloo') {
-    g.fillStyle = '#fff'; g.beginPath(); g.arc(F.x + 120, F.y + 150, 95, Math.PI, TAU); g.closePath(); g.fill(); g.stroke();
-    g.strokeStyle = '#a9c9de'; g.lineWidth = 3; for (const yy of [F.y + 90, F.y + 120]) { g.beginPath(); g.moveTo(F.x + 35, yy); g.lineTo(F.x + 205, yy); g.stroke(); }
-    g.fillStyle = '#4a6b85'; g.beginPath(); g.arc(F.x + 120, F.y + 150, 32, Math.PI, TAU); g.fill();
-  } else g.drawImage(kEmo(w.home), F.x + 30, F.y - 10, 180, 180);
-  g.strokeStyle = w.fence; g.lineWidth = 9; g.beginPath(); g.roundRect(F.x, F.y, F.w, F.h, 30); g.stroke();
-  g.lineWidth = 6; for (let px = F.x + 20; px < F.x + F.w; px += 40) for (const py of [F.y, F.y + F.h]) { g.beginPath(); g.moveTo(px, py - 14); g.lineTo(px, py + 14); g.stroke(); }
-  g.font = '800 34px "Baloo 2", sans-serif'; g.textAlign = 'center'; g.fillStyle = w.dark ? '#fff' : INK; g.fillText(w.homeName, F.x + F.w / 2, F.y - 28);
-  w.animals.forEach(([, , , , egg], i) => {
-    const [nx, ny] = CH_NESTS[i];
-    if (egg) { g.fillStyle = '#d9b36a'; g.beginPath(); g.ellipse(nx, ny + 8, 52, 24, 0, 0, TAU); g.fill(); g.strokeStyle = '#8a6a30'; g.lineWidth = 4; g.stroke(); }
-    else { g.fillStyle = 'rgba(120,80,40,.35)'; g.beginPath(); g.ellipse(nx, ny + 10, 64, 30, 0, 0, TAU); g.fill(); }
-  });
-  g.restore(); return c;
+function chMom(a, dt) {
+  const k = ch.kid, au = () => audioOn().currentTime; a.run += dt;
+  if (!a.has && (a.state === 'home' || a.state === 'nap')) { a.refill -= dt; if (a.refill <= 0) { a.has = true; a.gold = Math.random() < .15; a.v = chVar(); chirp(a.gold ? 1300 : 900, .08); } }
+  if (a.has && !k.carry && k.inv <= 0 && Math.hypot(k.x - a.nx, k.y - a.ny) < 72) {   // pegou!
+    a.has = false; k.carry = a; k.gold = a.gold; k.v = a.v || 0; a.gold = false; chirp(700, .12); chirp(1000, .15);
+    if (a.state === 'nap') { a.state = 'waking'; a.t = 2.6; say(`Pegou ${a.item}! Shhh, ela está dormindo... corre!`); }
+    else { a.state = 'alert'; a.t = .7; say(k.gold ? 'Uau, brilhante! Vale muitas moedas! Corre para casa!' : `Pegou ${a.item}! Corre para casa!`); }
+  }
+  const dx = k.x - a.x, dy = k.y - a.y, d = Math.hypot(dx, dy) || 1;
+  switch (a.state) {
+    case 'alert': if ((a.t -= dt) <= 0) a.state = 'chase'; break;
+    case 'waking': if ((a.t -= dt) <= 0) { a.state = 'alert'; a.t = .5; say(`${chCap(a.name)} acordou!`); tone('square', 400, 900, au(), .3, .06); } break;
+    case 'slip': case 'stun': case 'lost': case 'tired':
+      if ((a.t -= dt) <= 0) a.state = k.carry === a && !chInHome(k.x, k.y) && !chHidden(k, a) ? 'chase' : 'back'; break;
+    case 'chase': {
+      if (k.carry !== a || chInHome(k.x, k.y)) { a.state = 'back'; break; }
+      if (chHidden(k, a)) { a.state = 'lost'; a.t = 2.2; chirp(500, .1, 'sine'); break; }   // escondeu
+      if (ch.dog && ch.dog.cd <= 0 && d < 170) {   // o cachorrinho late e a mamãe para
+        a.state = 'stun'; a.t = 2; ch.dog.cd = 7; ch.dog.bark = .6; tone('square', 520, 380, au(), .12, .08); tone('square', 560, 400, au() + .18, .12, .08); break;
+      }
+      let v = chMomSpeed(a, dt), ux = dx / d, uy = dy / d;
+      if (a.kind === 'arranca') {   // arrancada em linha reta, depois para tonta
+        a.phase += dt; if (!a.dir || a.phase > 1.1) { if (a.dir) { a.state = 'tired'; a.t = .8; a.dir = null; a.phase = 0; break; } a.dir = [ux, uy]; a.phase = 0; tone('sawtooth', 150, 250, au(), .2, .05); }
+        [ux, uy] = a.dir; v *= 1.9;
+      }
+      if (a.kind === 'pula' && (a.phase += dt) > 3.4) { a.phase = 0; a.state = 'tired'; a.t = .7; break; }   // cansa de pular
+      a.x += ux * v; a.y += uy * v; a.face = ux > 0 ? 1 : -1;
+      if (chInHome(a.x, a.y, 30)) { a.state = 'back'; break; }   // bicho não entra no cercadinho
+      if (d < 48 && k.inv <= 0 && k.star <= 0 && k.jump <= 0) {   // pegou de volta
+        k.carry = null; k.inv = 1.4; a.state = 'back'; a.dir = null; ch.streak = 0; ch.shake = .35;
+        ch.flies.push({ a, fx: k.x, fy: k.y, t: 0, gold: k.gold, v: k.v }); k.gold = false; chirp(220, .3, 'sawtooth', .07);
+        const N = chCap(a.name);
+        say(chNeed(a) > cw().shoe ? `Ops! ${N} pegou de volta! Esse bicho corre mais que você. Use a disparada ou compre um tênis na loja!` : pick([`Ops! ${N} pegou de volta! Tenta de novo!`, 'Quase! Vamos de novo!', `${N} foi mais rápida! Use a disparada!`]));
+      }
+      break;
+    }
+    case 'back': {
+      const hx = a.nx - 60, hy = a.ny + 8, bx = hx - a.x, by = hy - a.y, bd = Math.hypot(bx, by);
+      if (bd < 5) { a.state = a.kind === 'dorme' ? 'nap' : 'home'; a.face = -1; a.dir = null; }
+      else { const v = Math.min(bd, a.speed * .6 * dt); a.x += bx / bd * v; a.y += by / bd * v; a.face = bx > 0 ? 1 : -1; }
+    }
+  }
+}
+function chDeliver() {   // chegou no cercadinho com o filhote
+  const k = ch.kid, a = k.carry, gold = k.gold, got = a.reward * (gold ? 5 : 1), my = cw();
+  const close = ch.animals.some(o => o.state === 'chase' && Math.hypot(o.x - k.x, o.y - k.y) < 180);
+  k.carry = null; k.gold = false; a.refill = 4; my.coins += got; ch.delivered++; ch.streak++; chCoinFx(k.x, k.y - 80, got);
+  if (ch.world === 'dinos' && dnSave.eggs < 9) { dnSave.eggs++; keep('oliver-dinos', dnSave); if (!ch.toldFarm) { ch.toldFarm = true; setTimeout(() => toast('🥚 Um ovo foi para a chocadeira da Fazenda dos Dinos!'), 1200); } }
+  const v = k.v || 0, key = a.baby + '|' + v, alb = chAlbum(ch.world), fresh = !alb.includes(key);
+  if (fresh) { alb.push(key); setTimeout(() => { say(alb.length >= 25 ? `Você completou o álbum ${CH_WORLDS[ch.world].name === 'Gelo' ? 'do' : 'da'} ${CH_WORLDS[ch.world].name}!` : v ? 'Uma cor nova! Figurinha nova no álbum!' : 'Figurinha nova no álbum!'); if (alb.length >= 25) celebrate(false); }, 3200); }
+  if (ch.mis && a === ch.animals[ch.mis.i] && ++ch.mis.got >= ch.mis.n) {   // missão cumprida: moedas extras e uma nova missão
+    const bonus = 10 * (ch.mis.i + 1) + 10; my.coins += bonus; setTimeout(() => { if (!ch.kid) return; chCoinFx(ch.kid.x, ch.kid.y - 80, bonus); celebrate(false); say(`Missão cumprida! Ganhou mais ${bonus} moedas!`); }, 1800);
+    ch.mis = null; setTimeout(() => { if (alive('chase') && ch.animals) chMission(); }, 6000);
+  }
+  const ids = Object.keys(CH_WORLDS).filter(id => !CH_WORLDS[id].special), nx = ids[ids.indexOf(ch.world) + 1];
+  if (a === ch.animals[4] && nx && !chSave.open.includes(nx)) { chSave.open.push(nx); my.done = true; }
+  // estrelas do lugar: levar 5 filhotes, 3 seguidos sem ser pego, e o filhote da mamãe mais rápida
+  const st = my.stars || (my.stars = [false, false, false]), was = st.slice();
+  if (ch.delivered >= 5) st[0] = true; if (ch.streak >= 3) st[1] = true; if (a === ch.animals[4]) st[2] = true;
+  st.forEach((on, i) => { if (on && !was[i]) setTimeout(() => { toast(['⭐ Levou 5 filhotes!', '⭐ 3 seguidos sem ser pego!', `⭐ Trouxe ${ch.animals[4].item}!`][i]); tone('triangle', 784, 1568, audioOn().currentTime, .5, .12); say('Ganhou uma estrela!'); if (st.every(Boolean)) celebrate(false); }, 1700 + i * 300); });
+  const ex = CH_FARM.x + 60 + Math.random() * (CH_FARM.w - 120), ey = CH_FARM.y + 200 + Math.random() * (CH_FARM.h - 240);
+  if (a.egg) ch.eggs.push({ a, v, x: ex, y: ey, t: 6 }); else ch.babies.push({ emo: a.baby, v, x: ex, y: ey, vx: 0, vy: 0, coinT: 4, turn: 0, hop: 0 });
+  ch.fx.push({ conf: true, n: 40, x: k.x, y: k.y - 60 }); [523, 659, 784, 1047].forEach((f, i) => blip(f, .18, i * .11));
+  if (close) { ch.slow = 1.1; ch.zoom = 1.35; say('Escapou por pouco!'); }   // câmera lenta quando a mamãe estava colada
+  else say(`Eba! Agora ${a.item} mora com você! Ganhou ${got} moedas!`);
+  chHud(); chKeep();
+}
+// chão pintado uma vez por lugar: grama, trilhas, lago, lama, cercadinho, ninhos e buracos do túnel
+function chPaintBg() {
+  const w = CH_WORLDS[ch.world], GS = .7, c = document.createElement('canvas'); c.width = CH_W * GS; c.height = CH_H * CH_TILT * GS;
+  const g = c.getContext('2d'); g.scale(GS, GS * CH_TILT);
+  let seed = 11; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  g.fillStyle = w.ground; g.fillRect(0, 0, CH_W, CH_H);
+  const sh = g.createLinearGradient(0, 0, 0, CH_H); sh.addColorStop(0, 'rgba(255,255,255,.12)'); sh.addColorStop(1, 'rgba(0,0,0,.08)'); g.fillStyle = sh; g.fillRect(0, 0, CH_W, CH_H);
+  for (let i = 0; i < 380; i++) { g.fillStyle = rnd() < .6 ? w.spot : 'rgba(255,255,255,.12)'; g.beginPath(); g.ellipse(rnd() * CH_W, rnd() * CH_H, 14 + rnd() * 40, 8 + rnd() * 14, 0, 0, TAU); g.fill(); }
+  for (const [lw, col] of [[64, 'rgba(0,0,0,.12)'], [50, w.path]]) {
+    g.strokeStyle = col; g.lineWidth = lw; g.lineCap = 'round';
+    for (const [nx, ny] of CH_NESTS) { g.beginPath(); g.moveTo(CH_FARM.x + CH_FARM.w, CH_FARM.y + CH_FARM.h / 2); g.quadraticCurveTo((CH_FARM.x + CH_FARM.w + nx) / 2, ny + (ny < 700 ? 160 : -160), nx - 40, ny + 10); g.stroke(); }
+  }
+  for (let i = 0; i < 46; i++) { const px = rnd() * CH_W, py = 140 + rnd() * (CH_H - 160); if (chInHome(px, py, 60) || chInLake(px, py) || CH_NESTS.some(([nx, ny]) => Math.hypot(px - nx, py - ny) < 120)) continue; g.drawImage(kEmo(w.deco[i % 3]), px - 22, py - 40, 44, 44); }
+  const [wa, wb] = CH_WATER[ch.world] || ['#7fd3ff', '#2b8fd8'];
+  g.fillStyle = w.base; g.beginPath(); g.ellipse(CH_LAKE.x, CH_LAKE.y, CH_LAKE.rx + 28, CH_LAKE.ry + 22, 0, 0, TAU); g.fill();
+  const lg = g.createRadialGradient(CH_LAKE.x - 60, CH_LAKE.y - 40, 20, CH_LAKE.x, CH_LAKE.y, CH_LAKE.rx); lg.addColorStop(0, wa); lg.addColorStop(1, wb); g.fillStyle = lg; g.beginPath(); g.ellipse(CH_LAKE.x, CH_LAKE.y, CH_LAKE.rx, CH_LAKE.ry, 0, 0, TAU); g.fill();
+  const mud = CH_MUD[ch.world] || '#7a5332';
+  for (const m of CH_MUDS) { g.fillStyle = mud; g.beginPath(); g.ellipse(m.x, m.y, m.rx, m.ry, 0, 0, TAU); g.fill(); g.fillStyle = 'rgba(255,255,255,.14)'; for (let i = 0; i < 6; i++) { g.beginPath(); g.ellipse(m.x + (rnd() - .5) * m.rx, m.y + (rnd() - .5) * m.ry, 14, 8, 0, 0, TAU); g.fill(); } }
+  const F = CH_FARM; g.fillStyle = w.base; g.beginPath(); g.roundRect(F.x, F.y, F.w, F.h, 40); g.fill();
+  g.fillStyle = 'rgba(0,0,0,.06)'; for (let i = 0; i < 40; i++) g.fillRect(F.x + 20 + rnd() * (F.w - 40), F.y + 20 + rnd() * (F.h - 40), 18, 3);
+  w.animals.forEach(([, , , , egg], i) => { const [nx, ny] = CH_NESTS[i]; g.fillStyle = egg ? '#c9973f' : 'rgba(110,70,30,.35)'; g.beginPath(); g.ellipse(nx, ny + 8, 62, 30, 0, 0, TAU); g.fill();
+    if (egg) { g.strokeStyle = '#e7bf6a'; g.lineWidth = 4; for (let j = 0; j < 12; j++) { const an = j / 12 * TAU; g.beginPath(); g.moveTo(nx + Math.cos(an) * 30, ny + 8 + Math.sin(an) * 14); g.lineTo(nx + Math.cos(an + .5) * 58, ny + 8 + Math.sin(an + .5) * 26); g.stroke(); } } });
+  for (const [tx, ty] of CH_TUNNEL) { g.fillStyle = '#5d4037'; g.beginPath(); g.ellipse(tx, ty, 62, 40, 0, 0, TAU); g.fill(); g.fillStyle = '#2b1a10'; g.beginPath(); g.ellipse(tx, ty + 4, 44, 26, 0, 0, TAU); g.fill(); }
+  return c;
 }
 function chEgg(x, px, py, r, color, wob = 0) {
-  x.save(); x.translate(px, py); x.rotate(wob); x.fillStyle = color; x.strokeStyle = INK; x.lineWidth = 3;
+  x.save(); x.translate(px, py); x.rotate(wob); x.fillStyle = color; x.strokeStyle = INK; x.lineWidth = Math.max(2, r * .1);
   x.beginPath(); x.ellipse(0, 0, r * .78, r, 0, 0, TAU); x.fill(); x.stroke();
-  if (color !== '#fffdf6' && color !== '#ffffff') { x.fillStyle = 'rgba(80,50,20,.28)'; for (const [a, b] of [[-.3, -.3], [.3, .1], [-.1, .45]]) { x.beginPath(); x.arc(a * r, b * r, r * .14, 0, TAU); x.fill(); } }
+  if (color !== '#fffdf6' && color !== '#ffffff') { x.fillStyle = 'rgba(80,50,20,.25)'; for (const [a, b] of [[-.3, -.3], [.3, .1], [-.1, .45]]) { x.beginPath(); x.arc(a * r, b * r, r * .14, 0, TAU); x.fill(); } }
+  x.fillStyle = 'rgba(255,255,255,.55)'; x.beginPath(); x.ellipse(-r * .25, -r * .4, r * .16, r * .26, -.4, 0, TAU); x.fill();
   x.restore();
 }
+// o que a mamãe guarda (ovo ou filhote), centrado em (px, py)
 function chItem(x, a, px, py, size, gold, v = 0) {
-  if (a.egg) chEgg(x, px, py, size * .45, gold ? '#ffd54f' : chEggColor(a, v)); else chBaby(x, a.baby, v, px, py, size * .85, -1);
+  if (a.egg) chEgg(x, px, py, size * .45, gold ? '#ffd54f' : chEggColor(a, v), Math.sin(ch.t * 8) * .06); else chBaby(x, a.baby, v, px, py, size * .85, -1);
   if (gold) for (let i = 0; i < 3; i++) { const an = ch.t * 3 + i * 2.1; emoDraw(x, '✨', px + Math.cos(an) * size * .6, py + Math.sin(an) * size * .5, size * .4); }
+}
+function chBarn(x, sx, sy, z) {
+  x.save(); x.translate(sx, sy); x.scale(z, z); x.lineJoin = 'round'; x.strokeStyle = INK; x.lineWidth = 5;
+  x.fillStyle = 'rgba(0,0,0,.15)'; x.beginPath(); x.ellipse(0, 4, 130, 26, 0, 0, TAU); x.fill();
+  x.fillStyle = '#d9483b'; x.beginPath(); x.moveTo(-100, 0); x.lineTo(-100, -120); x.lineTo(0, -190); x.lineTo(100, -120); x.lineTo(100, 0); x.closePath(); x.fill(); x.stroke();
+  x.fillStyle = '#a8322a'; x.beginPath(); x.moveTo(-112, -116); x.lineTo(0, -200); x.lineTo(112, -116); x.lineTo(100, -104); x.lineTo(0, -176); x.lineTo(-100, -104); x.closePath(); x.fill(); x.stroke();
+  x.fillStyle = '#fff8ea'; x.beginPath(); x.rect(-38, -86, 76, 86); x.fill(); x.stroke(); x.beginPath(); x.moveTo(-38, -86); x.lineTo(38, 0); x.moveTo(38, -86); x.lineTo(-38, 0); x.stroke();
+  x.fillStyle = '#ffe9a8'; x.beginPath(); x.arc(0, -134, 18, 0, TAU); x.fill(); x.stroke();
+  x.restore();
+}
+function chIgloo(x, sx, sy, z) {
+  x.save(); x.translate(sx, sy); x.scale(z, z); x.strokeStyle = INK; x.lineWidth = 5;
+  x.fillStyle = 'rgba(0,0,0,.12)'; x.beginPath(); x.ellipse(0, 4, 120, 24, 0, 0, TAU); x.fill();
+  x.fillStyle = '#fff'; x.beginPath(); x.arc(0, 0, 105, Math.PI, TAU); x.closePath(); x.fill(); x.stroke();
+  x.strokeStyle = '#a9c9de'; x.lineWidth = 3; for (const yy of [-35, -70]) { x.beginPath(); x.moveTo(-Math.sqrt(105 ** 2 - yy ** 2) + 4, yy); x.lineTo(Math.sqrt(105 ** 2 - yy ** 2) - 4, yy); x.stroke(); }
+  x.fillStyle = '#4a6b85'; x.strokeStyle = INK; x.lineWidth = 5; x.beginPath(); x.arc(0, 0, 36, Math.PI, TAU); x.closePath(); x.fill(); x.stroke();
+  x.restore();
+}
+function chDrawMom(x, a) {
+  const [nx, ny] = chP(a.nx, a.ny), zn = chZ(a.ny), t = ch.t;
+  if (a.has) chItem(x, a, nx, ny - 18 * zn, 56 * zn, a.gold, a.v);
+  const [sx, sy] = chP(a.x, a.y), z = chZ(a.y), big = (a.big ? 112 : 88) * z, chase = a.state === 'chase', swim = a.kind === 'nada' && chInLake(a.x, a.y);
+  let lift = 0, sq = 1, rot = 0;
+  if (chase) { const f = a.kind === 'pula' ? 7 : 13; lift = Math.abs(Math.sin(a.run * f)) * (a.kind === 'pula' ? 26 : a.kind === 'salta' ? 18 : 8) * z; sq = 1 + Math.sin(a.run * f * 2) * .08; }
+  if (a.fly && (chase || a.state === 'back')) lift = 60 * z + Math.sin(t * 8) * 10 * z;   // quem tem asa voa
+  if (swim) lift = -24 * z;
+  if (a.state === 'slip') rot = Math.sin(a.t * 20) * .6;
+  if (a.state === 'nap' || a.state === 'waking' || a.state === 'home') sq = 1 + Math.sin(t * 2 + a.nx) * .03;
+  if (a.kind === 'arranca' && chase && a.dir) sq = .9;
+  x.fillStyle = 'rgba(0,0,0,.18)'; x.beginPath(); x.ellipse(sx, sy, big * .38, big * .11, 0, 0, TAU); x.fill();
+  if (swim) { x.save(); x.beginPath(); x.rect(sx - big, sy - big * 2, big * 2, big * 2 - 6 * z); x.clip(); }
+  chSpr(x, kEmo(a.emo), sx, sy - lift, big, a.face < 0 ? 1 : -1, sq, rot);
+  if (swim) { x.restore(); x.strokeStyle = 'rgba(255,255,255,.8)'; x.lineWidth = 3; x.beginPath(); x.ellipse(sx, sy - 6 * z, big * .45, big * .1, 0, 0, TAU); x.stroke(); }
+  const top = sy - lift - big - 8 * z, icon = (e, s = 44) => emoDraw(x, e, sx, top - s * z * .3 + Math.sin(t * 6) * 3 * z, s * z);
+  if (a.state === 'alert') icon('❗', 52);
+  else if (chase) { icon('😠', 40); if (Math.hypot(ch.kid.x - a.x, ch.kid.y - a.y) < 230) emoDraw(x, '💦', sx + big * .35, sy - lift - big * .75, 28 * z); }
+  else if (a.state === 'slip' || a.state === 'tired' || a.state === 'stun') icon('💫');
+  else if (a.state === 'lost') icon('❓');
+  else if (a.state === 'nap' || a.state === 'waking' || (a.state === 'home' && a.has)) {
+    x.font = `800 ${30 * z}px sans-serif`; x.fillStyle = CH_WORLDS[ch.world].dark ? 'rgba(255,255,255,.7)' : 'rgba(42,29,18,.6)'; x.textAlign = 'center';
+    for (let i = 0; i < 3; i++) { const q = (t * .5 + i / 3) % 1; x.globalAlpha = 1 - q; x.fillText('z', sx + 30 * z + q * 30 * z, top - q * 40 * z); } x.globalAlpha = 1;
+    if (a.state === 'waking') icon('😳', 34);
+  }
+  const need = chNeed(a);
+  if (need > cw().shoe && a.state !== 'chase' && a.has) {   // plaquinha com o tênis que falta
+    x.fillStyle = '#fff8ea'; x.beginPath(); x.roundRect(nx - 34 * zn, ny - 150 * zn, 68 * zn, 52 * zn, 14 * zn); x.fill(); x.strokeStyle = INK; x.lineWidth = 3; x.stroke();
+    emoDraw(x, CH_SHOES[need][0], nx, ny - 124 * zn, 38 * zn);
+  }
+}
+function chDrawWorld(x, W, H, dt) {
+  const w = CH_WORLDS[ch.world], k = ch.kid, cam = ch.cam;
+  // a câmera segue a criança; zoom leve nos momentos especiais
+  ch.zoom += (1 - ch.zoom) * Math.min(1, dt * 1.5);
+  cam.z = Math.max(W / 1350, H / (CH_H * CH_TILT * .62)) * ch.zoom;
+  const vw = W / cam.z, vh = H / (cam.z * CH_TILT), tx = Math.max(vw / 2, Math.min(CH_W - vw / 2, k.x + k.face * 80)), ty = Math.max(vh / 2, Math.min(CH_H - vh / 2, k.y - 60));
+  if (cam.x == null) { cam.x = tx; cam.y = ty; } cam.x += (tx - cam.x) * Math.min(1, dt * 4); cam.y += (ty - cam.y) * Math.min(1, dt * 4);
+  x.save(); if (ch.shake > 0) x.translate((Math.random() - .5) * ch.shake * 60, (Math.random() - .5) * ch.shake * 60);
+  x.fillStyle = w.ground; x.fillRect(-60, -60, W + 120, H + 120);
+  if (!ch.bg) ch.bg = chPaintBg();
+  const [ox, oy] = chP(0, 0); x.drawImage(ch.bg, ox, oy, CH_W * cam.z, CH_H * CH_TILT * cam.z);
+  const [lx, ly] = chP(CH_LAKE.x, CH_LAKE.y); x.strokeStyle = 'rgba(255,255,255,.55)'; x.lineWidth = 3 * cam.z;   // brilho na água
+  for (let i = 0; i < 5; i++) { x.beginPath(); x.ellipse(lx + (i - 2) * 100 * cam.z, ly + ((i % 2) * 50 - 25) * cam.z * CH_TILT, (34 + Math.sin(ch.t * 2 + i) * 8) * cam.z, 6 * cam.z, 0, 0, TAU); x.stroke(); }
+  // capim balançando
+  x.strokeStyle = w.dark ? 'rgba(255,255,255,.25)' : 'rgba(40,90,20,.45)'; x.lineWidth = 3 * cam.z; x.lineCap = 'round'; x.beginPath();
+  for (const [px, py, ph] of CH_TUFTS) { const [sx, sy] = chP(px, py); if (sx < -30 || sx > W + 30 || sy < -30 || sy > H + 30) continue; const z = chZ(py), sw = Math.sin(ch.t * 2 + ph) * 4 * z;
+    for (const q of [-1, 0, 1]) { x.moveTo(sx + q * 5 * z, sy); x.quadraticCurveTo(sx + q * 6 * z, sy - 10 * z, sx + q * 9 * z + sw, sy - (18 - Math.abs(q) * 4) * z); } }
+  x.stroke();
+  for (const f of ch.fx) if (f.dust) { f.t -= dt; const [sx, sy] = chP(f.x, f.y); x.globalAlpha = Math.max(0, f.t * 2); x.fillStyle = f.c; x.beginPath(); x.arc(sx, sy - (.5 - f.t) * 30 * cam.z, f.r * cam.z * (1.5 - f.t), 0, TAU); x.fill(); }
+  x.globalAlpha = 1;
+  for (const p of ch.peels) { const [sx, sy] = chP(p.x, p.y); emoDraw(x, '🍌', sx, sy - 10 * cam.z, 44 * cam.z); }
+  for (const [px, py] of CH_TRAMPS) { const [sx, sy] = chP(px, py), z = chZ(py); x.fillStyle = '#263238'; x.beginPath(); x.ellipse(sx, sy, 50 * z, 22 * z, 0, 0, TAU); x.fill(); x.fillStyle = '#29b6f6'; x.beginPath(); x.ellipse(sx, sy - 6 * z, 42 * z, 17 * z, 0, 0, TAU); x.fill(); x.fillStyle = 'rgba(255,255,255,.6)'; x.beginPath(); x.ellipse(sx - 12 * z, sy - 10 * z, 12 * z, 4 * z, 0, 0, TAU); x.fill(); }
+  for (const e of ch.eggs) { const [sx, sy] = chP(e.x, e.y), z = chZ(e.y); chEgg(x, sx, sy - 22 * z, 22 * z, chEggColor(e.a, e.v), e.t < 2 ? Math.sin(ch.t * 30) * .25 : 0); }
+  // tudo que fica em pé, de trás para a frente
+  const list = [], add = (y, f) => list.push({ y, f });
+  add(CH_FARM.y + 60, () => {
+    const [sx, sy] = chP(CH_FARM.x + 150, CH_FARM.y + 120), z = chZ(CH_FARM.y);
+    if (w.home === 'barn') chBarn(x, sx, sy, z); else if (w.home === 'igloo') chIgloo(x, sx, sy, z); else chSpr(x, kEmo(w.home), sx, sy + 10 * z, 230 * z);
+    x.font = `800 ${34 * z}px "Baloo 2", sans-serif`; x.textAlign = 'center'; x.lineWidth = 6 * z; x.strokeStyle = w.dark ? INK : '#fff'; x.strokeText(w.homeName, sx + 70 * z, sy - 214 * z); x.fillStyle = w.dark ? '#fff' : INK; x.fillText(w.homeName, sx + 70 * z, sy - 214 * z);
+  });
+  const F = CH_FARM, posts = [];   // cerca com o portão aberto do lado direito
+  for (let px = F.x + 10; px <= F.x + F.w; px += 48) posts.push([px, F.y], [px, F.y + F.h]);
+  for (let py = F.y + 48; py < F.y + F.h; py += 48) { posts.push([F.x, py]); if (py < F.y + 150 || py > F.y + F.h - 150) posts.push([F.x + F.w, py]); }
+  for (const [px, py] of posts) add(py, () => { const [sx, sy] = chP(px, py), z = chZ(py); x.fillStyle = w.fence; x.strokeStyle = INK; x.lineWidth = 2.5; x.beginPath(); x.roundRect(sx - 6 * z, sy - 44 * z, 12 * z, 46 * z, 3 * z); x.fill(); x.stroke(); x.globalAlpha = .8; x.fillRect(sx - 24 * z, sy - 34 * z, 48 * z, 7 * z); x.fillRect(sx - 24 * z, sy - 18 * z, 48 * z, 7 * z); x.globalAlpha = 1; });
+  const bushE = kEmo(CH_BUSH_E[ch.world] || '🌳');
+  for (const [bx, by] of CH_BUSHES) add(by + 30, () => { const [sx, sy] = chP(bx, by + 30), z = chZ(by); x.globalAlpha = Math.hypot(k.x - bx, k.y - by) < 62 ? .7 : 1; chSpr(x, bushE, sx, sy, 150 * z, 1, 1 + Math.sin(ch.t * 1.5 + bx) * .015); x.globalAlpha = 1; });
+  for (const [px, py] of CH_TUNNEL) add(py - 30, () => { const [sx, sy] = chP(px, py - 34), z = chZ(py); x.font = `800 ${26 * z}px "Baloo 2", sans-serif`; x.textAlign = 'center'; x.fillStyle = '#fff'; x.strokeStyle = INK; x.lineWidth = 4; x.strokeText('túnel', sx, sy); x.fillText('túnel', sx, sy); });
+  for (const it of ch.items) add(it.y, () => { const [sx, sy] = chP(it.x, it.y), z = chZ(it.y), b = Math.abs(Math.sin(ch.t * 3 + it.x)) * 14 * z; x.fillStyle = 'rgba(0,0,0,.15)'; x.beginPath(); x.ellipse(sx, sy, 22 * z, 8 * z, 0, 0, TAU); x.fill(); x.fillStyle = 'rgba(255,255,255,.75)'; x.beginPath(); x.arc(sx, sy - 34 * z - b, 30 * z, 0, TAU); x.fill(); emoDraw(x, it.t, sx, sy - 34 * z - b, 46 * z); });
+  for (const c of ch.coins) if (c.t <= 0) add(c.y, () => { const [sx, sy] = chP(c.x, c.y), z = chZ(c.y); x.save(); x.translate(sx, sy - 22 * z); x.scale(Math.max(.2, Math.abs(Math.cos(ch.t * 4 + c.x))), 1); x.drawImage(kEmo('🪙'), -18 * z, -18 * z, 36 * z, 36 * z); x.restore(); });
+  for (const b of ch.babies) add(b.y, () => { const [sx, sy] = chP(b.x, b.y), z = chZ(b.y); x.fillStyle = 'rgba(0,0,0,.15)'; x.beginPath(); x.ellipse(sx, sy, 20 * z, 7 * z, 0, 0, TAU); x.fill(); chBaby(x, b.emo, b.v, sx, sy - 20 * z - Math.abs(Math.sin(b.hop * 9)) * 8 * z, 50 * z, b.vx > 0 ? -1 : 1); });
+  for (const a of ch.animals) add(a.y, () => chDrawMom(x, a));
+  if (ch.dog) add(ch.dog.y, () => { const d = ch.dog, [sx, sy] = chP(d.x, d.y), z = chZ(d.y); chSpr(x, kEmo('🐶'), sx, sy - (d.bark > 0 ? Math.abs(Math.sin(ch.t * 20)) * 10 * z : 0), 58 * z, k.face > 0 ? -1 : 1); if (d.bark > 0) { x.font = `800 ${30 * z}px sans-serif`; x.fillStyle = INK; x.textAlign = 'center'; x.fillText('Au au!', sx, sy - 66 * z); } });
+  add(k.y, () => {
+    const [sx, sy] = chP(k.x, k.y), z = chZ(k.y), lift = k.jump > 0 ? Math.sin((1 - k.jump / .9) * Math.PI) * 140 * z : 0, moving = k.tx !== null || k.dash > 0, s = .7 * z, bob = moving ? Math.abs(Math.sin(k.walk * 12)) * 5 * z : 0;
+    x.fillStyle = 'rgba(0,0,0,.2)'; x.beginPath(); x.ellipse(sx, sy, 34 * z * Math.max(.4, 1 - lift / (400 * z)), 11 * z, 0, 0, TAU); x.fill();
+    x.save(); x.globalAlpha = k.bubble > 0 ? .45 : (k.inv > 0 && Math.floor(ch.t * 12) % 2) ? .5 : 1;
+    if (k.star > 0) { x.shadowColor = `hsl(${ch.t * 300 % 360} 90% 60%)`; x.shadowBlur = 30 * z; }
+    drawAvatar(x, sx - 50 * s, sy - 150 * s - lift - bob, s, k.face, moving ? k.walk * 14 : 0, lift > 0, k.carry ? 'cheer' : ''); x.restore();
+    if (k.bubble > 0) { x.strokeStyle = 'rgba(255,255,255,.9)'; x.lineWidth = 4; x.fillStyle = 'rgba(160,220,255,.25)'; x.beginPath(); x.arc(sx, sy - 55 * z - lift, 72 * z, 0, TAU); x.fill(); x.stroke(); }
+    if (k.carry) chItem(x, k.carry, sx + k.face * 4 * z, sy - 122 * z - lift - bob, 56 * z, k.gold, k.v);
+    if (k.magnet > 0) emoDraw(x, '🧲', sx - 44 * z, sy - 120 * z - lift, 30 * z);
+    if (k.banana) emoDraw(x, '🍌', sx + 44 * z, sy - 120 * z - lift, 30 * z);
+  });
+  list.sort((p, q) => p.y - q.y).forEach(o => o.f());
+  for (const f of ch.flies) { const u = f.t, [ax, ay] = chP(f.fx, f.fy), [bx, by] = chP(f.a.nx, f.a.ny); chItem(x, f.a, ax + (bx - ax) * u, ay + (by - ay) * u - Math.sin(u * Math.PI) * 160 * cam.z - 60 * cam.z, 52 * cam.z, f.gold, f.v); }
+  for (const f of ch.fx) if (f.spark) { f.t -= dt; const [sx, sy] = chP(f.x, f.y); x.globalAlpha = Math.max(0, f.t / .7); emoDraw(x, '✨', sx, sy - (f.h + (.7 - f.t) * 50) * cam.z, 20 * cam.z); }
+  x.globalAlpha = 1;
+  for (const f of ch.fx) if (f.ring) { f.t -= dt; const [sx, sy] = chP(f.x, f.y); x.strokeStyle = `rgba(255,255,255,${Math.max(0, f.t / .6)})`; x.lineWidth = 6; x.beginPath(); x.ellipse(sx, sy, (1 - f.t) * 200 * cam.z, (1 - f.t) * 80 * cam.z, 0, 0, TAU); x.stroke(); }
+  for (const f of ch.fx) if (f.conf) { const [sx, sy] = chP(f.x, f.y); confettiAt(ch.cf, sx, sy, f.n); }
+  ch.fx = ch.fx.filter(f => (f.dust || f.spark || f.ring) ? f.t > 0 : !f.conf);
+  if (k.tx !== null && ch.down) { const [sx, sy] = chP(k.tx, k.ty), r = 24 + Math.sin(ch.t * 8) * 4; x.strokeStyle = 'rgba(255,255,255,.8)'; x.lineWidth = 4; x.beginPath(); x.ellipse(sx, sy, r * cam.z, r * .45 * cam.z, 0, 0, TAU); x.stroke(); }
+  x.restore();
+  // seta para a casa quando ela some da tela
+  const u = H / 100;
+  if (k.carry) { const [hx] = chP(CH_FARM.x + CH_FARM.w, 0), [, hy] = chP(0, CH_FARM.y + CH_FARM.h / 2); if (hx < 0) { const ay = Math.max(u * 15, Math.min(H - u * 15, hy)); emoDraw(x, '⬅️', u * 6 - Math.abs(Math.sin(ch.t * 5)) * u * 1.5, ay, u * 9); emoDraw(x, '🏠', u * 15, ay, u * 7); } }
+}
+// o que cai do céu, a placa da missão, as estrelas e o minimapa
+function chDrawHud(x, W, H, dt) {
+  const u = H / 100, sky = CH_SKY[ch.world];
+  if (sky) for (const p of ch.petals) { p.y += dt * .05 * p.s; p.x += Math.sin(ch.t + p.ph) * dt * .02; if (p.y > 1.05) { p.y = -.05; p.x = Math.random(); } x.globalAlpha = .75; emoDraw(x, sky, p.x * W, p.y * H, u * 3 * p.s, 1, Math.sin(ch.t * 2 + p.ph)); }
+  x.globalAlpha = 1;
+  if (ch.mis) {
+    const m = ch.mis, a = ch.animals[m.i];
+    x.fillStyle = 'rgba(255,248,234,.92)'; x.beginPath(); x.roundRect(u * 2, u * 2, u * 28, u * 9, u * 3); x.fill();
+    x.font = `800 ${u * 4}px "Baloo 2", sans-serif`; x.textAlign = 'left'; x.fillStyle = INK; x.fillText(`🎯 ${m.got}/${m.n}`, u * 4, u * 8);
+    chItem(x, a, u * 24, u * 6.5, u * 7, false, 0);
+  }
+  const st = cw().stars || [], goal = !st[0] ? `Leve 5 filhotes (${Math.min(5, ch.delivered)}/5)` : !st[1] ? `3 seguidos sem ser pego (${Math.min(3, ch.streak)}/3)` : !st[2] ? `Traga ${ch.animals[4].item}` : 'Lugar completo!';
+  x.fillStyle = 'rgba(255,248,234,.92)'; x.font = `600 ${u * 2.6}px system-ui, sans-serif`; const gw = Math.max(u * 22, x.measureText(goal).width + u * 4);
+  x.beginPath(); x.roundRect(W - gw - u * 2, u * 2, gw, u * 11, u * 3); x.fill();
+  for (let i = 0; i < 3; i++) { x.globalAlpha = st[i] ? 1 : .3; emoDraw(x, '⭐', W - gw - u * 2 + gw / 2 + (i - 1) * u * 6, u * 6, u * 5); } x.globalAlpha = 1;
+  x.textAlign = 'center'; x.fillStyle = INK; x.fillText(goal, W - u * 2 - gw / 2, u * 11.3);
+  // minimapa
+  const mw = Math.min(W * .2, u * 34), mh = mw * CH_H / CH_W, mx = u * 2, my = H - mh - u * 2, k = mw / CH_W;
+  x.fillStyle = 'rgba(255,247,234,.85)'; x.beginPath(); x.roundRect(mx - u, my - u, mw + u * 2, mh + u * 2, u * 2); x.fill();
+  x.fillStyle = CH_WORLDS[ch.world].ground; x.beginPath(); x.roundRect(mx, my, mw, mh, u); x.fill();
+  x.fillStyle = (CH_WATER[ch.world] || ['', '#4dabf7'])[1]; x.beginPath(); x.ellipse(mx + CH_LAKE.x * k, my + CH_LAKE.y * k, CH_LAKE.rx * k, CH_LAKE.ry * k, 0, 0, TAU); x.fill();
+  x.fillStyle = CH_WORLDS[ch.world].base; x.fillRect(mx + CH_FARM.x * k, my + CH_FARM.y * k, CH_FARM.w * k, CH_FARM.h * k);
+  const s = u * 3; for (const a of ch.animals) { const c = a.state === 'chase', px = mx + (c ? a.x : a.nx) * k, py = my + (c ? a.y : a.ny) * k; x.drawImage(kEmo(a.emo), px - s / 2, py - s / 2, s, s); if (c) { x.strokeStyle = '#e03131'; x.lineWidth = 2; x.beginPath(); x.arc(px, py, s * .6, 0, TAU); x.stroke(); } }
+  x.fillStyle = '#ff6b3d'; x.strokeStyle = '#fff'; x.lineWidth = 2; x.beginPath(); x.arc(mx + ch.kid.x * k, my + ch.kid.y * k, u, 0, TAU); x.fill(); x.stroke();
+  const vw = W / ch.cam.z, vh = H / (ch.cam.z * CH_TILT); x.strokeStyle = 'rgba(42,29,18,.5)'; x.lineWidth = 1.5; x.strokeRect(mx + (ch.cam.x - vw / 2) * k, my + (ch.cam.y - vh / 2) * k, vw * k, vh * k);
+}
+// moedas voando até o contador
+function chDrawCoins(x, W, H, dt) {
+  if (!ch.pfx.length) return;
+  const cv = $('#chCv').getBoundingClientRect(), r = $('#chCoins').getBoundingClientRect(), tx = (r.left + 18 - cv.left) * W / cv.width, ty = (r.top + r.height / 2 - cv.top) * H / cv.height, s = H / 26;
+  for (const f of ch.pfx) { f.t += dt * 1.4; if (f.t < 0) continue; const u = Math.min(1, f.t), e = u * u; x.drawImage(kEmo('🪙'), f.x + (tx - f.x) * e - s / 2, f.y + (ty - f.y) * e - Math.sin(u * Math.PI) * s * 2 - s / 2, s, s); if (u >= 1) f.done = true; }
+  if (ch.pfx.some(f => f.done)) { chHud(); const p = $('#chCoins'); p.classList.remove('ch-pop'); void p.offsetWidth; p.classList.add('ch-pop'); }
+  ch.pfx = ch.pfx.filter(f => !f.done);
+}
+/* desafio da Mamãe Gigante: corrida de lado, toque para pular; ela chega pertinho mas nunca pega */
+const CH_GIANT_LEN = 95;
+function chGiantStart() {
+  if (!ch?.animals || ch.giant || !$('#chMap').hidden) return;
+  const a = ch.animals[0], k = ch.kid; if (k.carry) { ch.flies.push({ a: k.carry, fx: k.x, fy: k.y, t: 0, gold: k.gold, v: k.v }); k.carry = null; }
+  for (const m of ch.animals) if (m.state !== 'nap' && m.state !== 'home') m.state = 'back';
+  const obs = []; for (let p = 12; p < CH_GIANT_LEN - 4; p += 6 + Math.random() * 3) obs.push({ u: p, t: pick(['🪵', 'poça', '🪨']), hit: false });
+  const coins = []; for (let p = 8; p < CH_GIANT_LEN; p += 3.2) coins.push({ u: p, h: Math.random() < .5 ? .3 : 2.2, got: false });
+  ch.giant = { a, u: 0, y: 0, vy: 0, gap: 6, stumble: 0, obs, coins, done: false, t: 0, got: 0 };
+  $('#chDash').hidden = true; say(`${chCap(a.name)} gigante acordou! Corre! Toque na tela para pular!`); tone('sawtooth', 90, 60, audioOn().currentTime, .8, .12);
+}
+function chGiantJump() { const G = ch.giant; if (G && !G.done && G.y === 0) { G.vy = -14; tone('sine', 300, 900, audioOn().currentTime, .2, .1); } }
+function chGiantStep(dt) {
+  const G = ch.giant; if (G.done) return; G.t += dt;
+  const sp = G.stumble > 0 ? 3 : 6.2; G.stumble -= dt; G.u += sp * dt; G.vy += 30 * dt; G.y = Math.min(0, G.y + G.vy * dt); if (G.y === 0) G.vy = Math.min(0, G.vy);
+  G.gap = Math.max(1.3, Math.min(7, G.gap + (G.stumble > 0 ? -2.2 : .35) * dt));
+  for (const o of G.obs) if (!o.hit && Math.abs(o.u - G.u) < .55 && G.y > -.9) { o.hit = true; G.stumble = .8; ch.shake = .25; tone('square', 180, 90, audioOn().currentTime, .3, .08); say(pick(['Ops! Tropeçou!', 'Pula! Pula!'])); }
+  for (const c of G.coins) if (!c.got && Math.abs(c.u - G.u) < .6 && Math.abs(-G.y + .9 - c.h) < 1.1) { c.got = true; G.got++; cw().coins++; ch.pfx.push({ x: ch.W * .32, y: ch.H * .55, t: 0 }); chirp(1400, .05, 'square', .04); }
+  if (G.gap < 1.6 && Math.random() < dt * 2) tone('sawtooth', 110, 80, audioOn().currentTime, .2, .06);
+  if (G.u >= CH_GIANT_LEN) {   // venceu: filhote dourado no cercadinho e 50 moedas
+    G.done = true; cw().coins += 50; celebrate(false);
+    ch.babies.push({ emo: G.a.baby, v: 5, x: CH_FARM.x + 60 + Math.random() * (CH_FARM.w - 120), y: CH_FARM.y + 220 + Math.random() * (CH_FARM.h - 260), vx: 0, vy: 0, turn: 0, coinT: 3, hop: 0 });
+    for (let i = 0; i < 10; i++) ch.pfx.push({ x: ch.W / 2 + (Math.random() - .5) * 120, y: ch.H / 2, t: -i * .08 });
+    chKeep(); $('#chGiantP').textContent = `Ganhou um filhote dourado para o cercadinho, ${50 + G.got} moedas e muita coragem!`; $('#chGiantEnd').hidden = false;
+    say('Você venceu a mamãe gigante! Ganhou um filhote dourado!');
+  }
+}
+function chGiantDraw(x, W, H) {
+  const G = ch.giant, w = CH_WORLDS[ch.world], U = H / 10, gy = H * .78, cam = G.u * U - W * .32, uw = p => p * U - cam;
+  const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, w.dark ? '#1d2160' : '#ffcf8a'); g.addColorStop(1, w.dark ? '#5a4b8c' : '#fff1d6'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+  x.fillStyle = 'rgba(255,255,255,.7)'; x.beginPath(); x.arc(W * .8, H * .2, U * .9, 0, TAU); x.fill();
+  for (const [k, hh, a] of [[.15, .26, .55], [.4, .16, .85]]) { x.fillStyle = w.spot; x.globalAlpha = a; x.beginPath(); x.moveTo(0, gy); for (let i = 0; i <= 40; i++) { const px = i / 40 * W; x.lineTo(px, gy - (Math.sin((px + cam * k) / W * 5) * .5 + .5) * H * hh); } x.lineTo(W, gy); x.fill(); }
+  x.globalAlpha = 1; x.fillStyle = w.ground; x.fillRect(0, gy, W, H - gy); x.fillStyle = w.path; x.fillRect(0, gy + U * .25, W, U * .7);
+  x.strokeStyle = w.fence; x.lineWidth = U * .1; for (let p = Math.floor(G.u - 10); p < G.u + 20; p += 1.5) { const px = uw(p); x.beginPath(); x.moveTo(px, gy - U * .1); x.lineTo(px, gy - U * .8); x.stroke(); }
+  const fx = uw(CH_GIANT_LEN); if (fx < W + 100) { for (let i = 0; i < 8; i++) { x.fillStyle = i % 2 ? '#fff' : INK; x.fillRect(fx, gy - U * 3 + i * U * .375, U * .4, U * .375); } emoDraw(x, '🏁', fx + U * .4, gy - U * 3.4, U * 1.2); }
+  for (const o of G.obs) { const px = uw(o.u); if (px < -U * 2 || px > W + U * 2) continue; if (o.t === 'poça') { x.fillStyle = '#4dabf7'; x.beginPath(); x.ellipse(px, gy + U * .5, U * .9, U * .25, 0, 0, TAU); x.fill(); } else chSpr(x, kEmo(o.t), px, gy + U * .2, U * 1.1); }
+  for (const c of G.coins) if (!c.got) { const px = uw(c.u); if (px > -U && px < W + U) emoDraw(x, '🪙', px, gy - c.h * U - U * .25, U * .6); }
+  const mx = uw(G.u - G.gap), sh = Math.abs(Math.sin(G.t * 10)) * U * .25;   // a mamãe gigante atrás
+  chSpr(x, kEmo(G.a.emo), mx, gy + U * .3 - sh, U * 5.5, -1, 1 + Math.sin(G.t * 20) * .05);
+  emoDraw(x, '😠', mx + U * .6, gy - U * 5.2 - sh, U * .9);
+  for (let i = 0; i < 3; i++) { x.fillStyle = 'rgba(230,200,140,.6)'; x.beginPath(); x.arc(mx - U * (1 + i * .6), gy - U * .2, U * (.5 - i * .1) * (1 + Math.sin(G.t * 12 + i) * .2), 0, TAU); x.fill(); }
+  const kx = uw(G.u), ky = gy + U * .3 + G.y * U, s = U / 95;
+  x.fillStyle = 'rgba(0,0,0,.2)'; x.beginPath(); x.ellipse(kx, gy + U * .35, U * .45, U * .12, 0, 0, TAU); x.fill();
+  drawAvatar(x, kx - 50 * s, ky - 150 * s, s, 1, G.stumble > 0 ? 0 : G.t * 16, G.y < 0, '');
+  if (G.stumble > 0) emoDraw(x, '💫', kx, ky - U * 1.8, U * .6);
+  const bw = Math.min(W * .5, U * 6), bx = (W - bw) / 2, by = H * .06, pr = Math.min(1, G.u / CH_GIANT_LEN);
+  x.fillStyle = 'rgba(255,247,234,.9)'; x.beginPath(); x.roundRect(bx - 10, by - 10, bw + 20, U * .5 + 20, 20); x.fill();
+  x.fillStyle = '#eadfcc'; x.beginPath(); x.roundRect(bx, by, bw, U * .5, U * .25); x.fill(); x.fillStyle = '#69db7c'; x.beginPath(); x.roundRect(bx, by, Math.max(U * .5, bw * pr), U * .5, U * .25); x.fill();
+  emoDraw(x, '🏃', bx + bw * pr, by + U * .25, U * .7); emoDraw(x, '🏁', bx + bw + U * .2, by + U * .25, U * .7);
+  if (G.gap < 2) { x.font = `800 ${U * .6}px "Baloo 2", sans-serif`; x.textAlign = 'center'; x.lineWidth = 6; x.strokeStyle = '#fff'; x.fillStyle = '#e03131'; x.strokeText('Ela está chegando! Pula!', W / 2, H * .3); x.fillText('Ela está chegando! Pula!', W / 2, H * .3); }
 }
 function chaseLoop(t) {
   if (!alive('chase')) { ch.raf = 0; return; }
-  const dt = Math.min(.05, (t - ch.last) / 1000 || 0); ch.last = t;
-  const cv = $('#chCv'); fitCanvas(cv); const W = cv.width, H = cv.height, x = cv.getContext('2d');
-  // a altura do mundo cabe na tela; na largura, a câmera segue a criança
-  const sc = H / CH_H, viewW = W / sc, ox0 = Math.max(0, (W - CH_W * sc) / 2);
-  if (sc !== ch.sc || !ch.bg || ch.bgH !== H || ch.ox0 !== ox0) { ch.sc = sc; ch.ox0 = ox0; ch.oy = 0; ch.bgH = H; ch.bg = ch.animals ? chPaintBg(Math.ceil(CH_W * sc + ox0 * 2), H) : null; }
-  if (!ch.animals) { ch.raf = requestAnimationFrame(chaseLoop); return; }
-  const want = ox0 > 0 ? 0 : Math.max(0, Math.min(CH_W - viewW, ch.kid.x - viewW * .4));
-  ch.camX = ch.camX == null ? want : ch.camX + (want - ch.camX) * Math.min(1, dt * 6); ch.ox = ox0 - ch.camX * sc;
-  if (ch.down && ch.ptrS) [ch.kid.tx, ch.kid.ty] = chWorldPt(ch.ptrS);   // dedo parado na beirada: continua andando
-  if (ch.run) chStep(dt);
-  x.fillStyle = CH_WORLDS[ch.world].ground; x.fillRect(0, 0, W, H);
-  x.drawImage(ch.bg, -ch.camX * sc, 0); x.save(); x.translate(ch.ox, ch.oy); x.scale(sc, sc);
-  for (const e of ch.eggs) chEgg(x, e.x, e.y, 22, chEggColor(e.a, e.v), e.t < 2 ? Math.sin(ch.t * 30) * .25 : 0);
-  const list = [...ch.babies.map(b => ({ y: b.y, f: () => chBaby(x, b.emo, b.v, b.x, b.y - 18, 44, b.vx > 0 ? -1 : 1) })),
-    ...ch.animals.map(a => ({ y: a.y, f: () => {
-      if (a.has) chItem(x, a, a.nx, a.ny - 6, 52, a.gold, a.v);
-      const big = a.big ? 108 : 80, hop = a.state === 'chase' ? Math.abs(Math.sin(ch.t * 14)) * 8 : 0;
-      emoDraw(x, a.emo, a.x, a.y - big * .38 - hop, big, a.face < 0 ? 1 : -1);
-      if (a.state === 'home' && a.has) { x.font = '800 26px sans-serif'; x.fillStyle = 'rgba(58,36,20,.55)'; x.textAlign = 'center'; x.fillText('z', a.x + 30, a.y - big * .7 - Math.sin(ch.t * 2) * 6); }
-      if (a.state === 'alert') emoDraw(x, '❗', a.x, a.y - big - 8, 46);
-      if (a.state === 'stun') emoDraw(x, '💫', a.x, a.y - big - 8 + Math.sin(ch.t * 8) * 4, 46);
-      if (a.state === 'lost') emoDraw(x, '❓', a.x, a.y - big - 8, 46, Math.sin(ch.t * 6) > 0 ? 1 : -1);
-      const need = chNeed(a);
-      if (need > cw().shoe && a.state === 'home') {   // plaquinha com o tênis que falta
-        x.fillStyle = '#fff8ea'; x.beginPath(); x.roundRect(a.nx - 34, a.ny - 122, 68, 52, 14); x.fill(); x.strokeStyle = INK; x.lineWidth = 3; x.stroke();
-        emoDraw(x, CH_SHOES[need][0], a.nx, a.ny - 96, 38);
-      }
-    } })),
-    { y: ch.kid.y, f: () => {
-      const k = ch.kid, s = .62, bob = Math.abs(Math.sin(k.walk * 12)) * 5;
-      x.save(); if ((k.inv > 0 && Math.floor(ch.t * 12) % 2) || chHidden(k)) x.globalAlpha = .45;
-      drawAvatar(x, k.x - 50 * s, k.y - 150 * s - bob, s, k.face, k.tx !== null ? k.walk * 14 : 0, false, k.carry ? 'cheer' : '');
-      x.restore(); if (k.carry) chItem(x, k.carry, k.x, k.y - 118 - bob, 54, k.gold, k.v);
-    } },
-    ...CH_BUSHES.map(([bx, by]) => ({ y: by + 34, f: () => emoDraw(x, CH_BUSH_E[ch.world] || '🌳', bx, by - 10, 120) })),
-    ...(ch.dog ? [{ y: ch.dog.y, f: () => { const d = ch.dog; emoDraw(x, '🐶', d.x, d.y - 26 - (d.bark > 0 ? Math.abs(Math.sin(ch.t * 20)) * 10 : 0), 58, ch.kid.face > 0 ? -1 : 1); if (d.bark > 0) { x.font = '800 30px sans-serif'; x.fillStyle = INK; x.textAlign = 'center'; x.fillText('Au au!', d.x, d.y - 70); } } }] : [])];
-  list.sort((p, q) => p.y - q.y).forEach(o => o.f());
-  for (const f of ch.flies) { const u = f.t; chItem(x, f.a, f.fx + (f.a.nx - f.fx) * u, f.fy + (f.a.ny - f.fy) * u - Math.sin(u * Math.PI) * 140, 52, f.gold, f.v); }
-  for (const f of ch.fx) if (f.coin) { f.t -= dt; f.y += f.vy * dt; emoDraw(x, '🪙', f.x, f.y, 34); }
-  ch.fx = ch.fx.filter(f => !f.coin || f.t > 0);
-  confettiDraw(x, ch.fx.filter(f => !f.coin), dt); ch.fx = ch.fx.filter(f => f.coin || f.t > 0);
-  if (ch.kid.tx !== null && ch.down) { x.strokeStyle = 'rgba(255,255,255,.7)'; x.lineWidth = 5; x.beginPath(); x.arc(ch.kid.tx, ch.kid.ty, 22 + Math.sin(ch.t * 8) * 4, 0, TAU); x.stroke(); }
-  if (ch.kid.carry && ch.camX > CH_FARM.x + CH_FARM.w - 60) {   // casa fora da tela: setinha mostrando o caminho
-    const ax = ch.camX + 70, ay = CH_FARM.y + CH_FARM.h / 2 + Math.sin(ch.t * 6) * 10; emoDraw(x, '⬅️', ax - Math.abs(Math.sin(ch.t * 4)) * 12, ay, 60); emoDraw(x, '🏠', ax + 55, ay, 50);
+  let dt = Math.min(.05, (t - ch.last) / 1000 || 0); ch.last = t;
+  if (ch.slow > 0) { ch.slow -= dt; dt *= .35; }   // câmera lenta do "escapou por pouco"
+  ch.shake = Math.max(0, (ch.shake || 0) - dt);
+  const cv = $('#chCv'); fitCanvas(cv); const W = cv.width, H = cv.height, x = cv.getContext('2d'); ch.W = W; ch.H = H;
+  if (!ch.animals) { x.fillStyle = CH_WORLDS[ch.world].ground; x.fillRect(0, 0, W, H); ch.raf = requestAnimationFrame(chaseLoop); return; }
+  if (ch.giant) {
+    if (ch.run) chGiantStep(dt); ch.t += dt;
+    x.save(); if (ch.shake > 0) x.translate((Math.random() - .5) * ch.shake * 60, (Math.random() - .5) * ch.shake * 60); chGiantDraw(x, W, H); x.restore();
+  } else {
+    if (ch.down && ch.ptrS) [ch.kid.tx, ch.kid.ty] = chWorldPt(ch.ptrS);   // dedo parado: continua andando para lá
+    if (ch.run) chStep(dt);
+    chDrawWorld(x, W, H, dt); chDrawHud(x, W, H, dt);
   }
-  x.restore();
-  if (ch.mis) {   // placa da missão no canto
-    const m = ch.mis, a = ch.animals[m.i], u = H / 100;
-    x.fillStyle = 'rgba(255,248,234,.92)'; x.beginPath(); x.roundRect(u * 2, u * 2, u * 28, u * 9, u * 3); x.fill();
-    x.font = `800 ${u * 4}px "Baloo 2", sans-serif`; x.textAlign = 'left'; x.fillStyle = INK; x.fillText(`🎯 ${m.got}/${m.n}`, u * 4, u * 8);
-    chItem(x, a, u * 24, u * 7, u * 7, false, 0);
-  }
+  confettiDraw(x, ch.cf, dt, H / 600); chDrawCoins(x, W, H, dt);
+  const d = $('#chDash'), p = Math.max(0, Math.min(1, 1 - (ch.kid.dashCd || 0) / 3.2)); d.style.setProperty('--p', p); d.classList.toggle('ready', p >= 1);
   ch.raf = requestAnimationFrame(chaseLoop);
 }
 function chShop() {
@@ -11750,6 +12029,12 @@ function chShop() {
   $('#chShopBox').hidden = false;
 }
 $('#chShopBtn').onclick = () => { blip(600); chShop(); };
+$('#chDash').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); chDash(); });
+$('#chGiantBtn').onclick = () => { blip(600); chGiantStart(); };
+$('#chGiantGo').onclick = () => {
+  $('#chGiantEnd').hidden = true; ch.giant = null; $('#chDash').hidden = false; ch.cam.x = null;
+  Object.assign(ch.kid, { x: CH_FARM.x + CH_FARM.w / 2, y: CH_FARM.y + CH_FARM.h - 80, tx: null }); chHud(); say('Olha o filhote dourado no cercadinho!');
+};
 $('#chShopClose').onclick = () => { $('#chShopBox').hidden = true; ch.run = $('#chMap').hidden; };
 $('#chMapBtn').onclick = () => { blip(600); chMap(); };
 $('#chAlbumBtn').onclick = () => {
@@ -13026,7 +13311,7 @@ GAMES.squish = squishStart; GAME_INTRO.squish = 'Crie seu squish e aperte bastan
 /* atualizações: com internet, o app confere o repositório público de versões ao abrir, ao voltar para ele e a cada 30 minutos.
    O jogo (este arquivo) chega sozinho e entra assim que a criança está na tela inicial (nunca no meio de uma brincadeira);
    se a versão nova precisar de APK novo, aparece um aviso na área dos pais com o botão de instalar. */
-const APP_VERSION = { code: 66, name: '6.31' };
+const APP_VERSION = { code: 67, name: '6.32' };
 const UPDATE_URL = 'https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/versao.json';
 let updInfo = null, nativeCode = 0, updChecked = 0, apkPct = -1;
 // o que aconteceu na última vez que o app procurou atualização (aparece na área dos pais)
