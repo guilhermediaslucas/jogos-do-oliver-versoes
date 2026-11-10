@@ -1,8 +1,8 @@
 {
-  "code": 64,
-  "name": "6.29",
+  "code": 65,
+  "name": "6.30",
   "minApk": 54,
-  "notes": "Versão 6.29: os Ovos de dinossauro viraram a Fazenda dos Dinos! Os dinos do vale moram na fazenda, com cuidados para crescer, chocadeira com ovo surpresa todo dia e ovos do Corre-Corre, horta, loja de enfeites, noite nas casinhas, Dinopédia e passeio montado nos dinos grandes.",
+  "notes": "Versão 6.30: o som não some mais. Quando o tablet apagava a tela ou outro app usava o som, o Mundo do Oliver ficava mudo; agora qualquer toque traz o som de volta.",
   "html": "https://raw.githubusercontent.com/guilhermediaslucas/jogos-do-oliver-versoes/main/web/index.html",
   "apk": "https://github.com/guilhermediaslucas/jogos-do-oliver-versoes/releases/latest/download/MundoDoOliver.apk"
 }
